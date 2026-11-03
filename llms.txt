@@ -1,0 +1,20 @@
+# Docs
+
+- [oh-my-webbridge](https://oh-my-webbridge.github.io/): A local daemon and browser extensions that let an agent or script work in the Chrome or Firefox you already use.
+- [Getting started](https://oh-my-webbridge.github.io/getting-started/): Install the daemon and the browser extension, pair a browser and run the first commands.
+
+- **Guides**
+- [Sessions and tabs](https://oh-my-webbridge.github.io/sessions/): How an agent splits work into sessions, how tabs are opened, grouped and borrowed, and the limits that apply.
+- [Agent activity](https://oh-my-webbridge.github.io/activity/): What the toolbar icon, the popup and the activity layer show while an agent controls a tab, and how to turn the layer off.
+- [Page presets](https://oh-my-webbridge.github.io/presets/): Control which network requests the tabs a session owns may make with the anti-ad, zen and none presets.
+- [Firefox](https://oh-my-webbridge.github.io/firefox/): Install the Firefox extension, pair it with the daemon, and see how its actions differ from Chrome.
+
+- **Reference**
+- [CLI](https://oh-my-webbridge.github.io/reference/cli/): Commands of the omw daemon and command line client.
+- [Actions](https://oh-my-webbridge.github.io/reference/actions/): The command endpoint, every browser action, selector syntax and error codes.
+- [JavaScript SDK](https://oh-my-webbridge.github.io/reference/sdk/): The Node.js client that sends actions to a daemon session.
+- [CDP](https://oh-my-webbridge.github.io/reference/cdp/): Chrome DevTools Protocol access through the daemon, in extension and native mode.
+
+- **Project**
+- [Architecture](https://oh-my-webbridge.github.io/architecture/): How the omw daemon and the browser extension split work, and how a command reaches a tab.
+- [Development](https://oh-my-webbridge.github.io/development/): Repository layout, toolchain, build output, test commands, and the release path.
