@@ -4,20 +4,20 @@ An agent works in tabs of your own browser, so the extension marks the tab it co
 
 <Demo
   name="activity-form"
-  alt="An agent fills in a booking form: the tab shows an edge glow, a focus frame moves from field to field, and the text appears in each one."
+  alt="An agent plays The Password Game: the tab shows an edge glow, the agent's pointer and a focus frame mark the password field, and the password grows one character at a time as each rule appears."
 />
 
 ## Toolbar icon [#toolbar-icon]
 
-| Icon                    | When                                         | Tooltip                                                                      |
-| ----------------------- | -------------------------------------------- | ---------------------------------------------------------------------------- |
-| Teal                    | Connected, this tab is not controlled        | `oh-my-webbridge: connected`                                                 |
-| Teal with an orange dot | A session controls this tab                  | `oh-my-webbridge: session research controls this tab`                        |
-| Grey                    | Not paired, or connecting                    | `oh-my-webbridge: not paired`, `oh-my-webbridge: connecting`                 |
-| Grey with a red dot     | Daemon not running, or the daemon refused it | `oh-my-webbridge: daemon not running`, `oh-my-webbridge: connection refused` |
-| Grey with pause bars    | Paused                                       | `oh-my-webbridge: paused`                                                    |
+| Icon                        | When                                         | Tooltip                                                                      |
+| --------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------- |
+| Dark, with a white pointer  | Connected, this tab is not controlled        | `oh-my-webbridge: connected`                                                 |
+| Dark, with an amber pointer | A session controls this tab                  | `oh-my-webbridge: session research controls this tab`                        |
+| Grey                        | Not paired, or connecting                    | `oh-my-webbridge: not paired`, `oh-my-webbridge: connecting`                 |
+| Grey with a red dot         | Daemon not running, or the daemon refused it | `oh-my-webbridge: daemon not running`, `oh-my-webbridge: connection refused` |
+| Grey with pause bars        | Paused                                       | `oh-my-webbridge: paused`                                                    |
 
-The orange dot is set on the controlled tab only. Other tabs keep the connection state icon. The tooltip uses the interface language of the extension.
+The amber pointer is set on the controlled tab only. Other tabs keep the connection state icon. The tooltip uses the interface language of the extension.
 
 ## The popup [#the-popup]
 
@@ -25,7 +25,7 @@ While connected, the popup starts with a row labeled "This tab". It reads "Not c
 
 <Demo
   name="popup"
-  alt="The popup over a booking form an agent is filling in: Connected, This tab reads Session demo, prompt examples in tabs, and Pause and Settings buttons."
+  alt="The popup over The Password Game, which an agent is playing: Connected, This tab reads Session demo, prompt examples in tabs, and Pause and Settings buttons."
   still
 />
 
@@ -34,9 +34,10 @@ While connected, the popup starts with a row labeled "This tab". It reads "Not c
 The layer is drawn in Chrome and Firefox, on tabs the session opened and on tabs it borrowed from you. It ends when the session releases or closes the tab. While it is drawn, the page shows:
 
 - An edge glow while an action runs, fading out shortly after it finishes.
-- A chip in the bottom right corner with an orange dot and the session name.
-- The orange-dot icon as the favicon, in place of the page's own icons.
-- A focus frame around the element an action targets, with the action name above it: Click, Hover, Type, Select, Check, Focus, Scroll, Drag or Upload. The label moves below the element when the element sits near the top edge. The frame follows elements of the main document; while the session has an iframe selected, the page shows the glow and the chip only.
+- The agent's pointer, with a tag that shows the session name. It moves to the centre of each element an action targets and stays at the last one. On light backgrounds the arrow is dark with a white edge, on dark backgrounds white with a dark edge.
+- A chip in the bottom right corner with an amber dot and the session name.
+- The amber-pointer icon as the favicon, in place of the page's own icons.
+- A focus frame around the element an action targets, with the action name above it: Click, Hover, Type, Select, Check, Focus, Scroll, Drag or Upload. The label moves below the element when the element sits near the top edge. The frame follows elements of the main document; while the session has an iframe selected, the page shows the glow, the chip and the pointer at its last position only.
 
 The focus frame stays for a moment after the action finishes, so a run of clicks reads as one activity instead of a flicker of frames. A navigation replaces the document, and the layer is drawn again on the new page.
 
@@ -58,4 +59,4 @@ The focus frame stays for a moment after the action finishes, so a run of clicks
 
 Under **Settings**, then **Pages**, turn off **Show agent activity**. The layer disappears from every controlled tab at once and is not drawn on tabs that sessions claim later. Agents keep working, and the toolbar icon and the popup row still show which session controls the tab. Turn the switch on again to draw the layer on the tabs that are still controlled.
 
-The layer follows the system's reduced motion and reduced transparency settings: the glow stops pulsing and the chip switches to a solid background.
+The layer follows the system's reduced motion and reduced transparency settings: the glow stops pulsing, the focus frame and the pointer move without gliding, and the chip switches to a solid background.

@@ -12,7 +12,7 @@ Agent 或指令碼送出的指令，會在你日常使用的 Chrome 或 Firefox 
 
 <Demo
   name="activity-form"
-  alt="Agent 填寫表單時，頁面顯示邊緣光暈，作用中的欄位出現焦點框，並逐字顯示輸入的文字。"
+  alt="Agent 在借用的分頁中玩 The Password Game：指標與焦點框標出密碼欄位，密碼逐字出現，規則一條接一條變成綠色。"
 />
 
 ## Agent 能做什麼 [#what-an-agent-can-do]

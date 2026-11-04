@@ -12,7 +12,7 @@ Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个
 
 <Demo
   name="activity-form"
-  alt="Agent 填写表单时，页面显示边缘光晕，当前的字段出现焦点框，并逐字显示输入的文字。"
+  alt="Agent 在借用的标签页中玩 The Password Game：指针与焦点框标出密码字段，密码逐字出现，规则一条接一条变成绿色。"
 />
 
 ## Agent 能做什么 [#what-an-agent-can-do]

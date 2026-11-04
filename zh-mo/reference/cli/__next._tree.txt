@@ -1,7 +1,8 @@
-:HL["/_next/static/chunks/0yl1yin4kf7x_.css","style"]
+:HL["/_next/static/chunks/0mfnrqn1cl58r.css","style"]
 :HL["/_next/static/chunks/0iaxnelvtqw2u.css","style"]
-:HL["/mark.svg","image"]
+:HL["/wordmark.svg","image"]
+:HL["/wordmark-dark.svg","image"]
 3:[["children",{"s":"__PAGE__","h":160}]]
 2:[["children",{"s":{"n":"slug","t":"oc","k":"reference/cli","s":["llms-full.txt","llms.txt"]},"h":65600,"c":"$Q3"}]]
 1:[["children",{"s":{"n":"lang","t":"d","k":"zh-mo","s":["api","llms.txt","md","og"]},"h":196656,"c":"$Q2"}]]
-0:{"b":"OrsnjW68yJiTrQxt9dCS7","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
+0:{"b":"C1FDxMwUn2mExp9MAE63f","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}

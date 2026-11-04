@@ -10,7 +10,7 @@ One daemon serves Chrome and Firefox at the same time. Each browser is paired on
 
 <Demo
   name="activity-form"
-  alt="An agent fills a form while the page shows an edge glow, a focus frame on the active field and typed text."
+  alt="An agent plays The Password Game in a borrowed tab: its pointer and a focus frame mark the password field, the password appears one character at a time, and the rules turn green one after another."
 />
 
 ## What an agent can do [#what-an-agent-can-do]
