@@ -1,0 +1,1584 @@
+# Agent 活動 (https://oh-my-webbridge.github.io/zh-hk/activity/)
+
+{/* Generated from activity.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+Agent 在你自己瀏覽器的分頁中工作，所以擴充功能會標示它所控制的分頁。標示出現在工具列圖示、彈出式視窗，以及畫在頁面上方的活動層。
+
+<Demo
+  name="activity-form"
+  alt="Agent 填寫訂位表單：分頁顯示邊緣光暈，焦點框在各欄位之間移動，文字逐一出現在每個欄位中。"
+/>
+
+## 工具列圖示 [#toolbar-icon]
+
+| 圖示             | 時機                          | 工具提示                                                          |
+| ---------------- | ----------------------------- | ----------------------------------------------------------------- |
+| 藍綠色           | 已連線，這個分頁未受控制      | 「oh-my-webbridge：已連線」                                       |
+| 藍綠色帶橘色圓點 | 有工作階段控制這個分頁        | 「oh-my-webbridge：工作階段 research 正在控制這個分頁」           |
+| 灰色             | 未配對，或連線中              | 「oh-my-webbridge：未配對」、「oh-my-webbridge：連線中」          |
+| 灰色帶紅色圓點   | daemon 未執行，或 daemon 拒絕 | 「oh-my-webbridge：daemon 未執行」、「oh-my-webbridge：連線遭拒」 |
+| 灰色帶暫停符號   | 已暫停                        | 「oh-my-webbridge：已暫停」                                       |
+
+橘色圓點只標在受控制的分頁上。其他分頁維持顯示連線狀態的圖示。工具提示使用擴充功能的介面語言。
+
+## 彈出式視窗 [#the-popup]
+
+連線時，彈出式視窗最上方是標為「這個分頁」的一列。一般分頁顯示「未受控制」，受控制的分頁顯示「工作階段 research」，動作執行期間顯示「工作階段 research 執行中」。這一列會跟隨作用中的分頁。
+
+<Demo
+  name="popup"
+  alt="彈出式視窗位於 Agent 正在填寫的訂位表單上方：已連線，「這個分頁」顯示「工作階段 demo」，分頁中有提示範例，另有「暫停」與「設定」按鈕。"
+  still
+/>
+
+## 在頁面上 [#on-the-page]
+
+活動層會繪製在 Chrome 與 Firefox 中，涵蓋工作階段開啓的分頁，以及它向你借用的分頁。工作階段釋放或關閉該分頁時，活動層隨之結束。繪製期間，頁面會顯示：
+
+- 動作執行期間的邊緣光暈，動作結束後不久淡出。
+- 右下角的標籤，帶有橘色圓點與工作階段名稱。
+- 以橘色圓點圖示作為網站圖示，取代頁面自己的圖示。
+- 動作所針對的元素周圍有焦點框，框上方標示動作名稱：Click、Hover、Type、Select、Check、Focus、Scroll、Drag 或 Upload。元素靠近上邊緣時，標籤會移到元素下方。焦點框跟隨主文件中的元素；工作階段選取了某個框架時，頁面只顯示光暈與標籤。
+
+動作結束後，焦點框會再停留片刻，所以連續的點擊看起來是一次活動，而不是一閃一閃的框。導覽會取代文件，活動層會在新頁面上重新繪製。
+
+## 它如何不干擾頁面 [#how-it-stays-out-of-the-way]
+
+- 活動層是一個帶有 shadow root 的宿主元素。頁面的樣式不會影響它的各個部分。
+- 它使用 `pointer-events: none`，所以點擊、選取與懸停都會抵達下方的頁面。
+- 它是 `inert` 且 `aria-hidden`，所以螢幕閲讀器與頁面的無障礙樹都會略過它。`read_page` 回傳的頁面文字不含標籤，`snapshot` 也不會列出活動層。
+- 擷取螢幕截圖與 PDF 時會先隱藏活動層，完成後再重新顯示。
+- 活動層帶有 75 秒的租約，擴充功能每 30 秒續約一次。擴充功能停止續約時，頁面會自行移除活動層並還原自己的網站圖示，因此即使 worker 停止或偵錯工具工作階段中斷，也不會留下任何標記。
+
+## 關閉活動層 [#turn-it-off]
+
+<Demo
+  name="settings"
+  alt="設定頁面，有「連線」、「頁面」與「進階」羣組。「顯示 Agent 活動」已開啓。"
+  still
+/>
+
+到**設定**，再到**網頁**，關閉**顯示 Agent 活動**。活動層會同時從所有受控制的分頁消失，之後才被工作階段認領的分頁也不會繪製活動層。Agent 仍會繼續工作，工具列圖示與彈出式視窗的那一列仍會顯示哪個工作階段控制該分頁。重新開啓開關，會在仍受控制的分頁上繪製活動層。
+
+活動層遵循系統的減少動態效果與減少透明度設定：光暈不再脈動，標籤改用實心背景。
+
+
+# 架構 (https://oh-my-webbridge.github.io/zh-hk/architecture/)
+
+{/* Generated from architecture.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+oh-my-webbridge 由兩個行程組成。daemon `omw` 是 Go 二進位檔，監聽 `127.0.0.1:17373`。擴充功能在 Chrome 或 Firefox 內執行，透過瀏覽器 API 操作分頁。Agent、CLI 與 SDK 透過 HTTP 呼叫 daemon；daemon 透過 WebSocket 呼叫擴充功能。
+
+## 元件 [#components]
+
+### Daemon [#daemon]
+
+daemon 保存的狀態，不會隨瀏覽器視窗關閉而消失。
+
+- 驗證：除了 `GET /ping` 與 `POST /pair`，每個請求都在這裏以 token 檢查。
+- 路由：每個瀏覽器保留一條連線，並把每個指令送往 Chrome 或 Firefox。
+- 並行與期限：daemon 決定是否受理請求，套用逾時，並在達到上限時回應 `busy`。
+- 檔案：daemon 把螢幕截圖與 PDF 寫到你指定的路徑，並為 Firefox 讀取上傳檔案，因為 Firefox 的擴充功能無法讀取本機檔案。
+- CDP 前端：`GET /json`、`GET /json/version` 與 `GET /devtools/page/{tab}` 向 CDP 用户端呈現 Chrome 分頁，`omw serve --cdp` 則把 `/devtools/browser` 轉送到原生 DevTools 端點。
+- 工作階段綁定：儲存在組態目錄的 `bindings.json`。
+
+### 擴充功能 [#extension]
+
+擴充功能負責瀏覽器端的工作。
+
+- 任務分頁與其分頁羣組，包括借用已存在的分頁。
+- DOM 與無障礙樹的 `snapshot`，以及由單一快照衍生的 `@e` 參照。
+- 輸入：點擊、懸停、輸入、選取、勾選、聚焦、捲動、拖曳與上傳。
+- Chrome：`chrome.debugger`，也就是 CDP。
+- Firefox：WebExtension API。`page.js` 依需求注入所選框架，`webRequest` 處理預設集與標頭，`tabs.captureTab` 擷取螢幕截圖，`userScripts.execute` 執行 `evaluate`。
+- 每個受控分頁的網路項目與主控台紀錄。
+- 繪製在受控頁面上方的活動層。
+
+Firefox 對部分動作回應 `unsupported`，因為它的擴充功能 API 沒有對應的功能。差異列於 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/)。
+
+一個分頁同一時間只屬於一個工作階段。建立分頁的工作階段把它們放在自己的分頁羣組；借用的分頁留在你的羣組，並在釋放時歸還。分頁羣組不是 cookie 邊界，也不是安全邊界：設定檔內的每個分頁共用相同的登入狀態。
+
+## 多瀏覽器路由 [#multi-browser-routing]
+
+daemon 最多保留一條 Chrome 連線與一條 Firefox 連線，並以 WebSocket 的 Origin 區分兩者。擴充功能的 hello 會回報瀏覽器、瀏覽器版本，以及擴充功能持有的工作階段名稱。
+
+指令可以帶 `browser` 欄位。工作階段在第一個指令時綁定到某個瀏覽器，並維持該綁定，直到 `close_session` 成功。綁定會寫入 `bindings.json`，因此 daemon 重新啓動後，工作階段仍會路由回同一個瀏覽器。下一次 hello 會重新回報工作階段名稱，過期的綁定會被丟棄。
+
+沒有綁定的工作階段，在 Chrome 已連線時送往 Chrome，否則送往 Firefox。`/json/list`、`/devtools/*` 與原始 `cdp` 需要 Chrome 擴充功能；即使沒有瀏覽器連線，`/json/version` 仍會回報版本。同一個瀏覽器的第二條連線會被拒絕，並回應 409。
+
+## 請求生命週期與並行 [#request-lifecycle-and-concurrency]
+
+請求以 `POST /command` 抵達，本文上限為 2 MiB；也可以作為擴充功能 WebSocket 上的框架抵達。請求若沒有 ID，daemon 會指派隨機 ID；回應只會與同一條連線上帶有該 ID 的待處理請求配對。連線中斷時，該連線上所有進行中的指令都以 `outcome_unknown` 結束。重新連線後，只接受新的請求。
+
+同一個工作階段的指令依序執行，不同的工作階段並行執行。擴充功能也依工作階段排隊，等待中的指令超過 32 個時回應 `busy`。`close_session` 與 `dialog` 不經過工作階段佇列，使用 16 個保留名額，因此卡住的工作階段或開啓中的對話框仍然可以被清除。頁面 CDP 連線保留協定的多工處理：同一個目標上有另一個指令在等待時，Fetch 或 Debugger 的接續仍會執行。
+
+預設逾時為 30 秒，上限為 120 秒。請求超過期限會回傳 `outcome_unknown`，SDK 不會重試結果不確定的指令。
+
+## 擴充功能生命週期 [#extension-lifecycle]
+
+Chrome 以 MV3 service worker 執行擴充功能背景。worker 與 daemon 保持一條 WebSocket，每 20 秒送出一次 ping，並在 45 秒沒有流量後關閉該 socket。`chrome.alarms` 計時器每 30 秒觸發一次，並在 worker 已停止時重新連線。重試間隔從 0.5 秒退避到 30 秒，並加入抖動。沒有 offscreen document、靜音音訊或輪詢迴圈讓 worker 保持存活，Chrome 仍可能隨時停止它。
+
+偵錯工作階段會比開啓它的 worker 更長壽，並維持附加在分頁上。下一個 worker 啓動時，不會有處理已暫停請求所需的狀態。它在啓動時會分離從前一個 worker 繼承的偵錯工作階段，這會釋放在那裏暫停的所有請求，然後在下一個指令時重新附加。工作階段中繼資料存放在 `chrome.storage.session`，而不是 worker 的全域變數。頁面 CDP 工作階段會隨開啓它們的 daemon 連線結束。
+
+Firefox 執行 MV3 event page，瀏覽器在閒置 30 秒後會將它暫停。WebSocket 流量不算作活動，因此在連線開啓期間，每 20 秒的心跳也會呼叫 `tabs.query`。暫停後，由 30 秒的 alarm 重新連線。重新載入背景頁會丟掉 `webRequest` 監聽器與框架選擇。預設集會在該分頁下一次受控導覽時重新安裝。
+
+## 本機信任模型 [#local-trust-model]
+
+daemon 只能從它所在的機器連線，token 是唯一的憑證。
+
+- 它綁定 `127.0.0.1:17373`，並拒絕 Host 不是 `127.0.0.1` 的請求。
+- 網頁來源會被拒絕。只接受由 32 個 a 到 p 字母組成的 `chrome-extension://` 來源，以及帶有 UUID 的 `moz-extension://` 來源，而且只限 `/extension`、`/ping` 與 `/pair`。
+- CLI 與 SDK 以 `Authorization: Bearer` 傳送 token。擴充功能以 WebSocket 子協定 `omw-token.<token>` 傳送 token，並與 `omw.v1` 並列。URL 中不會出現 token。
+- `GET /ping` 不需要 token 即可回報版本。`POST /pair` 需要擴充功能來源，並以六位數配對碼換取 token。
+- 配對碼的有效期為 5 分鐘，可嘗試 5 次。
+- 組態目錄以 0700 權限建立。存放 token 的 `config.json` 先寫入暫存檔，再以 0600 權限原子性地發布。
+- token 授予瀏覽器的完整控制權：任何分頁中的頁面 JavaScript、原始 CDP，以及寫入你指定之絕對路徑的檔案。它無法把你與以同一個作業系統使用者執行的其他行程隔離，而且設定檔的 cookie 對每個分頁都可用。
+- Chrome 擴充功能沒有 `<all_urls>` 主機權限、沒有常駐的 content script，也沒有外部訊息入口。Firefox 宣告 `<all_urls>`，螢幕截圖、請求過濾、cookie 與跨來源框架都需要它；`userScripts` 維持為選用權限，在初始設定頁面或在 **設定** 下的 **網頁** 中授予。
+
+## 資源限制 [#resource-limits]
+
+這些是容量防護，不是 RSS 的上限：同時進行的螢幕截圖，以及 Chrome 自己的分頁與網路快取，仍會增加記憶體用量。
+
+| 資源                                                                              | 限制                                                            |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| HTTP 請求本文                                                                     | 2 MiB                                                           |
+| 正在讀取或處理的 HTTP 請求                                                        | 288                                                             |
+| 每個瀏覽器的一般指令                                                              | 128                                                             |
+| 每個瀏覽器為 `close_session`、`dialog`、`cdp_detach`、`artifact_close` 保留的名額 | 16                                                              |
+| 擴充功能中每個工作階段的等待指令                                                  | 32                                                              |
+| 每個瀏覽器的工作階段                                                              | 128                                                             |
+| 每個工作階段的分頁                                                                | 32                                                              |
+| WebSocket 訊息                                                                    | 32 MiB                                                          |
+| daemon 中緩衝的回應                                                               | 64 MiB，超過後指令回傳 `outcome_unknown`                        |
+| 擴充功能傳送緩衝區                                                                | 超過 4 MiB 後訊框開始排隊，排隊上限 64 MiB，30 秒無法傳送即關閉 |
+| 螢幕截圖與 PDF 工作                                                               | 同時 2 個                                                       |
+| 指令逾時                                                                          | 預設 30 秒，上限 120 秒                                         |
+| `snapshot` 輸出                                                                   | 4000 個節點或 192000 個字元，並設定 `truncated`                 |
+| 頁面 CDP 訂閲佇列                                                                 | 32 個事件，每個事件 256 KiB                                     |
+| 網路擷取                                                                          | 每個分頁 500 筆項目，Chrome 中緩衝的本文共 8 MiB                |
+| Firefox 網路回應本文                                                              | 每個回應 1 MiB，每個分頁 8 MiB                                  |
+| Firefox 上傳                                                                      | 每個指令 16 MiB，進行中的所有指令合計 64 MiB                    |
+| PDF 輸出                                                                          | 100 MiB                                                         |
+| 成品檔案                                                                          | 先寫入暫存檔，再以 0600 權限寫成，絕不覆寫既有路徑              |
+
+
+# 開發 (https://oh-my-webbridge.github.io/zh-hk/development/)
+
+{/* Generated from development.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+這個儲存庫產出一個 Go 二進位檔、兩個擴充功能套件、一個 SDK 檔案與文件網站。建置需要 Go 1.27.3 或更新版本、Node 24 與 pnpm 11。封裝發行版本還需要 `PATH` 中有 `tar` 與 `zstd`。
+
+## 儲存庫結構 [#repository-layout]
+
+| 路徑               | 內容                                                                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `cmd/omw`          | CLI 進入點：`start`、`serve`、`stop`、`status`、`pair`、`connection`、`call`、`service`、`skill`、`install-skill`、`doctor`。       |
+| `internal/bridge`  | HTTP 與 WebSocket 伺服器、hub 與路由、配對、綁定、CDP 代理、上傳。                                                                  |
+| `internal/config`  | 組態目錄、token、位址、`OMW_HOME`。                                                                                                 |
+| `internal/service` | `omw service install` 寫入的 launchd 與 systemd 使用者服務。                                                                        |
+| `extension/src`    | 兩個瀏覽器共用的背景 worker、動作、快照、預設集、網路擷取、活動層。`extension/src/firefox` 存放 Firefox worker 與注入的 `page.js`。 |
+| `extension/ui`     | 彈出式視窗與應用程式頁面（初始設定、設定）。使用 Vite、React 19、來自 coss registry 的 Base UI 基礎元件，以及 Tailwind CSS 4。      |
+| `packages/brand`   | 圖示 SVG 與 `theme.css`，由擴充功能頁面與文件網站共用。                                                                             |
+| `sdk/`             | `index.ts`，也就是打包為 `dist/sdk.mjs` 的 JavaScript SDK。                                                                         |
+| `docs/`            | 以 Next 建置的 Fumadocs 網站，採靜態匯出。頁面位於 `docs/content/docs`；`meta.json` 決定頁面順序。                                  |
+| `scripts/`         | 建置、過濾清單編譯、發行封裝、發布、稽核。                                                                                          |
+| `tests/`           | Node 測試套件、端對端測試套件與測試資料。                                                                                           |
+
+`benchmarks/` 存放瀏覽器工具的基準測試，`examples/` 存放 SDK 指令碼，`skills/` 存放由 `omw install-skill` 安裝的 Agent 技能，`third_party/` 存放固定版本的過濾清單及其授權文字。
+
+`pnpm-workspace.yaml` 列出根套件、`docs`、`extension/ui` 與 `packages/*`，因此 Changesets 會讓根套件與工作區一起升版。
+
+## 工具鏈 [#toolchain]
+
+| 工具            | 版本與用途                                                                  |
+| --------------- | --------------------------------------------------------------------------- |
+| Go              | 1.27.3 或更新版本。唯一的第三方模組是 `github.com/coder/websocket`。        |
+| Node            | 24 或更新版本，設定於 `engines`。執行建置、測試、發行指令碼與文件網站。     |
+| pnpm            | 11，固定於 `packageManager`。執行任何指令碼之前，先用 `pnpm install` 安裝。 |
+| TypeScript      | 7，嚴格模式。擴充功能與 SDK 在 `pnpm run check` 中一併檢查。                |
+| oxlint 與 oxfmt | 靜態檢查與格式化。`oxlint` 透過 `oxlint-tsgolint` 以型別感知模式執行。      |
+| Vite            | 8，建置擴充功能頁面。esbuild 打包 worker 與 SDK。                           |
+
+## 建置 [#build]
+
+```sh
+pnpm install
+pnpm run build
+go build -trimpath -ldflags='-s -w' -o dist/omw ./cmd/omw
+```
+
+`make build` 執行相同的三個步驟，其中 `pnpm install` 帶 `--frozen-lockfile`。
+
+`pnpm run build` 執行 `scripts/build.mjs`，它會：
+
+1. 檢查 `package.json`、兩份擴充功能 manifest，以及 `internal/bridge/protocol.go` 中的 `Version` 是否為同一個版本。
+2. 以 esbuild 將 `extension/src/worker.ts` 打包為 ES module，經過壓縮，目標為 `chrome156`。
+3. 將 `extension/src/firefox/worker.ts` 打包，目標為 `firefox153`，並將 `extension/src/firefox/page.ts` 打包為 IIFE。
+4. 在 `extension/ui` 執行 Vite 建置，並把 `popup.html`、`app.html` 與其資源複製到兩個擴充功能目錄。
+5. 以 resvg 從 `packages/brand/icons` 的 SVG 轉出工具列圖示與應用程式圖示。
+6. 編譯過濾清單，並複製所打包的 npm 套件與過濾清單來源的授權文字。
+7. 將 `sdk/index.ts` 打包為 `dist/sdk.mjs`，目標為 Node 24。
+8. 寫出 `dist/extension.sha256.json` 與 `dist/extension-firefox.sha256.json`。
+
+輸出為 `dist/omw`、Chrome 用的 `dist/extension`、Firefox 用的 `dist/extension-firefox`，以及 `dist/sdk.mjs`。Chrome 把 `dist/extension` 當作未封裝的擴充功能載入。Firefox 把 `dist/extension-firefox` 當作暫時性擴充功能載入。
+
+## 擴充功能頁面 [#extension-pages]
+
+彈出式視窗、初始設定頁面與設定頁面是同一個 Vite 專案。`extension/ui/vite.config.ts` 將 `popup.html` 與 `app.html` 列為輸入，以相對 base 建置，讓頁面能從 `chrome-extension://` URL 運作，並輸出到 `dist/extension-ui`。建置也會產生 `bundled-modules.json`，`scripts/build.mjs` 用它蒐集頁面套件中每個 npm 模組的授權。
+
+`app/app.tsx` 依 URL hash 選擇初始設定頁面或設定頁面，因此 `app.html#settings` 會直接開啓設定頁面。取自 coss registry 的元件位於 `extension/ui/src/components/ui`，保持 registry 提供的原樣；側欄、步驟清單等組合元件位於 `extension/ui/src/components`。儲存庫根目錄的 `design.md` 是這些頁面與文件網站的呈現規則。頁面從 `chrome.storage` 讀取連線狀態，並自行呼叫 `GET /ping` 與 `POST /pair`。WebSocket 由背景 worker 持有。
+
+## 檢查與測試 [#checks-and-tests]
+
+```sh
+pnpm run check
+pnpm run format:check
+pnpm test
+go vet ./...
+go test -race ./...
+```
+
+`make check` 執行 `go vet`、型別感知的靜態檢查與格式檢查。`make test` 執行 `go test -race` 與 Node 測試套件。
+
+| 指令                             | 執行內容                                                                                                 |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `pnpm run build`                 | 上述的完整建置。                                                                                         |
+| `pnpm run check`                 | `oxlint --type-aware --type-check --deny-warnings --format=agent`。                                      |
+| `pnpm run format`                | `oxfmt`，並寫入變更。`pnpm run format:check` 只回報，不寫入。                                            |
+| `pnpm test`                      | `tests/` 中的單元測試套件：SDK、worker、動作、預設集、預設集生命週期、狀態、Firefox、發行與基準測試。    |
+| `pnpm run test:e2e`              | 針對 Chrome 執行 `tests/e2e.test.mjs`。需要 `CHROME_BIN`。                                               |
+| `pnpm run test:e2e:firefox`      | 針對 Firefox 執行 `tests/e2e-firefox.test.mjs`。需要 `FIREFOX_BIN`。                                     |
+| `pnpm run test:e2e:dual`         | 兩個瀏覽器連到同一個 daemon。需要兩個變數。                                                              |
+| `pnpm run test:e2e:firefox-page` | 在 Firefox 內執行 `page.js`。需要 `FIREFOX_BIN`。                                                        |
+| `pnpm run bench`                 | `benchmarks/run.mjs`。                                                                                   |
+| `pnpm run release:plan`          | 預覽下一個版本，不消耗變更片段。                                                                         |
+| `pnpm run release:check`         | 檢查各處版本是否一致，以及變更片段能否解析；CI 會傳入基準 commit，額外要求已發布的變更必須附有變更片段。 |
+| `pnpm run release:version`       | 消耗變更片段，並在本機準備版本。                                                                         |
+| `pnpm run release:pack`          | 建置發行封存檔。`pnpm run release:audit` 驗證它們。                                                      |
+
+端對端測試套件會啓動 `dist/omw`，並載入 `dist/extension` 或 `dist/extension-firefox`，因此請先執行建置。`CHROME_BIN` 與 `FIREFOX_BIN` 是瀏覽器二進位檔的絕對路徑。缺少對應變數的測試套件會被略過。
+
+## 文件網站 [#documentation-site]
+
+```sh
+pnpm --filter @oh-my-webbridge/docs dev
+```
+
+開發伺服器監聽連接埠 3884。頁面是 `docs/content/docs` 中的 MDX。`docs/content/docs/meta.json` 依側邊欄順序列出頁面，新頁面必須加到該檔案。每個路徑都以語言段開頭，例如 `/zh-tw/sessions/`；網站根目錄會依瀏覽器的第一個語言把讀者帶到對應的文件。`pnpm --filter @oh-my-webbridge/docs build` 產生供 GitHub Pages 使用的靜態匯出。建置時會讀取每個頁面的 Git 歷史，列出貢獻者與頁面歷史，因此需要完整的 clone。
+
+示範影片與螢幕截圖放在孤立分支 `assets`，Pages 工作流程會把它 checkout 到 `docs/public/media`。`pnpm run media` 用 Chrome for Testing 把它們錄到 `dist/media`；`pnpm run media --language zh-TW` 以其他介面語言錄製含有擴充功能文字的場景。
+
+## 翻譯 [#translations]
+
+英文是來源語言。繁體中文（台灣）由英文人工翻譯。`pnpm run i18n` 用 OpenCC 把 zh-TW 文字轉成簡體中文（zh-CN）以及香港、澳門用字（zh-HK、zh-MO），再用 oxfmt 格式化輸出。只編輯英文與 zh-TW 檔案：其他檔案會被腳本覆寫。產生的檔案與來源不一致時，`pnpm run i18n:check` 會失敗，CI 會執行這項檢查。
+
+| 文字                 | 英文                    | zh-TW 來源                              | 產生的檔案                                                      |
+| -------------------- | ----------------------- | --------------------------------------- | --------------------------------------------------------------- |
+| `extension/locales/` | `en.json`               | `zh-TW.json`                            | `zh-CN.json`、`zh-HK.json`、`zh-MO.json`、`extension/_locales/` |
+| `docs/content/docs/` | `page.mdx`、`meta.json` | `page.zh-tw.mdx`、`meta.zh-tw.json`     | `page.zh-cn.mdx`、`page.zh-hk.mdx`、`page.zh-mo.mdx`、`meta.*`  |
+| `docs/messages/`     | `site.en.json`          | `site.zh-tw.json`、`history.zh-tw.json` | `zh-cn`、`zh-hk` 與 `zh-mo` 檔案                                |
+
+zh-CN 的轉換先套用 OpenCC 的詞彙表（`twp` 轉 `cn`），再套用 `scripts/i18n.mjs` 裏的中國大陸軟體用語表。zh-HK 與 zh-MO 的轉換只改字形（`tw` 轉 `hk`）；OpenCC 沒有獨立的澳門標準。
+
+`en.json` 的每個鍵都必須出現在 `zh-TW.json`，而且 `{placeholders}` 相同，否則腳本會停止。翻譯頁面的標題沿用英文標題的錨點，例如 `## 選擇器 [#selectors]`，讓指向章節的連結在每種語言都有效。
+
+擴充功能頁面、彈出式視窗、工具列標題與活動層使用設定頁選擇的語言，或瀏覽器的語言。瀏覽器擴充功能清單中的擴充功能名稱與説明來自 `extension/_locales`，一律依瀏覽器語言顯示。
+
+## Changesets 與發行 [#changesets-and-releases]
+
+版本號與發行説明來自變更片段，而不是來自 commit 訊息，也不會發布到 npm。
+
+- 每個使用者可見的變更，在 `.changeset/` 下新增一個檔案，並以該變更命名。front matter 記錄升版類型：修正用 `patch`，新功能用 `minor`，破壞性行為用 `major`。
+- 內文先寫一個簡短的 H1 標題，接着寫使用者看到的結果、適用的遷移或範圍説明，以及 PR 建立後的 PR 連結。變更片段以 GitHub Flavored Markdown 呈現，因此每個區塊都要正確關閉，原始 HTML 只用於註解，連結以行內方式書寫。
+- PR 若變更已發布的輸入，例如原始碼、建置指令碼、相依套件、發行工作流程或擴充功能 manifest，沒有新的變更片段就會讓 CI 失敗。測試與內部文件可以不附。編輯既有的變更片段不算數。
+- 推送到 `main` 會維護一個草稿 `release/next` 版本 PR。它的工作流程執行 `scripts/release-pr.mjs`，以 `scripts/release.mjs version` 消耗變更片段，同步套件、鎖定檔、daemon 與 manifest 的版本，並寫出 `CHANGELOG.md` 與 `docs/releases/<version>.md`。
+- 版本 PR 合併後，版本工作流程會為 `chore(release): prepare <version>` 這個 commit 建立標籤。該標籤觸發發行工作流程：它重新建置、稽核每個封存檔、上傳資產、驗證其 SHA-256 摘要，之後才發布 GitHub Release。
+- 封存檔使用 zstd 層級 3，以 `zstd -dc archive.tar.zst | tar -xf - -C DIR` 解開。
+
+## 授權 [#license]
+
+本專案採用 Apache-2.0 授權。`NOTICE` 存放聲明，`THIRD_PARTY.md` 列出所打包的過濾清單與 npm 套件。擴充功能建置在 `licenses/` 下附上完整的授權文字。
+
+
+# Firefox (https://oh-my-webbridge.github.io/zh-hk/firefox/)
+
+{/* Generated from firefox.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+Firefox 版本是適用於 Firefox 153 以上的 MV3 擴充功能。它與同一個 daemon 配對，並提供與 Chrome 擴充功能相同的動作，差異列於[動作](#actions)。Chrome 擴充功能使用 CDP 之處，Firefox 擴充功能改用 WebExtension API：頁面動作在內容指令碼中執行；預設集、網路擷取與額外的請求標頭使用會阻擋的 `webRequest` 監聽器；螢幕截圖使用 `tabs.captureTab`；`evaluate` 使用 `userScripts`。
+
+## 安裝 [#install]
+
+每個發行版本有兩個 Firefox 檔案。請都以 `SHA256SUMS` 核對。
+
+- `omw-<version>-firefox-mv3.tar.zst` 內含擴充功能目錄。以 `zstd -dc archive.tar.zst | tar -xf - -C <directory>` 解開。
+- `omw-<version>-firefox-mv3-unsigned.xpi` 內含相同的擴充功能，已封裝以供簽章。
+
+### 暫時性擴充功能 [#temporary-extension]
+
+暫時性擴充功能會在 Firefox 結束時移除。
+
+1. 開啓 `about:debugging`，選擇**這個 Firefox**。
+2. 選擇**載入暫時性附加元件…**。
+3. 選取 `dist/extension-firefox` 或已解開的發行版本目錄中的 `manifest.json`。
+
+`pnpm run build` 會把 `dist/extension-firefox` 寫在 Chrome 建置結果旁邊。
+
+### 已簽章的擴充功能 [#signed-extension]
+
+Firefox 正式版與 Beta 版只安裝由 Mozilla 簽章的擴充功能。已簽章的擴充功能在重新啓動後仍保持安裝。
+
+1. 在 addons.mozilla.org 上以未公開上架（unlisted）、自行發布的方式為擴充功能簽章。在 AMO 開發者中心上傳未簽章的 `.xpi`，或在解開的目錄中執行 `web-ext sign --channel=unlisted --api-key=<JWT issuer> --api-secret=<JWT secret>`。`web-ext` 會把已簽章的 `.xpi` 寫入 `web-ext-artifacts/`。
+2. 在 `about:addons` 中開啓齒輪選單，選擇**從檔案安裝附加元件…**，再選取已簽章的 `.xpi`。
+
+AMO 會在簽章前驗證每次提交。簽章最多可能需要 24 小時，而且每個版本都需要各自的簽章。
+
+Firefox ESR、Developer Edition、Nightly 與未加品牌的建置版本，在 `about:config` 中 `xpinstall.signatures.required` 為 `false` 時，可安裝未簽章的 `.xpi`。
+
+## 配對與權限 [#pairing-and-permissions]
+
+安裝擴充功能後，會開啓初始設定頁面（`app.html`），列出設定步驟：
+
+1. **啓動 daemon**：執行 `omw start`，或執行 `omw service install` 以便登入時啓動。頁面連上 daemon 後，這個步驟即完成。
+2. **配對這個瀏覽器**：執行 `omw pair`。它會印出六位數的配對碼，有效時間為 5 分鐘，可嘗試 5 次。把配對碼輸入配對碼欄位。
+3. **允許指令碼**：授予選用的 `userScripts` 權限。
+4. **和 Agent 試試看**：執行 `omw install-skill ~/.agents/skills`，再請 Agent 做點事。
+
+- **存取所有網站**是 `<all_urls>` 主機權限，在安裝時請求。你可以在 `about:addons` 的「權限」中關閉它。關閉後，頁面動作、`screenshot` 與 `cookies` 會回傳 `restricted_tab`，預設集也會停止過濾請求。此時 `navigate` 到回應 204 No Content 或 205 Reset Content 的 URL，會一直等到指令的期限。重新開啓這項權限即可恢復過濾。
+- **使用者指令碼**是選用的 `userScripts` 權限。請在步驟 3 選擇**允許指令碼**，或到**設定**，再到**網頁**，並確認 Firefox 的提示。Firefox 只接受來自使用者操作的請求，所以這些按鈕是授予權限的唯一入口。在授予之前，`evaluate` 與帶有 `expression` 的 `wait` 會回傳 `unsupported`。
+
+彈出式視窗中的**暫停**會讓擴充功能與 daemon 中斷連線，直到你選擇**繼續**。
+
+## Chrome 與 Firefox 並用 [#chrome-and-firefox-together]
+
+daemon 同一時間各保持一個 Chrome 連線與一個 Firefox 連線。同一個瀏覽器的第二個連線會得到 HTTP 409。
+
+- 帶有 `browser` 的指令會送往該瀏覽器：命令列用 `omw call --browser firefox SESSION ACTION`，SDK 用 `connect(session, { browser: "firefox" })`。
+- 不帶 `browser` 的指令會送往工作階段所綁定的瀏覽器。未綁定的工作階段會送往唯一已連線的瀏覽器，兩個瀏覽器都已連線時則送往 Chrome。
+- daemon 送出的第一個指令，會把工作階段綁定到那個瀏覽器。綁定儲存在 `bindings.json`，在擴充功能重新連線與 daemon 重新啓動後仍然保留。
+- `browser` 指定另一個瀏覽器時，會回傳 `session_browser`（HTTP 409）。所綁定的瀏覽器未連線時，會回傳 `browser_offline`；daemon 不會把工作階段移到另一個瀏覽器。`close_session` 會移除綁定。
+- `/json`、`/json/list`、`/json/version` 與 `/devtools/page/*` 使用 Chrome。只有 Firefox 連線時，它們會回傳 `unsupported`（HTTP 501）。
+
+`omw status` 與 `omw doctor` 會為每個瀏覽器各印出一行連線資訊。
+
+## 動作 [#actions]
+
+除非表格列出差異，動作的行為與 Chrome 相同。Firefox 無法執行的動作或參數會回傳 `unsupported`（HTTP 501），訊息中會指出動作、參數與原因。
+
+| 動作                                                     | Firefox 的行為                                                                                    |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `navigate`                                               | 預設集封鎖頂層頁面時，分頁停留在目前的頁面；`navigate` 回傳該 URL，在新分頁中則回傳 `about:blank` |
+| `window_new`                                             | 忽略 `focused: false`；新視窗會取得焦點                                                           |
+| `click`、`dblclick`、`mouse_click`、`hover`、`send_keys` | 不受信任事件；檢查 `isTrusted` 的頁面會忽略它們                                                   |
+| `keyboard`（`down`、`up`）、`mouse`、`drag`              | `unsupported`                                                                                     |
+| `key_type`、`keyboard`（`insertText`）                   | 沒有可編輯元素取得焦點時，回傳 `element_action_failed`                                            |
+| `scroll`                                                 | 不觸發 `wheel` 事件；未知的 `direction` 回傳 `invalid_args`                                       |
+| `snapshot`、`read_page`、`find`                          | 角色與名稱取自 DOM；同一個頁面得到的文字可能與 Chrome 不同                                        |
+| `wait`                                                   | `expression` 需要使用者指令碼權限                                                                 |
+| `evaluate`                                               | 需要使用者指令碼權限；`contextId` 回傳 `unsupported`                                              |
+| `frame`                                                  | 以字串回傳數值的 `frameId`，不回傳 `contextId`                                                    |
+| `history`                                                | `back`、`forward` 與 `reload` 可用；`list` 回傳 `unsupported`                                     |
+| `dialog`、`console`                                      | `unsupported`                                                                                     |
+| `dialog_status`                                          | 只回傳 URL，不含對話框類型或訊息                                                                  |
+| `emulate`                                                | 只有 `data`（額外的請求標頭）可用                                                                 |
+| `cookies`                                                | 涵蓋所有 cookie 分區；`set` 寫入未分區的 cookie                                                   |
+| `upload`                                                 | 由 daemon 讀取檔案：每個指令 16 MiB，傳輸中共 64 MiB                                              |
+| `screenshot`                                             | 擷取分頁但不啓用它；`selector` 與 `fullPage` 需要主框架                                           |
+| `save_as_pdf`                                            | `unsupported`；`tabs.saveAsPDF` 會開啓儲存對話框，且不回傳 PDF 位元組                             |
+| `network`                                                | 最多 500 個項目；本文超過 1 MiB 或本文已被丟棄時，回傳錯誤                                        |
+| `preset`                                                 | 使用會阻擋的 `webRequest`；見[預設集](#presets)                                                   |
+| `cdp`、`cdp_attach`、`cdp_detach`、`list_targets`        | `unsupported`；Firefox 沒有 CDP                                                                   |
+| `artifact_read`、`artifact_close`                        | `unsupported`；Firefox 的動作不回傳 artifact 串流                                                 |
+
+Firefox 擴充功能無法產生受信任的輸入。`click`、`dblclick`、`mouse_click`、`hover` 與 `send_keys` 會分派 `pointer*`、`mouse*` 與 `key*` 事件，其 `isTrusted` 為 `false`。頁面不會取得使用者啓用狀態。頁面由這些事件發起的 `window.open` 彈出視窗、檔案選擇器、全螢幕與剪貼簿讀取都會失敗。`click` 之後仍會呼叫 `element.click()`，執行連結、按鈕與表單控制項的預設動作。`fill` 與 `key_type` 使用 `document.execCommand`，並產生受信任的 `beforeinput` 與 `input` 事件。`hover` 不會設定 `:hover`，所以由 CSS `:hover` 展開的選單會保持關閉。`send_keys` 接受 `Backspace`、`Delete`、`Enter`、`Tab`、`Shift+Tab`、`Control+A` 與 `Meta+A`。其他按鍵會回傳 `unsupported`。
+
+## 背景生命週期 [#background-lifecycle]
+
+背景以 MV3 事件頁面的形式執行。Firefox 會在事件頁面閒置 30 秒後將其暫停，而 WebSocket 流量不算作活動。擴充功能連線期間，每 20 秒送出一次 ping 並呼叫 `tabs.query`，讓頁面保持載入。每 30 秒觸發一次的 alarm，會在暫停後重新連線。工作階段中繼資料存放在 `storage.session`，Firefox 重新啓動時會清除它。
+
+背景重新啓動會丟失 `webRequest` 監聽器與框架選擇：
+
+- `preset {cmd:"status"}` 會為既有分頁回報 `none`，直到該分頁的下一次導覽再次套用工作階段的預設集。
+- 網路錄製會停止。
+- 額外的請求標頭套用於新的任務分頁；既有分頁需要再次執行 `emulate {data}`。
+
+## 預設集 [#presets]
+
+Firefox 預設集使用與 Chrome 相同的模式、過濾清單、引擎與工作階段設定，且只套用於任務分頁。[頁面預設集](https://oh-my-webbridge.github.io/zh-hk/presets/)説明各個模式與內建清單。
+
+- 每個任務分頁都有自己會阻擋的 `webRequest.onBeforeRequest` 監聽器，並以 `tabId` 過濾。它會收到每個框架的請求，包括跨處理程序的框架，且沒有每個分頁的目標數上限。清單載入後，每個請求都會同步比對。
+- 預設集變更會立即套用到既有的任務分頁，回應會回報 `appliesOn: "immediate"`。重新設定會替換監聽器，且不會對頁面送出任何東西，所以忙碌的頁面不會延遲它。預設集未變更的導覽會保留監聽器與狀態計數器；設定了 `environment` 的預設集，每次導覽都會重新設定。
+- `zen` 依類型封鎖請求：`images` 涵蓋圖片與圖片集請求，`fonts` 涵蓋字型，`css` 涵蓋樣式表，`javascript` 涵蓋指令碼。`javascript: true` 時，擴充功能也會在該分頁的文件與框架回應中加上 `Content-Security-Policy: script-src 'none'`。行內指令碼與事件處理常式屬性會停止執行，`<noscript>` 的內容不會呈現。
+- `environment` 會被接受，但回報 `environmentState: "unavailable"` 並附上原因。網路過濾則繼續進行。
+- 被封鎖的頂層頁面會讓分頁停留在目前的頁面，不顯示錯誤頁面。
+- 沒有**存取所有網站**時，每個請求都會通過。狀態回報 `network: false` 並記錄原因。沒有任何請求計為已封鎖。
+- 清單載入失敗時，請求會不經過濾而通過，`zen` 的類型封鎖仍然有效。下一次設定預設集時會重新載入清單。
+- 最後一個過濾中的分頁停止過濾 30 秒後，引擎資料即被釋放。
+
+
+# 快速開始 (https://oh-my-webbridge.github.io/zh-hk/getting-started/)
+
+{/* Generated from getting-started.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+Chrome 與 Firefox 可以並行使用，且各自獨立配對。
+
+## 系統需求 [#requirements]
+
+- Chrome 156 或更新版本，或 Firefox 153 或更新版本。
+- macOS 或 Linux，且與瀏覽器在同一台電腦上。
+- 解開發行版本封存檔需要 `zstd`。
+- 從原始碼建置需要 Go 1.27.3、Node 24 與 pnpm 11。
+
+## 安裝 daemon [#install-the-daemon]
+
+<Tabs items={["發行版本封存檔", "從原始碼建置"]}>
+<Tab value="發行版本封存檔">
+
+從[發行版本頁面](https://github.com/oh-my-webbridge/oh-my-webbridge/releases)下載適用於你平台的 `omw-<version>-<os>-<arch>.tar.zst`，並以同一個發行版本中的 `SHA256SUMS` 檔案核對。接着解開封存檔：
+
+```sh
+zstd -dc omw-<version>-darwin-arm64.tar.zst | tar -xf - -C "$HOME/.local"
+```
+
+封存檔內含 `bin/omw`、`README.md` 與授權檔。請把執行檔放在 `PATH` 內；登入時啓動的服務會記錄該路徑。
+
+</Tab>
+<Tab value="從原始碼建置">
+
+在儲存庫根目錄執行建置：
+
+```sh
+pnpm install
+pnpm run build
+go build -trimpath -ldflags='-s -w' -o dist/omw ./cmd/omw
+```
+
+`pnpm run build` 會把 Chrome 擴充功能寫入 `dist/extension`，把 Firefox 擴充功能寫入 `dist/extension-firefox`，並把 SDK 寫入 `dist/sdk.mjs`。
+
+</Tab>
+</Tabs>
+
+## 安裝擴充功能 [#install-the-extension]
+
+<Tabs items={["Chrome", "Firefox"]}>
+<Tab value="Chrome">
+
+把 `omw-<version>-chrome-mv3.tar.zst` 解開到一個資料夾。開啓 `chrome://extensions`，開啓「開發人員模式」，選擇**載入未封裝項目**，再選取該資料夾；manifest 位於封存檔根目錄。從原始碼建置時，以同樣方式載入 `dist/extension`。
+
+</Tab>
+<Tab value="Firefox">
+
+解開 `omw-<version>-firefox-mv3.tar.zst`。開啓 `about:debugging`，選擇**這個 Firefox**，再選擇**載入暫時性附加元件…**，然後選取解開後資料夾中的 `manifest.json`。Firefox 重新啓動時會移除暫時性擴充功能。要永久安裝，需要來自 addons.mozilla.org 的自行發布模式簽章；請把 `omw-<version>-firefox-mv3-unsigned.xpi` 提交到該網站。從原始碼建置時，載入 `dist/extension-firefox`。
+
+</Tab>
+</Tabs>
+
+## 設定瀏覽器 [#set-up-the-browser]
+
+安裝擴充功能後，會開啓初始設定頁面。瀏覽器尚未配對、daemon 未執行，或 daemon 拒絕連線時，可在彈出式視窗中按**開啓初始設定**重新開啓該頁面。
+
+<Steps>
+<Step>
+### 啓動 daemon [#start-the-daemon]
+
+執行 `omw start`。它會在背景啓動 daemon，並印出 `started`；若已有 daemon 在執行，則印出 `already running`。頁面連上 daemon 後，這個步驟會自動完成；在此之前，頁面顯示「正在等待 127.0.0.1:17373 上的 daemon」。
+
+</Step>
+<Step>
+### 配對這個瀏覽器 [#pair-this-browser]
+
+執行 `omw pair`。它會印出六位數的配對碼，例如 `482 913`，有效時間為 5 分鐘，可嘗試 5 次。把配對碼輸入配對碼欄位。擴充功能會儲存 daemon 的 token，並顯示「這個瀏覽器已配對。」
+
+</Step>
+<Step>
+### 和 Agent 試試看 [#try-it-with-an-agent]
+
+以 `omw install-skill ~/.agents/skills` 安裝 Agent 技能，再請 Agent 執行瀏覽器任務，例如讀取作用中的分頁。
+
+</Step>
+</Steps>
+
+Firefox 在最後一步之前多一個步驟：**允許指令碼**，其按鈕使用相同的文字。`evaluate` 動作需要選用的使用者指令碼權限；你可以在該步驟授予，也可以之後到**設定**，再到**網頁**授予。
+
+擴充功能的頁面、彈出式視窗與工具列提示使用瀏覽器的語言。若要改用其他語言，請在初始設定頁或設定頁側欄底部開啓語言選單。擴充功能提供英文、繁體中文（台灣、香港與澳門）與簡體中文。
+
+<Demo name="setup" alt="初始設定頁面，顯示各個步驟、配對碼欄位與已連線狀態。" />
+
+## 登入時啓動 [#start-at-login]
+
+先把執行檔移到你打算長期使用的路徑，再執行：
+
+```sh
+omw service install
+```
+
+在 macOS 上，這個指令會寫入 `~/Library/LaunchAgents/app.oh-my-webbridge.plist`，並以 `launchctl` 載入。在 Linux 上，它會寫入 `~/.config/systemd/user/oh-my-webbridge.service`，並以 `systemctl --user` 啓用該 unit。這個 unit 會以安裝指令所用的組態目錄執行 `omw serve`。安裝服務之前，請先停止由 `omw start` 啓動的 daemon，因為服務會自行啓動另一個 daemon。請透過服務管理員停止服務：
+
+```sh
+launchctl bootout gui/$(id -u)/app.oh-my-webbridge
+```
+
+```sh
+systemctl --user disable --now oh-my-webbridge.service
+```
+
+`omw stop` 會要求執行中的 daemon 結束，並保留已開啓的分頁。已安裝服務時，請使用服務管理員，以免 daemon 再次啓動。
+
+## 安裝 Agent 技能 [#install-the-agent-skill]
+
+`omw install-skill DIR` 會寫入 `DIR/oh-my-webbridge/SKILL.md`，並複製內建於執行檔的指南。它拒絕覆寫既有檔案，所以重新安裝前請先刪除舊檔。`omw skill` 會印出同一份指南。這份指南告訴 Agent 要執行哪些指令、工作階段與分頁擁有權如何運作，以及可能遇到哪些錯誤。
+
+## 第一批指令 [#first-commands]
+
+```sh
+omw call research navigate '{"url":"https://example.com","group_title":"Research"}'
+omw call research snapshot
+omw call research evaluate '{"code":"document.title"}'
+omw call research close_session
+```
+
+`omw call` 後的第一個引數是工作階段名稱；每項任務使用一個名稱。每個指令都會在 stdout 印出 JSON。
+
+- `navigate` 會在標題為 `Research` 的新羣組中開啓背景分頁，並回傳分頁 id。同一個工作階段之後的導覽會重用該分頁；傳入 `newTab` 則開啓另一個分頁。
+- `snapshot` 會回傳無障礙樹，其中的 `@e` 參照可供 `click` 與 `fill` 使用。
+- `evaluate` 會回傳運算式的值。
+- `close_session` 會關閉該工作階段擁有的分頁，並釋放任何借用的分頁。
+
+第三個引數是 JSON 物件。傳入 `-` 可從 stdin 讀取，避免 shell 引號問題：
+
+```sh
+omw call research evaluate - < request.json
+```
+
+兩個瀏覽器都已連線時，請在 `omw call` 後立即指定其中一個：
+
+```sh
+omw call --browser firefox research snapshot
+```
+
+## 檢查連線 [#check-the-connection]
+
+`omw doctor` 會在 stderr 印出組態檔路徑，在 stdout 印出狀態 JSON，然後在 stderr 為每個瀏覽器印出一行：
+
+```text
+chrome: connected (VERSION)
+firefox: not connected
+```
+
+`omw status` 會印出相同的狀態 JSON 與瀏覽器行，但不印組態檔路徑。daemon 沒有回應時，兩者都以非零狀態碼結束。
+
+<Callout type="warn" title="token 就是瀏覽器的憑證">
+
+`omw connection` 會印出 daemon 端點與 token。任何持有 token 的人都能操控兩個已配對的瀏覽器，因此請不要讓它出現在記錄檔或聊天中。若要不使用六位數配對碼來配對，請到**設定**，再到**進階**，再到 **daemon token**，貼上 64 個十六進位字元。
+
+</Callout>
+
+
+# oh-my-webbridge (https://oh-my-webbridge.github.io/zh-hk/)
+
+{/* Generated from index.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+Agent 或指令碼送出的指令，會在你日常使用的 Chrome 或 Firefox 設定檔中執行，因此頁面保有該設定檔的登入狀態、cookie 與擴充功能。daemon 與瀏覽器在同一台電腦上執行，只監聽 `127.0.0.1:17373`。
+
+1. Agent 或指令碼透過 `omw call` 或 SDK 送出指令。
+2. `omw` daemon 檢查 token，再透過 WebSocket 把指令轉送給某個瀏覽器中的擴充功能。
+3. 擴充功能在分頁中執行指令，並回傳 JSON。
+
+一個 daemon 可同時服務 Chrome 與 Firefox。每個瀏覽器只需配對一次，token 由其擴充功能保存。
+
+<Demo
+  name="activity-form"
+  alt="Agent 填寫表單時，頁面顯示邊緣光暈，作用中的欄位出現焦點框，並逐字顯示輸入的文字。"
+/>
+
+## Agent 能做什麼 [#what-an-agent-can-do]
+
+- 在背景開啓分頁，每個工作階段使用一個分頁羣組。羣組標題取自 `group_title` 或工作階段名稱。分頁羣組只在畫面上區隔不同任務；所有分頁共用同一個設定檔及其 cookie。
+- 以文字讀取頁面（`read_page`），或取得帶有 `@e` 參照的無障礙快照（`snapshot`），供後續動作指定目標。
+- 點擊、輸入與填寫表單欄位。Chrome 透過 DevTools 協定送出這些輸入，因此頁面收到的是受信任事件；Firefox 以不受信任事件送出點擊與按鍵，頁面可能忽略這些事件。
+- 在兩種瀏覽器中擷取螢幕截圖，並可在 Chrome 中把頁面存成 PDF。
+- 在兩種瀏覽器中讀取網路請求，並可在 Chrome 中讀取主控台訊息。
+- 沒有現成動作能完成任務時，可在 Chrome 中送出原始 CDP 指令。
+
+## 接下來看哪裏 [#where-to-go-next]
+
+- [快速開始](https://oh-my-webbridge.github.io/zh-hk/getting-started/)：安裝 daemon 與擴充功能，配對瀏覽器，並執行第一批指令。
+- [工作階段與分頁](https://oh-my-webbridge.github.io/zh-hk/sessions/)：每項任務一個工作階段，各有自己的分頁與分頁羣組。
+- [Agent 活動](https://oh-my-webbridge.github.io/zh-hk/activity/)：光暈、焦點框與工具列圖示，用來標示 Agent 正在控制的分頁。
+- [動作](https://oh-my-webbridge.github.io/zh-hk/reference/actions/)：所有動作、其引數，以及會回傳的錯誤。
+
+
+# 頁面預設集 (https://oh-my-webbridge.github.io/zh-hk/presets/)
+
+{/* Generated from presets.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+預設集是工作階段組態的一部分。它套用在工作階段擁有的任務分頁上，包括之後才開啓的分頁。
+
+| 模式      | 網路                       | 環境                         | 用途                                 |
+| --------- | -------------------------- | ---------------------------- | ------------------------------------ |
+| `anti-ad` | 內建的過濾清單             | 選用，預設關閉               | 一般任務頁面                         |
+| `zen`     | `anti-ad` 加上資源類型限制 | 選用，`zen` 封鎖指令碼時略過 | 靜態頁面或封存頁面、大量閲讀         |
+| `none`    | 不做預設集攔截             | 關閉                         | 被預設集弄壞的頁面，或不要過濾的執行 |
+
+<Tabs items={["anti-ad", "none"]}>
+  <Tab value="anti-ad">
+    <Demo
+      name="presets"
+      still
+      alt="任務分頁中的新聞首頁套用 anti-ad 預設集：報導占滿頁面，廣告版位都不見了。"
+    />
+  </Tab>
+  <Tab value="none">
+    <Demo
+      name="presets-none"
+      still
+      alt="同一個新聞首頁，預設集設為 none：橫幅廣告、側欄方塊與資訊流中的方塊都顯示廣告。"
+    />
+  </Tab>
+</Tabs>
+
+## 設定預設集 [#set-a-preset]
+
+```js
+const browser = await connect("archive");
+
+await browser.preset("anti-ad", { environment: true });
+await browser.navigate("https://example.com");
+
+const status = await browser.call("preset", { cmd: "status" });
+console.log(status);
+```
+
+`preset` 會儲存工作階段的組態，並把它套用到工作階段擁有的分頁上。`navigate` 接受相同的 `preset`、`zen` 與 `environment` 欄位，並在導覽開始後儲存這些欄位。在命令列中：
+
+```sh
+omw call archive preset '{"preset":"zen","zen":{"images":true,"fonts":true,"css":false,"javascript":false}}'
+omw call archive preset '{"cmd":"status"}'
+```
+
+尚未選擇預設集的工作階段使用 `anti-ad`，這是新任務分頁的預設。
+
+## anti-ad [#anti-ad]
+
+這些清單在建置時編譯進擴充功能。`pnpm run filters:update` 會下載它們，並把 URL、SHA-256 值、日期與原始聲明記錄在 `third_party/filters/sources.lock.json`。擴充功能不會從第三方伺服器擷取規則或更新，離線時也能運作。
+
+內含的清單：
+
+- AdGuard Base（已移除與 EasyList 重複的項目）與 AdGuard Tracking Protection
+- EasyList 與 EasyPrivacy
+- uBlock Origin 中已啓用的非地區性預設清單：filters、badware、privacy、unbreak、quick fixes、URLHaus 與 Peter Lowe
+
+不包含地區性清單與騷擾類清單。封裝的 uBO scriptlet 與重新導向資源來自 Ghostery 固定版本的副本。
+
+引擎實作了請求封鎖與例外。重新導向、回應本文與 HTML 改寫、CSP 指令，以及程序式外觀過濾（procedural cosmetics）均未實作。因此，同樣的清單在 uBlock Origin 或 AdGuard 下與在這裏的頁面呈現可能不同。
+
+## zen [#zen]
+
+`zen` 在 `anti-ad` 之上增加資源類型封鎖。每個開關都是布林值，`true` 表示封鎖該資源類型。
+
+| 開關         | 封鎖             | 預設    |
+| ------------ | ---------------- | ------- |
+| `images`     | 圖片與圖片集請求 | `true`  |
+| `fonts`      | 字型請求         | `true`  |
+| `css`        | 樣式表請求       | `false` |
+| `javascript` | 指令碼請求       | `false` |
+
+`javascript: true` 也會停止行內指令碼與事件處理常式屬性。在 Chrome 中，指令碼執行透過 CDP 停用。在 Firefox 中，擴充功能會在該分頁的文件與框架回應中加上 `Content-Security-Policy: script-src 'none'`。此時 `<noscript>` 的內容不會呈現，因為瀏覽器仍回報指令碼功能為啓用。
+
+這些限制涵蓋網路請求。行內圖片與 data 圖片、行內 CSS，以及已安裝的 service worker 快取不受影響。需要樣式表或指令碼的網站會因這些開關而損壞。請選擇 `none`，或放寬某個開關，然後重新導覽。
+
+## environment [#environment]
+
+`environment: true` 會加入內建清單中的外觀過濾（cosmetics）與 scriptlet，並以文件主機名稱作為防護。它預設關閉，而在 `zen` 的 `javascript` 開啓時會略過。
+
+註冊發生在目標文件載入之前，所以這項設定套用於分頁接下來顯示的文件，不會改變已載入的頁面。請重新導覽。跨主機的重新導向，或來自其他主機的框架，只會得到網路過濾，因為防護機制絕不會注入其他主機的規則。
+
+環境注入不是反機器人的指紋偽造。解析失敗或擲出例外的 scriptlet 只影響它自己。狀態回報的是已安裝，而不是每個 scriptlet 都成功執行。在 Firefox 中，`environment: true` 會被接受，但回報為 `environmentState: "unavailable"`，網路過濾則繼續進行。
+
+## none [#none]
+
+`none` 會移除任務分頁上的攔截。透過 `cdp` 安裝的原始 CDP Fetch 處理常式，會與同一分頁上的預設集請求處理常式衝突。請先選擇 `none`。
+
+## 借用的分頁 [#borrowed-tabs]
+
+預設集只套用在工作階段擁有的分頁。借用的分頁絕不會被過濾，也不會為借用它的工作階段保留任何預設集狀態。針對借用分頁的導覽若帶有預設集選項，會回傳 `borrowed_tab`。
+
+## 狀態 [#status]
+
+`preset {cmd:"status"}` 會讀取目前的分頁，並回傳：
+
+- 組態：`name`、`environment`、`images`、`fonts`、`css`、`javascript`
+- `blocked` 與 `allowed`：自預設集安裝以來的請求數
+- `network`：分頁上的攔截是否作用中
+- `environmentState`：`off`、`active` 或 `unavailable`
+- `fallback`：最多 8 個原因，每個截斷為 300 個字元
+
+任何其他的 `cmd` 值都會回傳 `invalid_args`。組態呼叫會回傳 `config`、每個任務分頁的狀態項目、`appliesOn` 與 `borrowedTabsExcluded`。在 Chrome 中，`appliesOn` 為 `immediate; environment on next navigation`。
+
+## 成本與限制 [#costs-and-limits]
+
+- 比對在擴充功能背景中執行，所有分頁共用同一個過濾引擎。請求不會送到 daemon。
+- 最後一個過濾中的分頁停止過濾 30 秒後，引擎資料即被釋放。下一次套用預設集時會重新載入。
+- 網路與指令碼限制會立即套用到既有的任務分頁與框架。環境註冊則套用到下一個文件。
+- 重新設定分頁時，會先停用該分頁每個目標上的攔截，所以頁面請求會繼續進行，而忙碌的框架只會延後其餘的處理。安裝新的預設集需要目前的文件有回應。頁面沒有回應時，請用 `close_session` 復原。
+- 導覽預設集未變更的任務分頁時，會保留攔截，也不會送出重新設定的指令。`environment` 關閉時，狀態計數器會在導覽前後持續累計。
+- 清單載入失敗時，請求會不經過濾而通過，狀態會保留原因。`zen` 的類型封鎖仍然有效。
+- Chrome 每個分頁最多攔截 128 個目標。超出的框架會放行（fail open），狀態會記錄原因。Firefox 沒有每個分頁的目標數上限。
+- Chrome 重新啓動擴充功能 worker 後，既有分頁的狀態會回報 `none`，直到受控制的導覽重新套用已儲存的工作階段組態。不會重試任何網站動作。
+- `pnpm run filters:update` 會下載上游清單，更新 gzip 檔與 `sources.lock.json`，並在下載錯誤或回應無效時失敗。清單與其記錄的 SHA-256 不符時，建置會失敗。
+
+## Firefox [#firefox]
+
+Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾在會阻擋的 `webRequest` 監聽器中執行，環境注入無法使用，被封鎖的頂層頁面會讓分頁停留在目前的頁面。差異請見 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/#presets)。
+
+
+# 動作 (https://oh-my-webbridge.github.io/zh-hk/reference/actions/)
+
+{/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+每個瀏覽器動作都經由 daemon 的 `POST /command`，位址為 `http://127.0.0.1:17373`。請求帶有 `omw connection` 印出的 Bearer token。CLI 以 `omw call` 包裝它，SDK 以 `call` 包裝它（請見 [CLI](https://oh-my-webbridge.github.io/zh-hk/reference/cli/) 與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/)）。
+
+## 請求 [#requests]
+
+| 欄位        | 型別   | 意義                                                                                               |
+| ----------- | ------ | -------------------------------------------------------------------------------------------------- |
+| `session`   | string | 工作階段名稱，由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。必填。           |
+| `action`    | string | 下列表格中的動作名稱。必填。                                                                       |
+| `args`      | object | 動作引數。預設為 `{}`。                                                                            |
+| `timeoutMs` | number | 期限，單位為毫秒，範圍 1 到 120000，預設 30000。它涵蓋排隊與執行。                                 |
+| `browser`   | string | `chrome` 或 `firefox`。省略時，依序使用已綁定到該工作階段的瀏覽器、唯一已連線的瀏覽器，或 Chrome。 |
+
+本文是一個 JSON 物件，上限 2 MiB，不可含有未知欄位。名稱與既有綁定重複的工作階段，依 [工作階段與分頁](https://oh-my-webbridge.github.io/zh-hk/sessions/) 的規則路由。
+
+```json
+{
+  "session": "research",
+  "action": "navigate",
+  "args": { "url": "https://example.com", "group_title": "Research" },
+  "timeoutMs": 30000
+}
+```
+
+成功的呼叫會回傳 daemon 指派的 id 與動作結果：
+
+```json
+{
+  "id": "8f3c1a7d2b6e4c5a9f01d3b7e2c4a680",
+  "result": { "success": true, "tabId": 412, "url": "https://example.com/" }
+}
+```
+
+失敗的呼叫回傳 id 與錯誤，而不是結果，並帶有 [錯誤](#errors) 表格中的 HTTP 狀態碼：
+
+```json
+{
+  "id": "8f3c1a7d2b6e4c5a9f01d3b7e2c4a680",
+  "error": { "code": "stale_ref", "message": "element reference expired; take a fresh snapshot" }
+}
+```
+
+頁面動作在工作階段目前的分頁中執行。傳入 `tabId`（或 `tab`），即可操作該工作階段持有的另一個分頁，而不必切換過去。
+
+## 導覽與分頁 [#navigation-and-tabs]
+
+| 動作            | 引數                                       | 備註                                                                                                         |
+| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `navigate`      | `url`、`newTab`、`group_title`、預設集欄位 | 除非工作階段已有目前分頁，或設定了 `newTab`，否則開啓一個背景任務分頁。URL 必須是 HTTP(S) 或 `about:blank`。 |
+| `find_tab`      | `url`（完整 URL 或主機名稱）、`active`     | 為工作階段認領既有分頁。`active: true` 借用瀏覽器的使用中分頁。回傳 `tabId`、`url`、`borrowed`。             |
+| `list_tabs`     | 無                                         | 列出這個工作階段擁有或借用的分頁，含 `tabId`、`url`、`title`、`active`、`borrowed`、`groupTitle`。           |
+| `switch_tab`    | `tabId`                                    | 讓該分頁成為目前分頁。已被丟棄的分頁會先重新載入；結果會回報 `revived`。                                     |
+| `window_new`    | `url`、預設集欄位                          | 開啓獨立的視窗，認領其分頁，並回傳 `tabId` 與 `windowId`。                                                   |
+| `close_tab`     | `tabId`                                    | 關閉工作階段建立的分頁。借用的分頁不會被關閉。                                                               |
+| `close_session` | 無                                         | 關閉任務分頁、釋放借用的分頁，並移除瀏覽器綁定。回傳已關閉的分頁數量。                                       |
+| `history`       | `cmd`：`list`、`back`、`forward`、`reload` | `list` 回傳導覽項目。每次 `history` 呼叫都會丟棄該分頁的參照與框架選擇。                                     |
+
+一個工作階段最多持有 32 個分頁，任務分頁與借用的分頁合計。
+
+## 讀取 [#reading]
+
+| 動作            | 引數                                                    | 備註                                                                                                                                                  |
+| --------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snapshot`      | `interactive`、`maxDepth`                               | 帶有 `@e` 參照的無障礙樹，另含 `url`、`title`、`truncated`。深度上限為 64。輸出在 4000 個節點或 192000 個字元時停止。                                 |
+| `find`          | `query`、快照欄位                                       | 對快照各行做不分大小寫的搜尋。最多 100 筆符合。                                                                                                       |
+| `read_page`     | 無                                                      | `url`、`title`，以及 `document.body.innerText` 的前 192000 個字元。                                                                                   |
+| `evaluate`      | `code`、`contextId`                                     | 執行一個運算式，並回傳 `{ type: "value", value }`。需要 `await` 時，使用非同步 IIFE。                                                                 |
+| `get`           | `selector`、`property`、`attribute`                     | `text`、`html`、`value`、`attr`、`count`、`box`、`styles`、`title`、`url`。                                                                           |
+| `is`            | `selector`、`property`                                  | `visible`、`enabled`、`checked`、`editable`。回傳布林值 `value`。                                                                                     |
+| `locate`        | `by`、`value`、`name`、`nth`、`cmd`、`text`、`property` | 依 `by`（`role`、`text`、`label`、`placeholder`、`alt`、`title`、`testid`、`css`、`xpath`）建立選擇器，並執行 `cmd`，這是一個元素動作，預設為 `get`。 |
+| `dialog_status` | 無                                                      | 以 `dialog` 回傳待處理的 JavaScript 對話框，或回傳 `null`。                                                                                           |
+
+## 輸入 [#input]
+
+| 動作                               | 引數                                                               | 備註                                                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `click`、`dblclick`、`mouse_click` | `selector`，或 `x` 與 `y`、`button`                                | 在元素中心送出滑鼠事件。                                                                                                                                            |
+| `hover`                            | `selector`                                                         | 把指標移到元素上。                                                                                                                                                  |
+| `fill`                             | `selector`、`value`                                                | 取代 input、textarea 或 contenteditable 元素的內容。`value` 為空字串時會清空內容。                                                                                  |
+| `key_type`                         | `text`、`selector`                                                 | 在已聚焦的元素插入文字，或先聚焦 `selector`。                                                                                                                       |
+| `send_keys`                        | `keys`                                                             | 單一按鍵，或 `Control+A`、`Meta+A` 這類組合鍵。具名按鍵包括 `Enter`、`Tab`、`Escape`、`Backspace`、`Delete`、方向鍵、`Home`、`End`、`PageUp`、`PageDown`、`Space`。 |
+| `keyboard`                         | `cmd`：`down`、`up`、`insertText`；`key`、`text`                   | 較低階的按鍵控制，用於按住修飾鍵。                                                                                                                                  |
+| `mouse`                            | `cmd`：`move`、`down`、`up`、`wheel`；`x`、`y`、`button`、`amount` | 原始的指標控制。                                                                                                                                                    |
+| `scroll`                           | `selector`，或 `direction`、`amount`、`x`、`y`                     | 指定選擇器時，把該元素捲動到中間。否則依 `amount`（0 到 100000，預設 600）朝 `up`、`down`、`left` 或 `right` 滾動滾輪。                                             |
+| `select_option`                    | `selector`、`value`                                                | 以值或顯示文字比對選項，然後觸發 `input` 與 `change`。                                                                                                              |
+| `drag`                             | `from`、`to`                                                       | 在 `from` 按下，分十個步驟移動，並在 `to` 放開。                                                                                                                    |
+| `focus`、`check`、`uncheck`        | `selector`                                                         | `check` 與 `uncheck` 會先讀取目前狀態，並驗證結果；重複執行不會切換狀態。單選按鈕只支援 `check`。                                                                   |
+| `dialog`                           | `accept`、`promptText`                                             | 回應待處理的對話框。`accept` 預設為 `false`。                                                                                                                       |
+
+## 等待 [#waiting]
+
+條件成立時，`wait` 立即回傳；在請求期限之前，它每 75 ms 輪詢一次。設定它的其中一個欄位。
+
+| 欄位         | 意義                                                                                      |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| `selector`   | 第一個符合的元素存在、有邊界框，且不是 `visibility: hidden`。                             |
+| `text`       | `document.body.innerText` 包含該字串。                                                    |
+| `url`        | 目前的 URL 符合。`*` 可比對任意一段字元。                                                 |
+| `expression` | JavaScript 運算式為真值。                                                                 |
+| `load`       | `load` 等待 `readyState === "complete"`；`domcontentloaded` 等待文件離開 `loading` 狀態。 |
+| `state`      | `visible`（預設）或 `hidden`，後者會反轉條件。                                            |
+
+## 框架 [#frames]
+
+| 動作或引數                                                                  | 意義                                                     |
+| --------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `frame {"cmd": "list"}`                                                     | 列出框架，含 `id`、`name` 與 `url`，包括跨行程的子框架。 |
+| `frame {"selector": "iframe#panel"}`                                        | 選取包含符合之 iframe 元素的框架。                       |
+| `frame {"frameId": "..."}`、`frame {"name": "..."}`、`frame {"url": "..."}` | 依 id、名稱或完整 URL 選取。                             |
+| `frame {"cmd": "main"}`                                                     | 回到主框架，並丟棄該框架的參照。                         |
+
+選取框架後，頁面動作在該框架中執行。選取框架會丟棄先前的參照，並需要重新取得快照。
+
+## 檔案與擷取 [#files-and-capture]
+
+| 動作          | 引數                                                                                                                               | 備註                                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `screenshot`  | `format`（`png`、`jpeg`）、`quality`（0 到 100）、`selector`、`fullPage`、`path`                                                   | 回傳 `path`、`sizeBytes` 與 `mimeType`。沒有 `path` 時，檔案會放在 daemon 的成品目錄下。既有的路徑會被拒絕。 |
+| `save_as_pdf` | `paper_format`（預設 `letter`；另有 `legal`、`a4`、`a3`、`tabloid`）、`landscape`、`scale`（0.1 到 2）、`print_background`、`path` | 以分塊方式把 PDF 串流寫到磁碟，並回傳 `path`、`sizeBytes`、`mimeType` 與 `pageTitle`。僅限 Chrome。          |
+| `upload`      | `selector`、`files`                                                                                                                | 執行瀏覽器之機器上的絕對路徑。對 Firefox，daemon 會內嵌檔案內容：每個指令 16 MiB，進行中的合計 64 MiB。      |
+| `download`    | `url`（HTTP(S)）、`filename`                                                                                                       | 在瀏覽器所在的主機上回傳 `path`、`sizeBytes`、`mimeType` 與 `id`。取消或逾時會中斷下載。                     |
+
+編碼後的結果超過 32 MiB 的螢幕截圖，會以 `result_too_large` 失敗。
+
+## 網路、主控台、儲存空間與 cookie [#network-console-storage-and-cookies]
+
+| 動作      | 引數                                                                                          | 備註                                                                         |
+| --------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `network` | `cmd`：`start`、`stop`、`list`、`detail`；`filter`、`requestId`                               | 每個分頁保留最近 500 個請求。`filter` 是 URL 子字串。`detail` 回傳回應本文。 |
+| `console` | `cmd`：`start`、`list`、`clear`、`stop`                                                       | 每個分頁最多儲存 200 筆項目，每筆截斷為 8192 個字元。                        |
+| `storage` | `cmd`：`list`、`get`、`set`、`remove`、`clear`；`kind`（`local`、`session`）、`name`、`value` | 只讀寫目前的來源。回傳 `origin`、`kind`，以及 `value` 或整個儲存空間。       |
+| `cookies` | `cmd`：`list`、`set`、`delete`、`clear`；`data`、`name`                                       | 範圍限於目前的 URL。`set` 把 `data` 直接傳給 cookie 欄位。                   |
+
+## 模擬 [#emulation]
+
+| 欄位                          | 意義                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `width`、`height`             | 視埠大小，單位為 CSS 像素，各為 1 到 16384。變更裝置度量時，兩者都必須提供。 |
+| `deviceScaleFactor`、`mobile` | 度量覆寫所用的裝置像素比與行動裝置旗標。                                     |
+| `colorScheme`                 | 供 `prefers-color-scheme` 使用的 `dark` 或 `light`。                         |
+| `latitude`、`longitude`       | 地理位置。兩者必須一起提供。                                                 |
+| `offline`                     | 讓頁面離線或恢復連線。                                                       |
+| `data`                        | 額外的 HTTP 標頭：最多 128 個字串值與 32 KiB，不可含有 CR 或 LF。            |
+
+設定會在工作階段內持續有效，並在新分頁導覽之前套用到它們。
+
+## 批次 [#batch]
+
+`batch` 接受 `steps`，這是由 `{ action, args }` 物件組成的陣列，含 1 到 64 項。步驟在同一個請求中依序執行，並在第一個錯誤時停止。已完成的步驟不會還原。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 與 `artifact_close` 不能出現在批次內。
+
+## 預設集 [#presets]
+
+| 欄位          | 意義                                                              |
+| ------------- | ----------------------------------------------------------------- |
+| `preset`      | `anti-ad`（預設）、`zen` 或 `none`。                              |
+| `environment` | 安裝內附的外觀規則與 scriptlet。從下一個文件起套用。              |
+| `zen`         | `images`、`fonts`、`css`、`javascript`。`true` 會封鎖該資源類型。 |
+| `cmd`         | `status` 讀取該分頁的計數器、攔截與後備原因。                     |
+
+組態儲存在工作階段上，並套用到任務分頁。借用的分頁不在其內。`navigate` 接受相同的欄位，並在導覽開始後儲存它們。請見[頁面預設集](https://oh-my-webbridge.github.io/zh-hk/presets/)。
+
+## CDP [#cdp]
+
+`cdp` 對分頁送出一個 Chrome DevTools Protocol 指令：`method`、`params`，以及子目標可選的 `sessionId`。它原封不動地回傳協定結果。
+
+有兩個方法會改變橋接器自身的狀態。`Runtime.disable` 結束其工作階段的框架選擇；沒有 session id 的 `Page.disable` 使該分頁的 `@e` 參照失效；下一次快照或導覽會重新啓用這些事件。
+
+daemon 在內部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact_close` 與 `list_targets`。不要自行送出它們。
+
+## 選擇器 [#selectors]
+
+每個接受 `selector` 的動作都接受下列形式。
+
+| 形式                             | 範例                                 | 比對方式                                                                 |
+| -------------------------------- | ------------------------------------ | ------------------------------------------------------------------------ |
+| CSS                              | `button[type=submit]`、`css=.card a` | 選擇器查詢。也會搜尋開啓的 shadow root。                                 |
+| `@e` 參照                        | `@e<generation>.<index>`             | 最新 `snapshot` 中的節點。                                               |
+| `role=`                          | `role=button[name="Submit"]`         | 無障礙角色，以及可選的名稱。名稱是 JSON 字串，須完全相符。               |
+| `text=`                          | `text=Sign in`、`text="Sign in"`     | 轉譯後的文字。未加引號的值比對不分大小寫的子字串；加引號的值須完全相符。 |
+| `label=`                         | `label=Email`                        | 關聯的標籤文字或 `aria-label`。                                          |
+| `placeholder=`、`alt=`、`title=` | `placeholder=Search`                 | 對應的屬性。                                                             |
+| `testid=`                        | `testid=search`                      | `data-testid` 屬性。                                                     |
+| `xpath=`                         | `xpath=//table//a`                   | 只在目前文件中執行的 XPath。不會穿越 shadow root。                       |
+
+附加 ` >>nth=0` 取第一個符合項，或附加 ` >>nth=-1` 取最後一個。文字、CSS 與屬性定位器會穿越開啓的 shadow root。它們看不到封閉的 shadow root。
+
+## 參照的存續期間 [#reference-lifetime]
+
+`@e` 參照屬於單一文件世代。在 Chrome 中，新的快照、框架選擇、新的主文件（導覽或重新載入），或分頁 URL 的變更，都會使它們失效。在所選框架內取得的快照，也會在該框架導覽、重新載入、被移除，或選取結束時過期。其他 iframe 載入或導覽，不影響它的有效性。在 Firefox 中，參照存在於產生它們的文件內；請見 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/)。
+
+## 錯誤 [#errors]
+
+每個錯誤都帶有 `code` 與 `message`。HTTP 狀態碼列於下方；這裏未列出的錯誤碼回傳 502。
+
+| 錯誤碼                  | HTTP | 意義                                                                                                                            | 處理方式                                                                     |
+| ----------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `invalid_request`       | 400  | 本文被拒絕：有未知欄位、缺少 action 或 session、工作階段名稱含有不允許的字元、`browser` 無效，或 `timeoutMs` 超出 1 到 120000。 | 修正 JSON。訊息會指出欄位。                                                  |
+| `invalid_args`          | 400  | 引數缺少、型別錯誤，或超出範圍。                                                                                                | 閲讀訊息；它會指出動作與引數。                                               |
+| `unsupported`           | 501  | 目標瀏覽器沒有這個動作，或沒有它的某個引數。                                                                                    | 不要重試。改用其他動作，或使用 Chrome 工作階段。                             |
+| `busy`                  | 429  | 容量限制已滿：指令名額、每個工作階段 32 個分頁、每個瀏覽器 128 個工作階段、Firefox 上傳額度，或兩個同時進行的成品工作。         | 降低並行數量，並在先前的指令完成後重試。                                     |
+| `browser_offline`       | 503  | 目標瀏覽器沒有擴充功能連線，包括綁定到未連線瀏覽器的工作階段。                                                                  | 檢查 `omw doctor` 與擴充功能，或在新的工作階段中繼續。                       |
+| `session_browser`       | 409  | 工作階段綁定到另一個瀏覽器，而請求指定了這個瀏覽器。                                                                            | 移除 `browser`，或關閉該工作階段並開始新的工作階段。                         |
+| `outcome_unknown`       | 504  | 指令可能已經執行：期限、傳輸寫入或斷線切斷了回覆。                                                                              | 重複之前，先觀察頁面或網路狀態。切勿盲目重送提交、付款或發布操作。           |
+| `tab_busy`              | 409  | 該分頁屬於另一個工作階段。                                                                                                      | 使用這個工作階段持有的分頁，或使用另一個工作階段。                           |
+| `stale_ref`             | 409  | `@e` 參照比它所屬的文件存活得更久。                                                                                             | 重新取得 `snapshot`。                                                        |
+| `no_tab`                | 502  | 頁面動作在工作階段還沒有分頁時執行。                                                                                            | 先執行 `navigate` 或 `find_tab`。                                            |
+| `tab_missing`           | 502  | `find_tab` 沒有符合的分頁。                                                                                                     | 先在這個工作階段中開啓該頁面，或傳入 `active: true` 借用瀏覽器的使用中分頁。 |
+| `restricted_tab`        | 502  | 該分頁不是一般的、非無痕的 HTTP(S) 頁面。                                                                                       | 導覽到 HTTP(S) 頁面。瀏覽器內部頁面無法用指令碼操作。                        |
+| `borrowed_tab`          | 502  | 動作需要工作階段建立的分頁：關閉它，或對借用的分頁套用預設集。                                                                  | 用 `navigate` 開啓任務分頁。                                                 |
+| `element_missing`       | 502  | 選擇器沒有符合任何元素。                                                                                                        | 檢查選擇器，或重新取得快照。                                                 |
+| `element_hidden`        | 502  | 元素沒有邊界框，因此沒有可點擊的中心。                                                                                          | 把它捲動到可見範圍，或等待它轉譯完成。                                       |
+| `element_action_failed` | 502  | 頁面拒絕了這個操作，例如填寫不可編輯的元素，或選取不存在的選項。                                                                | 用 `get` 或 `is` 檢查，並調整動作。                                          |
+| `state_mismatch`        | 502  | `check` 或 `uncheck` 讓控制項停在錯誤的狀態。                                                                                   | 用 `is` 重新讀取，然後重試，或改為點擊它。                                   |
+| `evaluation_failed`     | 502  | `evaluate` 擲出例外，或內部頁面指令碼擲出例外。                                                                                 | 修正運算式。訊息帶有頁面例外。                                               |
+| `frame_missing`         | 502  | `frame` 找不到符合所給選擇器、id、名稱或 URL 的框架。                                                                           | 用 `frame {"cmd":"list"}` 列出框架，並選取其中一個。                         |
+| `frame_unavailable`     | 502  | 所選的框架已被取代、移除，或失去其執行環境。                                                                                    | 之後的指令使用主框架；如果工作要在該框架繼續，請重新選取它。                 |
+| `history_missing`       | 502  | `history back` 或 `forward` 在該方向上沒有項目。                                                                                | 先讀取 `history {"cmd":"list"}`。                                            |
+| `request_missing`       | 502  | 該請求沒有網路紀錄，或紀錄已被逐出。                                                                                            | 開始記錄，重現問題，然後讀取 `list`。                                        |
+| `request_pending`       | 502  | 回應本文尚未完整。                                                                                                              | 等 `list` 中出現 `complete: true`，再重試 `detail`。                         |
+| `request_failed`        | 502  | 請求本身失敗。                                                                                                                  | 讀取該項目上的錯誤文字。                                                     |
+| `download_missing`      | 502  | 瀏覽器沒有列出該下載。                                                                                                          | 重試 `download`。                                                            |
+| `download_failed`       | 502  | 瀏覽器中斷了下載。                                                                                                              | 閲讀訊息並重試。                                                             |
+| `window_failed`         | 502  | 新視窗沒有分頁。                                                                                                                | 重試 `window_new`。                                                          |
+| `result_too_large`      | 502  | 結果在傳輸時超過 32 MiB，或網路本文在 Chrome 中超過 2 Mi 個字元、在 Firefox 中超過 1 MiB。                                      | 縮小結果：螢幕截圖使用 `selector` 或 `jpeg`，並讀取較小的片段。              |
+| `debugger_unavailable`  | 502  | Chrome 拒絕附加偵錯工具，例如因為 DevTools 已開啓，或原則封鎖了它。                                                             | 關閉該分頁的 DevTools 並重試。                                               |
+| `browser_error`         | 502  | 擴充功能回報了沒有錯誤碼的錯誤。                                                                                                | 閲讀訊息，重試一次，然後回報。                                               |
+| `internal`              | 502  | daemon 端的失敗，例如編碼請求時出錯。                                                                                           | 重試。如果持續發生，重新啓動 daemon。                                        |
+
+
+# CDP (https://oh-my-webbridge.github.io/zh-hk/reference/cdp/)
+
+{/* Generated from cdp.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+daemon 以兩種模式在 `127.0.0.1:17373` 提供 Chrome DevTools Protocol，位址與連接埠和它其餘的 API 相同：
+
+- **擴充功能模式**透過 Chrome 擴充功能中的 `chrome.debugger` 提供頁面目標。它需要已配對的 Chrome 擴充功能，並可搭配你已開啓的設定檔使用。
+- **原生模式**是通往 Chrome 瀏覽器端點的 WebSocket 代理，該瀏覽器由你以遠端偵錯啓動。以 `omw serve --cdp` 啓用。
+
+每個請求都需要 `Authorization: Bearer <token>`，包括 WebSocket 升級。用 `omw connection` 取得 token。`Host` 標頭必須是 `127.0.0.1`。帶有網頁 `Origin` 的請求會以 403 拒絕。
+
+## 擴充功能模式的端點 [#endpoints-in-extension-mode]
+
+| 端點                     | 方法      | 回覆                                  |
+| ------------------------ | --------- | ------------------------------------- |
+| `/json`、`/json/list`    | GET       | 開啓中的頁面目標，為 JSON 陣列。      |
+| `/json/version`          | GET       | 不含瀏覽器 WebSocket URL 的版本物件。 |
+| `/devtools/page/{tabId}` | WebSocket | 一個分頁的一個 CDP 工作階段。         |
+
+只有 Firefox 擴充功能已連線時，這些端點以 HTTP 501 回應，錯誤碼為 `unsupported`。沒有任何瀏覽器連線時，`/json` 與 `/json/list` 以 HTTP 503 回應，而 `/json/version` 仍回傳它的物件。
+
+### /json/list [#jsonlist]
+
+```sh
+TOKEN=$(omw connection | sed -E 's/.*"token":"([^"]+)".*/\1/')
+curl -s -H "Authorization: Bearer $TOKEN" http://127.0.0.1:17373/json/list
+```
+
+```json
+[
+  {
+    "id": "123456789",
+    "type": "page",
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:17373/devtools/page/123456789"
+  }
+]
+```
+
+`id` 是分頁 id。清單涵蓋屬於工作階段的非無痕 HTTP(S) 與 `about:blank` 分頁，以及你自己開啓的分頁，因為擴充功能可以附加到這兩者。
+
+### /json/version [#jsonversion]
+
+```json
+{
+  "Browser": "oh-my-webbridge/0.2.0",
+  "Protocol-Version": "1.3",
+  "User-Agent": "oh-my-webbridge",
+  "transport": "chrome.debugger (page targets only)"
+}
+```
+
+這個物件沒有 `webSocketDebuggerUrl`，因此在此模式下，透過 `/json/version` 探索目標的用户端找不到任何目標。
+
+## 頁面連線 [#page-connections]
+
+連線到 `ws://127.0.0.1:17373/devtools/page/{tabId}`，並在升級請求上帶 Bearer 標頭。在接受 WebSocket 之前，daemon 會要求擴充功能附加到該分頁。
+
+- 另一個工作階段正在使用的分頁，會以 HTTP 409 回應，而且不會被接管。
+- 用户端中斷連線、分頁關閉、偵錯工具分離，以及 daemon 停止或擴充功能暫停或中斷連線時，該分頁都會被釋放。之後用户端可以重新連線。
+- 該分頁的事件在附加開始之前就已訂閲，因此在附加回覆之前抵達的事件仍會被轉送。
+
+訊息使用 CDP 的格式。指令需要 `id` 與 `method`：
+
+```json
+{ "id": 1, "method": "Page.navigate", "params": { "url": "https://example.com/" } }
+```
+
+回覆帶有 `result`，或帶有錯誤碼 `-32000` 的錯誤物件：
+
+```json
+{ "id": 1, "error": { "code": -32000, "message": "..." } }
+```
+
+事件帶有 `method`、`params`，並在事件屬於子目標時帶有 `sessionId`。回覆可能亂序抵達；原始的 id 會保留。
+
+單一頁面連線的限制：
+
+| 限制           | 值     |
+| -------------- | ------ |
+| 進行中的指令   | 32     |
+| 每個指令的期限 | 30 秒  |
+| 訊息大小       | 32 MiB |
+
+大於 32 MiB 的事件不會被轉送。橋接器會為該分頁送出 `Inspector.detached` 並關閉連線。事件的參數超過 256 KiB 時，daemon 也會關閉連線。跟不上事件串流的用户端會被中斷連線，而不是悄悄遺失事件。
+
+當頁面回報沒有 `sessionId` 的 `Inspector.detached` 時，daemon 會轉送它並關閉 WebSocket，這與 Chrome 自己的頁面端點行為一致。
+
+## cdp 動作 [#the-cdp-action]
+
+`cdp` 動作在工作階段目前的分頁上送出一個協定指令，必要時會附加該分頁。它與頁面連線使用相同的傳輸，只是沒有 WebSocket。
+
+```sh
+omw call research cdp '{"method":"Page.navigate","params":{"url":"https://example.com/"}}'
+```
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("research");
+const { frameTree } = await task.cdp("Page.getFrameTree");
+```
+
+| 引數        | 型別     | 意義                                                                                                                       |
+| ----------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `method`    | `string` | 協定方法，例如 `Page.navigate`。                                                                                           |
+| `params`    | `object` | 方法參數。預設為 `{}`。                                                                                                    |
+| `sessionId` | `string` | 子目標工作階段，用於以 `flatten: true` 的 `Target.attachToTarget` 開啓的扁平工作階段。省略時，指令送往該分頁的根工作階段。 |
+
+這個動作僅限 Chrome。Firefox 以 HTTP 501 回應 `unsupported`，訊息為 `cdp is not available in Firefox: Firefox has no Chrome DevTools Protocol`。
+
+有兩個方法會與橋接器的其他部分互動：
+
+- 根工作階段上的 `Page.disable` 會清除該分頁的 `@e` 參照。下一次 `snapshot` 或 `navigate` 會重新啓用 Page 事件。
+- `Runtime.disable` 結束該工作階段的框架選擇。之後的指令在主框架中執行，直到 `frame` 再次選取框架。
+
+## 原生模式 [#native-mode]
+
+```sh
+omw serve --cdp ws://127.0.0.1:9222/devtools/browser/8b0d3f7c-...
+```
+
+URL 必須以 `ws://` 或 `wss://` 開頭，並包含主機。否則 daemon 會拒絕啓動。以 `--remote-debugging-port=9222` 啓動 Chrome，即可從 `http://127.0.0.1:9222/json/version` 取得該 URL。
+
+在原生模式下，`/json/version` 會加入瀏覽器 WebSocket URL，並回報另一種傳輸：
+
+```json
+{
+  "Browser": "oh-my-webbridge/0.2.0",
+  "Protocol-Version": "1.3",
+  "User-Agent": "oh-my-webbridge",
+  "transport": "native CDP passthrough",
+  "webSocketDebuggerUrl": "ws://127.0.0.1:17373/devtools/browser"
+}
+```
+
+`/devtools/browser` 開啓通往該 URL 的 WebSocket，並雙向複製框架，因此每個 CDP 網域與每個瀏覽器層級的目標都可使用。尚未設定原生模式時，它以 HTTP 503 回應（只有 Firefox 擴充功能已連線時為 501），無法連到所設定的端點時以 HTTP 502 回應。上游撥接的逾時為 10 秒。
+
+Playwright 可以連線到這個代理：
+
+```js
+import { chromium } from "playwright-core";
+
+const browser = await chromium.connectOverCDP("http://127.0.0.1:17373", {
+  headers: { Authorization: `Bearer ${process.env.OMW_TOKEN}` },
+});
+```
+
+把 `OMW_TOKEN` 設為 `omw connection` 輸出中的 `token` 值。Playwright 讀取 `/json/version`，並使用它找到的 `webSocketDebuggerUrl`。
+
+原生模式不取代擴充功能模式。`/json/list` 仍然透過 Chrome 擴充功能列出目標，因此沒有 Chrome 擴充功能時，即使代理可以運作，它仍以 HTTP 503 回應（只有 Firefox 擴充功能已連線時為 501）。
+
+## 限制 [#limits]
+
+- 擴充功能模式只提供頁面目標。瀏覽器目標端點無法使用，而 Chrome 允許 `chrome.debugger` 使用的網域，只是完整協定的子集。該清單請見 [`chrome.debugger` 參考](https://developer.chrome.com/docs/extensions/reference/api/debugger)。
+- 原生模式轉送所設定的端點接受的一切內容；daemon 不過濾網域或方法。
+- 在目前的版本中，Chrome 不接受 `--remote-debugging-port` 與預設設定檔目錄並用。請讓它指向另一個使用者資料目錄；請見[遠端偵錯](https://developer.chrome.com/blog/remote-debugging-port)。
+- CDP 回覆、事件與 `cdp` 動作的結果，共用橋接器其餘部分的 32 MiB 訊息上限。動作的引數與任何 `/command` 本文一樣，上限為 2 MiB。
+
+
+# CLI (https://oh-my-webbridge.github.io/zh-hk/reference/cli/)
+
+{/* Generated from cli.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+`omw` 是 Go daemon，也是它的命令列用户端。它監聽 `127.0.0.1:17373`，沒有選項可以綁定其他位址或網路介面。`serve` 與 `start` 執行 daemon。`stop`、`status`、`doctor`、`pair` 與 `call` 需要已在執行中的 daemon。`connection`、`skill`、`install-skill`、`service install`、`version` 與 `help` 不需要 daemon。
+
+| 指令                  | 用途                                               |
+| --------------------- | -------------------------------------------------- |
+| `omw serve`           | 在前景執行 daemon。                                |
+| `omw start`           | 啓動背景 daemon；daemon 已在執行時也可以安全執行。 |
+| `omw stop`            | 停止 daemon，並保持分頁開啓。                      |
+| `omw status`          | 印出 daemon 狀態，以及每個瀏覽器一行的狀態。       |
+| `omw doctor`          | 與 `status` 相同，另外印出組態檔路徑。             |
+| `omw pair`            | 印出瀏覽器擴充功能的配對碼。                       |
+| `omw connection`      | 印出端點、token 與協定版本。                       |
+| `omw call`            | 對工作階段送出一個動作。                           |
+| `omw service install` | 安裝 launchd 或 systemd 使用者服務。               |
+| `omw install-skill`   | 把內附的 Agent 指南寫入指定目錄之下。              |
+| `omw skill`           | 印出內附的 Agent 指南。                            |
+| `omw version`         | 印出 daemon 版本。                                 |
+| `omw help`            | 印出指令清單。                                     |
+
+每個指令成功時以狀態碼 0 結束。失敗時，指令把 `omw: ` 與錯誤訊息印到 stderr，然後以狀態碼 1 結束。
+
+## serve [#serve]
+
+```sh
+omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
+```
+
+在前景執行 daemon，直到收到 SIGINT 或 SIGTERM。監聽位址固定為 `127.0.0.1:17373`。如果 `config.json` 指定了其他位址，daemon 會拒絕啓動。
+
+`--cdp` 讓 daemon 指向一個已啓用遠端偵錯的 Chrome 瀏覽器端點。URL 必須以 `ws://` 或 `wss://` 開頭，並帶有主機。使用這個旗標時，`/devtools/browser` 會代理該端點；請見 [CDP](https://oh-my-webbridge.github.io/zh-hk/reference/cdp/#native-mode)。
+
+端點不會寫入 `config.json`。該檔案中已有的 `cdp` 欄位會在啓動時讀取，旗標會在該行程中取代它。
+
+## start [#start]
+
+```sh
+omw start
+```
+
+在新的工作階段中啓動 `omw serve`，與終端機分離，並把 `OMW_HOME` 設為組態目錄。輸出寫入該目錄中的 `daemon.log`。每次啓動都會清空該檔案。指令會等待約兩秒，讓 daemon 回應 `/status`。
+
+成功時印出 `started`；daemon 已在連接埠上回應時，印出 `already running`。當其他行程佔用連接埠，或 token 不符時，指令回報連接埠或憑證不符，並以狀態碼 1 結束。新的 daemon 在這段時間內沒有回應時，指令會印出 `daemon.log` 的內容。
+
+## stop [#stop]
+
+```sh
+omw stop
+```
+
+送出 `POST /shutdown`，並印出回覆 `{"stopping":true}`。工作階段開啓的分頁會保持開啓。`bindings.json` 中的綁定會保留。
+
+## status 與 doctor [#status-and-doctor]
+
+```sh
+omw status
+omw doctor
+```
+
+兩者都把 daemon 的 `/status` JSON 印到 stdout，並把每個瀏覽器一行的狀態印到 stderr：
+
+```text
+chrome: connected (156.0.8078.80)
+firefox: not connected
+```
+
+`doctor` 會在這些行之前，先把 `config.json` 的路徑印到 stderr。
+
+`status` 是需要驗證的請求。沒有執行中的 daemon 時，它以狀態碼 1 結束，並印出連線錯誤。
+
+## pair [#pair]
+
+```sh
+omw pair
+```
+
+向 daemon 要求配對碼，並以兩組各三位數的格式印出：
+
+```text
+Enter this code in the oh-my-webbridge extension:
+
+    482 913
+
+It works once and expires in 5 minutes.
+```
+
+配對碼的有效期為 5 分鐘，可嘗試 5 次。指令每 500 ms 輪詢一次 daemon，在擴充功能兑換配對碼時，印出 `Paired with Chrome.` 或 `Paired with Firefox.`。配對碼過期時，指令以狀態碼 1 結束。沒有執行中的 daemon 時，它會印出提示，要求執行 `omw start`。
+
+## connection [#connection]
+
+```sh
+omw connection
+```
+
+印出一個 JSON 物件：
+
+```json
+{
+  "endpoint": "ws://127.0.0.1:17373/extension",
+  "token": "64 hex characters",
+  "protocol": 1
+}
+```
+
+token 是以十六進位表示的 32 個隨機位元組，與 `config.json` 保存的值相同。它授權除了 `GET /ping` 與 `POST /pair` 之外的每個請求，包括 WebSocket 升級與 CDP 連線。請把它當作機密：不要貼到 issue、日誌或網頁中。
+
+## call [#call]
+
+```sh
+omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
+```
+
+對 daemon 送出一個動作，並印出它的 JSON 回覆。工作階段名稱由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。`ACTION` 是[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/)中的其中一個動作。
+
+選用的第三個引數是含有動作引數的 JSON 物件。使用 `-` 時，指令從 stdin 讀取該物件，上限 2 MiB。省略時，daemon 收到 `{}`。
+
+```sh
+omw call research navigate '{"url":"https://example.com/"}'
+echo '{"selector":"#submit"}' | omw call --browser firefox form click -
+```
+
+`--browser` 把動作送往指定的瀏覽器。省略時，daemon 依序依據工作階段綁定、唯一已連線的瀏覽器、Chrome 來路由。
+
+用户端最多等待 125 秒。daemon 套用指令自己的期限，預設為 30 秒。回覆照 daemon 送出的內容印出。HTTP 狀態碼為 400 或以上時，指令在印出回覆後以狀態碼 1 結束。
+
+## service install [#service-install]
+
+```sh
+omw service install
+```
+
+安裝使用者服務，在登入時執行 `omw serve`，並把 `OMW_HOME` 設為指令所用的組態目錄。
+
+| 平台  | 檔案                                               | 啓用方式                                                                                       |
+| ----- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| macOS | `~/Library/LaunchAgents/app.oh-my-webbridge.plist` | `launchctl bootstrap gui/$UID`                                                                 |
+| Linux | `~/.config/systemd/user/oh-my-webbridge.service`   | `systemctl --user daemon-reload`，然後 `systemctl --user enable --now oh-my-webbridge.service` |
+
+服務讓 daemon 持續執行：macOS 使用 `KeepAlive`，Linux 使用 `Restart=on-failure`，延遲 3 秒。macOS 會捨棄輸出；systemd 單元保留預設的 journal。
+
+## install-skill 與 skill [#install-skill-and-skill]
+
+```sh
+omw install-skill DIRECTORY
+omw skill
+```
+
+`install-skill` 把內附的 Agent 指南以 0600 權限寫入 `DIRECTORY/oh-my-webbridge/SKILL.md`，並以 0700 權限建立目錄。它拒絕覆寫既有檔案。
+
+`skill` 把同一份指南印到 stdout。
+
+```sh
+omw install-skill ~/.agents/skills
+```
+
+## version 與 help [#version-and-help]
+
+```sh
+omw version
+omw --version
+omw help
+```
+
+`version` 印出 daemon 版本。`help`、`--help` 與單獨的 `omw` 印出指令清單。
+
+未知的指令會印出 `omw: unknown command "NAME"; run omw help`，並以狀態碼 1 結束。
+
+## 組態目錄 [#configuration-directory]
+
+目錄依下列順序決定：
+
+1. `OMW_HOME`（有設定時）。
+2. macOS：`~/Library/Application Support/oh-my-webbridge`。
+3. Linux：`$XDG_CONFIG_HOME/oh-my-webbridge`；`XDG_CONFIG_HOME` 未設定時為 `~/.config/oh-my-webbridge`。
+
+CLI、daemon、使用者服務與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/) 都讀取同一個目錄。每個讀取組態的指令，在目錄不存在時都會以 0700 權限建立它。
+
+| 檔案            | 內容                                                                                         |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| `config.json`   | `token`（64 個十六進位字元）、`address`，以及選用的 `cdp` 端點。首次使用時以 0600 權限建立。 |
+| `bindings.json` | 工作階段與瀏覽器的綁定，權限 0600，在啓動時讀取。                                            |
+| `daemon.log`    | 由 `omw start` 啓動的 daemon 的輸出，每次啓動都會清空。                                      |
+| `artifacts/`    | 未指定明確 `path` 時儲存的螢幕截圖與 PDF。                                                   |
+
+`config.json` 中的 token 是唯一的憑證。任何人讀到這個檔案，就能操控已配對的瀏覽器，因此請讓這個目錄保持私有，也不要在機器之間複製 `config.json`。
+
+
+# JavaScript SDK (https://oh-my-webbridge.github.io/zh-hk/reference/sdk/)
+
+{/* Generated from sdk.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/zh-hk/reference/cli/#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。
+
+`connect` 回傳一個綁定到單一工作階段名稱的 task 物件。如同 `omw call`，擴充功能會依需求開啓該工作階段的分頁與分頁羣組。
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("research");
+await task.navigate("https://example.com/");
+const page = await task.evaluate("({title:document.title,url:location.href})");
+console.log(page.title);
+await task.close();
+```
+
+## connect(session, options) [#connectsession-options]
+
+```ts
+const task = await connect("research", { browser: "firefox" });
+```
+
+| 引數              | 型別                    | 意義                                                                                               |
+| ----------------- | ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `session`         | `string`                | 工作階段名稱：由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。由 daemon 驗證。 |
+| `options.browser` | `"chrome" \| "firefox"` | 把每個指令送往這個瀏覽器。省略時，daemon 依序依據工作階段綁定、唯一已連線的瀏覽器、Chrome 來路由。 |
+
+在下列情況，`connect` 會被拒絕：
+
+- `config.json` 不存在或無法讀取。請先執行 `omw start`；它會建立該檔案。
+- 檔案中的 `address` 不是 `127.0.0.1:17373`；訊息為 `unsupported daemon address`。
+- `browser` 是其他字串；訊息為 `unsupported browser: safari`。
+
+回傳的物件含有 `session`、`browser`（未指定瀏覽器時為 undefined），以及下列方法。
+
+## Task 方法 [#task-methods]
+
+| 方法                              | 送出                    | 解析為                                                                            |
+| --------------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `call(action, args, options)`     | 帶有 `args` 的 `action` | 指令結果；除非傳入型別引數，否則沒有型別。                                        |
+| `navigate(url, newTab = false)`   | `navigate`              | `{ success, tabId, url }`                                                         |
+| `preset(preset, options)`         | `preset`                | `{ config, tabs }`，含每個任務分頁的狀態。`options` 接受 `zen` 與 `environment`。 |
+| `snapshot()`                      | `snapshot`              | `{ tree, truncated, url, title }`                                                 |
+| `click(selector)`                 | `click`                 | `{ success: true }`                                                               |
+| `fill(selector, value)`           | `fill`                  | `{ success: true }`                                                               |
+| `evaluate(code)`                  | `evaluate`              | 運算式的值，而不是包裝物件。                                                      |
+| `cdp(method, params, sessionId?)` | `cdp`                   | CDP 指令的結果。                                                                  |
+| `close()`                         | `close_session`         | `{ success, closed }`，`closed` 為已關閉的分頁數量。                              |
+
+`evaluate` 在頁面中執行 JavaScript 運算式。把非同步程式碼包在 IIFE 中：
+
+```js
+const count = await task.evaluate("(async () => (await fetch('/api/count')).text())()");
+```
+
+```js
+const links = await task.evaluate("document.querySelectorAll('a').length");
+```
+
+選擇器接受[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/#selectors)中列出的形式，包括 CSS、快照中的 `@e` 參照、`role=`、`text=` 與 `xpath=`。
+
+## call(action, args, options) [#callaction-args-options]
+
+```ts
+const result = await task.call(
+  "get",
+  { selector: "#price", property: "text" },
+  { timeoutMs: 5000 },
+);
+```
+
+| 選項        | 型別          | 預設    | 意義                                                        |
+| ----------- | ------------- | ------- | ----------------------------------------------------------- |
+| `timeoutMs` | `number`      | `30000` | 指令的期限，包括它在佇列中的時間。daemon 接受 1 到 120000。 |
+| `signal`    | `AbortSignal` | 無      | 取消請求。它會與 `timeoutMs + 5000` 的內部逾時合併。        |
+
+請求在 daemon 期限之後 5 秒於本機中止。這讓 daemon 有時間在頁面沒有完成時，以 `outcome_unknown` 回應。
+
+```js
+const controller = new AbortController();
+setTimeout(() => controller.abort(), 2000);
+try {
+  await task.call("wait", { selector: "#done", state: "visible" }, { signal: controller.signal });
+} catch (error) {
+  console.log(error.name);
+}
+```
+
+## 錯誤 [#errors]
+
+被拒絕的呼叫是帶有 `code` 屬性的 `Error`。當 daemon 以指令錯誤回應時，`code` 與 `message` 就是 daemon 的 `error.code` 與 `error.message`。
+
+```js
+try {
+  await task.click("@e12");
+} catch (error) {
+  if (error.code === "stale_ref") {
+    await task.snapshot();
+  } else {
+    throw error;
+  }
+}
+```
+
+| `code`                                     | 原因                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `stale_ref`、`tab_busy`、`session_browser` | 參照已過期、另一個工作階段持有該分頁，或該工作階段綁定到另一個瀏覽器。HTTP 409。           |
+| `browser_offline`                          | 目標瀏覽器沒有已連線的擴充功能。HTTP 503。                                                 |
+| `unsupported`                              | 該瀏覽器沒有這個動作或引數。HTTP 501。                                                     |
+| `busy`                                     | 指令容量已滿。HTTP 429。等執行中的指令完成後重試。                                         |
+| `outcome_unknown`                          | 指令可能已經生效。重試之前，先讀取頁面。HTTP 504。                                         |
+| `invalid_args`、`invalid_request`          | 引數在分派之前就被拒絕。HTTP 400。                                                         |
+| `http_error`                               | 回覆不是 JSON，因此缺少 daemon 的錯誤物件。訊息為 `HTTP <status>: <本文的前 200 個字元>`。 |
+
+回覆沒有 JSON 內容類型時，請求從未到達指令處理常式。可能的原因：token 被拒絕、`Host` 不是回送位址、網頁 `Origin`，或連接埠 17373 上是其他服務。
+
+被中止的請求以 `AbortError` 拒絕，沒有 daemon 的錯誤碼。被拒絕的連線以 `fetch` 的 `TypeError` 拒絕。
+
+完整的錯誤碼清單與復原步驟位於[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/#errors)。
+
+## 並行任務 [#parallel-tasks]
+
+每個工作階段擁有自己的分頁。給每個任務各自的工作階段名稱，然後用 `Promise.all` 一起啓動。daemon 並行執行這些指令，每個瀏覽器最多同時進行 128 個。
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const tasks = [
+  { session: "chrome-docs", url: "https://developer.chrome.com/docs/extensions/" },
+  { session: "go-docs", url: "https://go.dev/doc/" },
+];
+
+const results = await Promise.all(
+  tasks.map(async ({ session, url }) => {
+    const task = await connect(session);
+    try {
+      await task.navigate(url);
+      const page = await task.evaluate("({title:document.title,url:location.href})");
+      return { session, ...page };
+    } finally {
+      await task.close();
+    }
+  }),
+);
+
+console.log(JSON.stringify(results, null, 2));
+```
+
+```json
+[
+  {
+    "session": "chrome-docs",
+    "title": "Chrome Extensions documentation",
+    "url": "https://developer.chrome.com/docs/extensions/"
+  },
+  {
+    "session": "go-docs",
+    "title": "The Go Programming Language",
+    "url": "https://go.dev/doc/"
+  }
+]
+```
+
+兩個工作階段名稱相同的任務會共用分頁與 CDP 狀態，因此請給彼此獨立的工作不同的名稱。
+
+關閉 task 會關閉該工作階段開啓的分頁、釋放借用的分頁，並刪除工作階段綁定。沒有呼叫 `close` 時，分頁保持開啓，綁定也會保留，因此之後以相同名稱呼叫 `connect` 會繼續該工作階段。
+
+## 型別 [#types]
+
+`sdk/index.ts` 從擴充功能協定匯入 `Args`、`Browser`、`Json` 與 `Fault`。`call` 接受結果的型別參數：
+
+```ts
+const box = await task.call<{ x: number; y: number }>("get", {
+  selector: "#cart",
+  property: "box",
+});
+```
+
+
+# 工作階段與分頁 (https://oh-my-webbridge.github.io/zh-hk/sessions/)
+
+{/* Generated from sessions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+工作階段是 oh-my-webbridge 的工作單位。每個指令都會指定一個工作階段，daemon 再把指令送往該工作階段持有的分頁。工作階段開啓的分頁會放進一個分頁羣組，羣組標題為工作階段名稱，或 Agent 傳入的標題。因此任務的頁面會聚在一起，並與你自己使用的頁面分開。
+
+<Demo
+  name="activity-read"
+  alt="工作階段示範在它開啓的分頁中閲讀文章：頁面一節一節捲動，角落的標籤顯示工作階段名稱。"
+/>
+
+## 每項任務一個工作階段 [#one-session-per-task]
+
+為每項任務取一個專屬的工作階段名稱，並在該任務的所有操作中沿用。同時執行的任務使用不同的名稱。每個工作階段各自保有自己的分頁、分頁羣組、目前分頁、預設集與框架選擇。瀏覽器會同時執行來自不同工作階段的指令。
+
+```sh
+omw call research navigate '{"url":"https://example.com/docs","group_title":"Research"}'
+omw call billing navigate '{"url":"https://example.com/pricing","group_title":"Billing"}'
+```
+
+工作階段從它的第一個指令開始。名稱長度為 1 到 96 個字元，可用字母（含 CJK）、數字、`_`、`.` 或 `-`。
+
+## 工作階段固定在同一個瀏覽器 [#a-session-stays-in-one-browser]
+
+工作階段的第一個指令決定它所在的瀏覽器：由 `browser` 指定的瀏覽器、唯一已連線的瀏覽器，或兩個瀏覽器都已連線時的 Chrome。該工作階段之後的指令都送往同一處，即使另一個瀏覽器之後才連線也一樣。`close_session` 會移除這個綁定。要求使用另一個瀏覽器的指令會以 `session_browser` 失敗。
+
+## 指令依抵達順序執行 [#commands-run-in-arrival-order]
+
+每個工作階段有一個佇列。同一工作階段的指令一次執行一個，順序與 daemon 收到的順序相同，所以接在快照之後的點擊，會作用在該快照所描述的頁面上。工作階段之間不共用佇列，某個工作階段中回應緩慢的頁面不會拖住其他工作階段。
+
+`dialog` 與 `close_session` 在工作階段佇列之外回應，因此即使分頁的指令仍在等待，它們也能送達該分頁。一個工作階段最多可同時有 32 個指令在執行或等待。
+
+## 新分頁在背景開啓 [#new-tabs-open-in-the-background]
+
+工作階段沒有目前分頁，或指令設定了 `newTab` 時，`navigate` 會開啓新分頁。分頁在背景開啓，並加入該工作階段的分頁羣組：
+
+```json
+{
+  "session": "research",
+  "action": "navigate",
+  "args": { "url": "https://example.com/docs", "newTab": true, "group_title": "Research" }
+}
+```
+
+- `group_title` 設定羣組的標題。開啓分頁的導覽可以變更標題；否則維持目前的標題。預設為工作階段名稱。
+- 羣組建立時是摺疊的，所以任務分頁不會讓分頁列變寬。展開羣組即可查看頁面。
+- 之後不帶 `newTab` 的 `navigate` 會重用目前分頁。一個工作階段最多持有 32 個分頁，任務分頁與借用的分頁合計。
+- `list_tabs` 只回傳該工作階段的分頁，內容包括 URL、標題、作用中旗標、羣組標題，以及該分頁是否為借用。
+
+## 借用你的分頁 [#borrowing-one-of-your-tabs]
+
+帶有 `active: true` 的 `find_tab` 會認領最後取得焦點的視窗中的作用中分頁。URL 必須完全相符，或主機名稱相符：
+
+```sh
+omw call research find_tab '{"url":"example.com","active":true}'
+```
+
+不帶 `active: true` 時，`find_tab` 只在工作階段已持有的分頁中尋找。借用的分頁會保持開啓，`close_tab` 會以 `borrowed_tab` 拒絕關閉它。工作階段使用該分頁，並在結束時釋放它。一個分頁同一時間只屬於一個工作階段，其他工作階段要求該分頁時會收到 `tab_busy`。預設集只套用在工作階段自己開啓的分頁。任務需要你已開啓的頁面時才借用分頁；否則請開啓任務分頁。
+
+## 結束工作階段 [#ending-a-session]
+
+`close_session` 會取消工作階段仍在執行或等待的指令，關閉工作階段開啓的分頁，並釋放借用的分頁，這些分頁會保持開啓。它會移除工作階段的瀏覽器綁定，並清除工作階段在借用分頁上記錄的內容：框架選擇、網路項目、主控台輸出與 `@e` 參照。你自己關閉分頁時，該分頁會從工作階段中移除；工作階段只會由 `close_session` 結束。
+
+## 限制 [#limits]
+
+| 限制               | 值                                                        |
+| ------------------ | --------------------------------------------------------- |
+| 工作階段           | 每個瀏覽器 128 個                                         |
+| 每個工作階段的分頁 | 32 個，任務分頁與借用的分頁合計                           |
+| 同時執行的指令     | 每個瀏覽器 128 個；`close_session` 與 `dialog` 另有 16 個 |
+| 每個工作階段的指令 | 32 個執行中或等待中                                       |
+| 工作階段名稱       | 1 到 96 個字母（含 CJK）、數字、`_`、`.` 或 `-`           |
+| `timeoutMs`        | 1 到 120000，預設 30000                                   |
+
+達到限制時，指令會以 `busy` 與 HTTP 429 失敗，而不是等待。請降低並行數量，或關閉已完成的工作階段。
+
+## 逾時與結果不確定 [#timeouts-and-uncertain-results]
+
+`timeoutMs` 涵蓋整個請求，包括在工作階段佇列中等待的時間。時間用完，或指令執行到一半時瀏覽器中斷連線，呼叫會回傳 `outcome_unknown`。此時動作可能已經送達頁面：點擊可能已經發生，表單可能已經送出。
+
+<Callout type="warn" title="收到 outcome_unknown 後重試">
+  重新使用指令之前，請先觀察頁面。`snapshot`、`read_page`、分頁 URL、`get`
+  與網路記錄會顯示頁面做了什麼。只有在狀態顯示動作沒有發生時，才再次送出指令；付款、發布或提交，絕不可自動重送。
+</Callout>
+
+## 登入狀態來自你的設定檔 [#logins-come-from-your-profile]
+
+任務分頁與借用的分頁都在你的瀏覽器設定檔中執行，使用其中的 cookie、工作階段與登入狀態。工作階段與分頁羣組是用來整理分頁，不是用來區分帳號：每個工作階段看到的登入狀態都相同，為某項任務清除 cookie 或網站儲存空間，等於為整個設定檔清除。下一項任務需要從未登入開始時，請先登出該網站。

@@ -1,39 +1,543 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
-<loc>https://oh-my-webbridge.github.io/activity/</loc>
+<loc>https://oh-my-webbridge.github.io/en/activity/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/activity/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/architecture/</loc>
+<loc>https://oh-my-webbridge.github.io/en/architecture/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/architecture/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/development/</loc>
+<loc>https://oh-my-webbridge.github.io/en/development/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/development/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/development/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/development/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/development/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/development/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/firefox/</loc>
+<loc>https://oh-my-webbridge.github.io/en/firefox/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/firefox/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/getting-started/</loc>
+<loc>https://oh-my-webbridge.github.io/en/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/getting-started/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/</loc>
+<loc>https://oh-my-webbridge.github.io/en/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/presets/</loc>
+<loc>https://oh-my-webbridge.github.io/en/presets/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/presets/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/reference/actions/</loc>
+<loc>https://oh-my-webbridge.github.io/en/reference/actions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/actions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/reference/cdp/</loc>
+<loc>https://oh-my-webbridge.github.io/en/reference/cdp/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cdp/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/reference/cli/</loc>
+<loc>https://oh-my-webbridge.github.io/en/reference/cli/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cli/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/reference/sdk/</loc>
+<loc>https://oh-my-webbridge.github.io/en/reference/sdk/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/sdk/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 <url>
-<loc>https://oh-my-webbridge.github.io/sessions/</loc>
+<loc>https://oh-my-webbridge.github.io/en/sessions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/sessions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/activity/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/activity/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/architecture/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/architecture/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/development/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/development/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/development/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/development/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/development/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/development/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/firefox/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/firefox/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/getting-started/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/presets/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/presets/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/reference/actions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/actions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/reference/cdp/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cdp/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/reference/cli/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cli/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/reference/sdk/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/sdk/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-tw/sessions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/sessions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/activity/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/activity/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/architecture/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/architecture/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/development/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/development/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/development/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/development/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/development/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/development/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/firefox/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/firefox/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/getting-started/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/presets/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/presets/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/reference/actions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/actions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/reference/cdp/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cdp/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/reference/cli/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cli/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/reference/sdk/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/sdk/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-cn/sessions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/sessions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/activity/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/activity/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/architecture/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/architecture/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/development/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/development/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/development/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/development/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/development/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/development/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/firefox/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/firefox/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/getting-started/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/presets/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/presets/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/reference/actions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/actions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/reference/cdp/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cdp/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/reference/cli/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cli/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/reference/sdk/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/sdk/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-hk/sessions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/sessions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/activity/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/activity/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/activity/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/architecture/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/architecture/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/architecture/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/development/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/development/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/development/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/development/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/development/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/development/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/firefox/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/firefox/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/firefox/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/getting-started/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/presets/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/presets/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/presets/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/reference/actions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/actions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/actions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/reference/cdp/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cdp/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cdp/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/reference/cli/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/cli/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/cli/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/reference/sdk/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/reference/sdk/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/reference/sdk/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
+</url>
+<url>
+<loc>https://oh-my-webbridge.github.io/zh-mo/sessions/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://oh-my-webbridge.github.io/en/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-TW" href="https://oh-my-webbridge.github.io/zh-tw/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://oh-my-webbridge.github.io/zh-cn/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-HK" href="https://oh-my-webbridge.github.io/zh-hk/sessions/" />
+<xhtml:link rel="alternate" hreflang="zh-MO" href="https://oh-my-webbridge.github.io/zh-mo/sessions/" />
+<lastmod>2026-11-04T02:15:24.000Z</lastmod>
 </url>
 </urlset>

@@ -1,0 +1,1564 @@
+# Agent activity (https://oh-my-webbridge.github.io/en/activity/)
+
+An agent works in tabs of your own browser, so the extension marks the tab it controls. The mark appears in the toolbar icon, the popup and the activity layer drawn over the page.
+
+<Demo
+  name="activity-form"
+  alt="An agent fills in a booking form: the tab shows an edge glow, a focus frame moves from field to field, and the text appears in each one."
+/>
+
+## Toolbar icon [#toolbar-icon]
+
+| Icon                    | When                                         | Tooltip                                                                      |
+| ----------------------- | -------------------------------------------- | ---------------------------------------------------------------------------- |
+| Teal                    | Connected, this tab is not controlled        | `oh-my-webbridge: connected`                                                 |
+| Teal with an orange dot | A session controls this tab                  | `oh-my-webbridge: session research controls this tab`                        |
+| Grey                    | Not paired, or connecting                    | `oh-my-webbridge: not paired`, `oh-my-webbridge: connecting`                 |
+| Grey with a red dot     | Daemon not running, or the daemon refused it | `oh-my-webbridge: daemon not running`, `oh-my-webbridge: connection refused` |
+| Grey with pause bars    | Paused                                       | `oh-my-webbridge: paused`                                                    |
+
+The orange dot is set on the controlled tab only. Other tabs keep the connection state icon. The tooltip uses the interface language of the extension.
+
+## The popup [#the-popup]
+
+While connected, the popup starts with a row labeled "This tab". It reads "Not controlled" for an ordinary tab, "Session research" for a controlled tab, and "Session research is working" while an action runs. The row follows the active tab.
+
+<Demo
+  name="popup"
+  alt="The popup over a booking form an agent is filling in: Connected, This tab reads Session demo, prompt examples in tabs, and Pause and Settings buttons."
+  still
+/>
+
+## On the page [#on-the-page]
+
+The layer is drawn in Chrome and Firefox, on tabs the session opened and on tabs it borrowed from you. It ends when the session releases or closes the tab. While it is drawn, the page shows:
+
+- An edge glow while an action runs, fading out shortly after it finishes.
+- A chip in the bottom right corner with an orange dot and the session name.
+- The orange-dot icon as the favicon, in place of the page's own icons.
+- A focus frame around the element an action targets, with the action name above it: Click, Hover, Type, Select, Check, Focus, Scroll, Drag or Upload. The label moves below the element when the element sits near the top edge. The frame follows elements of the main document; while the session has an iframe selected, the page shows the glow and the chip only.
+
+The focus frame stays for a moment after the action finishes, so a run of clicks reads as one activity instead of a flicker of frames. A navigation replaces the document, and the layer is drawn again on the new page.
+
+## How it stays out of the way [#how-it-stays-out-of-the-way]
+
+- The layer is one host element with a shadow root. The page's styles do not reach its parts.
+- It uses `pointer-events: none`, so clicks, selection and hover reach the page underneath.
+- It is `inert` and `aria-hidden`, so screen readers and the page's accessibility tree skip it. `read_page` returns the page text without the chip, and `snapshot` does not list the layer.
+- Screenshots and PDFs are taken with the layer hidden, then it reappears.
+- The layer carries a 75-second lease that the extension renews every 30 seconds. If the extension stops renewing it, the page removes the layer by itself and restores its own favicon, so a stopped worker or a lost debugger session leaves no markings behind.
+
+## Turn it off [#turn-it-off]
+
+<Demo
+  name="settings"
+  alt="The settings page with Connection, Pages and Advanced groups. Show agent activity is on."
+  still
+/>
+
+Under **Settings**, then **Pages**, turn off **Show agent activity**. The layer disappears from every controlled tab at once and is not drawn on tabs that sessions claim later. Agents keep working, and the toolbar icon and the popup row still show which session controls the tab. Turn the switch on again to draw the layer on the tabs that are still controlled.
+
+The layer follows the system's reduced motion and reduced transparency settings: the glow stops pulsing and the chip switches to a solid background.
+
+
+# Architecture (https://oh-my-webbridge.github.io/en/architecture/)
+
+Two processes make up oh-my-webbridge. The daemon `omw` is a Go binary that listens on `127.0.0.1:17373`. The extension runs inside Chrome or Firefox and drives tabs through browser APIs. Agents, the CLI and the SDK call the daemon over HTTP; the daemon calls the extension over a WebSocket.
+
+## Components [#components]
+
+### Daemon [#daemon]
+
+The daemon holds state that outlives a browser window.
+
+- Authentication. Every request is checked against the token here, except `GET /ping` and `POST /pair`.
+- Routing. It keeps one connection per browser and sends each command to Chrome or Firefox.
+- Concurrency and deadlines. It admits requests, applies a timeout, and answers `busy` when a limit is reached.
+- Files. It writes screenshots and PDFs to the paths you give it, and reads upload files for Firefox, whose extension cannot read local files.
+- CDP front end. `GET /json`, `GET /json/version` and `GET /devtools/page/{tab}` present Chrome tabs to CDP clients, and `omw serve --cdp` passes `/devtools/browser` through to a native DevTools endpoint.
+- Session bindings, stored in `bindings.json` in the config directory.
+
+### Extension [#extension]
+
+The extension owns the browser side.
+
+- Task tabs and their tab groups, including borrowing a tab that already exists.
+- `snapshot` of the DOM and accessibility tree, and the `@e` references derived from one snapshot.
+- Input: click, hover, type, select, check, focus, scroll, drag and upload.
+- Chrome: `chrome.debugger`, which is CDP.
+- Firefox: WebExtension APIs. `page.js` is injected into the selected frame on demand, `webRequest` handles presets and headers, `tabs.captureTab` takes screenshots, and `userScripts.execute` runs `evaluate`.
+- Network entries and console records for each controlled tab.
+- The activity layer drawn over a controlled page.
+
+Firefox answers some actions with `unsupported`, because its extension APIs have no equivalent. The differences are listed in [Firefox](https://oh-my-webbridge.github.io/en/firefox/).
+
+One tab belongs to one session at a time. A session that creates tabs keeps them in its own tab group; a borrowed tab stays in your group and returns on release. A tab group is neither a cookie boundary nor a security boundary: every tab in the profile shares the same logins.
+
+## Multi-browser routing [#multi-browser-routing]
+
+The daemon keeps at most one Chrome connection and one Firefox connection. It tells them apart by the WebSocket Origin. The extension's hello reports the browser, the browser version, and the session names the extension holds.
+
+A command may carry a `browser` field. A session binds to a browser on its first command and keeps that binding until `close_session` succeeds. The binding is written to `bindings.json`, so after a daemon restart the session is routed back to the same browser. The next hello re-reports the session names, and stale bindings are dropped.
+
+A session without a binding goes to Chrome when it is connected, and to Firefox otherwise. `/json/list`, `/devtools/*` and raw `cdp` need the Chrome extension; `/json/version` reports the version even with no browser connected. A second connection from the same browser is refused with 409.
+
+## Request lifecycle and concurrency [#request-lifecycle-and-concurrency]
+
+Requests arrive as `POST /command` with a 2 MiB body limit, or as frames on the extension WebSocket. The daemon assigns a random ID to a request that omits one, and a response is matched only against a pending request with that ID on the same connection. A dropped connection ends every command in flight on it with `outcome_unknown`. After reconnecting, only new requests are accepted.
+
+Commands for one session run in order, and different sessions run concurrently. The extension also queues per session and answers `busy` past 32 waiting commands. `close_session` and `dialog` run outside the session queue, on a reserve of 16 slots, so a stuck session or an open dialog can still be cleared. Page CDP connections keep the protocol multiplexing: a Fetch or Debugger continuation runs while another command on the same target waits.
+
+The default timeout is 30 seconds and the maximum is 120 seconds. A request that passes its deadline returns `outcome_unknown`, and the SDK does not retry an uncertain command.
+
+## Extension lifecycle [#extension-lifecycle]
+
+Chrome runs the extension background as an MV3 service worker. The worker keeps one WebSocket to the daemon, sends a ping every 20 seconds, and closes the socket after 45 seconds without traffic. A `chrome.alarms` timer fires every 30 seconds and reconnects when the worker was stopped. Retries back off from 0.5 seconds to 30 seconds with jitter. No offscreen document, silent audio or polling loop keeps the worker alive, and Chrome may still stop it at any point.
+
+A debugger session survives the worker that opened it and stays attached to its tab. The next worker starts without the state that answers paused requests. On startup it detaches the debugger sessions it inherited from the previous worker, which releases any request paused there, and attaches again on the next command. Session metadata lives in `chrome.storage.session` rather than in worker globals. Page CDP sessions end with the daemon connection that opened them.
+
+Firefox runs an MV3 event page, which the browser suspends after 30 seconds idle. WebSocket traffic does not count as activity, so the 20-second heartbeat also calls `tabs.query` while a connection is open. A 30-second alarm reconnects after a suspension. Reloading the background drops the `webRequest` listeners and the frame selection. Presets are installed again on that tab's next controlled navigation.
+
+## Local trust model [#local-trust-model]
+
+The daemon is reachable only from the machine it runs on, and the token is the only credential.
+
+- It binds `127.0.0.1:17373` and rejects a request whose Host is not `127.0.0.1`.
+- Web origins are rejected. Only `chrome-extension://` origins with 32 letters from a to p and `moz-extension://` origins with a UUID are accepted, and only on `/extension`, `/ping` and `/pair`.
+- The CLI and the SDK send the token as `Authorization: Bearer`. The extension sends it as a WebSocket subprotocol, `omw-token.<token>`, next to `omw.v1`. No token appears in the URL.
+- `GET /ping` reports the version without a token. `POST /pair` requires an extension origin and redeems the six-digit code for the token.
+- A pairing code is valid for 5 minutes and 5 attempts.
+- The config directory is created with mode 0700. `config.json`, which holds the token, is written to a temporary file and published atomically with mode 0600.
+- The token grants full control of the browser: page JavaScript in any tab, raw CDP, and file writes to the absolute paths you name. It does not isolate you from another process running as the same OS user, and the profile's cookies are available to every tab.
+- The Chrome extension has no `<all_urls>` host permission, no resident content script and no external message entry point. Firefox declares `<all_urls>`, which screenshots, request filtering, cookies and cross-origin frames need; `userScripts` stays optional and is granted in the setup page or under **Settings**, then **Pages**.
+
+## Resource limits [#resource-limits]
+
+These are capacity guards, not a bound on RSS: concurrent screenshots and Chrome's own tab and network caches still add memory.
+
+| Resource                                                                                 | Limit                                                                             |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| HTTP request body                                                                        | 2 MiB                                                                             |
+| HTTP requests being read or served                                                       | 288                                                                               |
+| Ordinary commands per browser                                                            | 128                                                                               |
+| Reserved slots per browser for `close_session`, `dialog`, `cdp_detach`, `artifact_close` | 16                                                                                |
+| Waiting commands per session in the extension                                            | 32                                                                                |
+| Sessions per browser                                                                     | 128                                                                               |
+| Tabs per session                                                                         | 32                                                                                |
+| WebSocket message                                                                        | 32 MiB                                                                            |
+| Buffered responses in the daemon                                                         | 64 MiB, past that the command returns `outcome_unknown`                           |
+| Extension send buffer                                                                    | 4 MiB before frames queue, 64 MiB queued, closed after 30 seconds without sending |
+| Screenshot and PDF jobs                                                                  | 2 at a time                                                                       |
+| Command timeout                                                                          | 30 seconds default, 120 seconds maximum                                           |
+| `snapshot` output                                                                        | 4000 nodes or 192000 characters, with `truncated` set                             |
+| Page CDP subscription queue                                                              | 32 events, 256 KiB per event                                                      |
+| Network capture                                                                          | 500 entries per tab, 8 MiB of buffered bodies in Chrome                           |
+| Firefox network bodies                                                                   | 1 MiB per response, 8 MiB per tab                                                 |
+| Firefox upload                                                                           | 16 MiB per command, 64 MiB across commands in flight                              |
+| PDF output                                                                               | 100 MiB                                                                           |
+| Artifact files                                                                           | written with mode 0600 through a temporary file, never over an existing path      |
+
+
+# Development (https://oh-my-webbridge.github.io/en/development/)
+
+The repository produces one Go binary, two extension bundles, one SDK file and the documentation site. Building needs Go 1.27.3 or newer, Node 24 and pnpm 11. Packaging a release also needs `tar` and `zstd` on `PATH`.
+
+## Repository layout [#repository-layout]
+
+| Path               | Contents                                                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cmd/omw`          | CLI entry point: `start`, `serve`, `stop`, `status`, `pair`, `connection`, `call`, `service`, `skill`, `install-skill`, `doctor`.                                               |
+| `internal/bridge`  | HTTP and WebSocket server, hub and routing, pairing, bindings, CDP proxy, uploads.                                                                                              |
+| `internal/config`  | Config directory, token, address, `OMW_HOME`.                                                                                                                                   |
+| `internal/service` | launchd and systemd user service written by `omw service install`.                                                                                                              |
+| `extension/src`    | Background worker for both browsers, actions, snapshots, presets, network capture, activity layer. `extension/src/firefox` holds the Firefox worker and the injected `page.js`. |
+| `extension/ui`     | Popup and app pages (setup, settings). Vite, React 19, Base UI primitives from the coss registry, Tailwind CSS 4.                                                               |
+| `packages/brand`   | Icon SVGs and `theme.css`, shared by the extension pages and the docs site.                                                                                                     |
+| `sdk/`             | `index.ts`, the JavaScript SDK that is bundled to `dist/sdk.mjs`.                                                                                                               |
+| `docs/`            | Fumadocs site on Next, a static export. Pages live in `docs/content/docs`; `meta.json` sets their order.                                                                        |
+| `scripts/`         | Build, filter compilation, release packaging, publishing, auditing.                                                                                                             |
+| `tests/`           | Node test suites, end-to-end suites and fixtures.                                                                                                                               |
+
+`benchmarks/` holds the browser tool benchmark, `examples/` holds SDK scripts, `skills/` holds the agent skill that `omw install-skill` installs, and `third_party/` holds the pinned filter lists and their license texts.
+
+`pnpm-workspace.yaml` lists the root package, `docs`, `extension/ui` and `packages/*`, so Changesets versions the root package together with the workspace.
+
+## Toolchain [#toolchain]
+
+| Tool             | Version and role                                                                         |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| Go               | 1.27.3 or newer. The only third-party module is `github.com/coder/websocket`.            |
+| Node             | 24 or newer, set in `engines`. Runs the build, tests, release scripts and the docs site. |
+| pnpm             | 11, pinned in `packageManager`. Install with `pnpm install` before any script runs.      |
+| TypeScript       | 7, strict. The extension and SDK are checked as part of `pnpm run check`.                |
+| oxlint and oxfmt | Lint and format. `oxlint` runs type-aware through `oxlint-tsgolint`.                     |
+| Vite             | 8, builds the extension pages. esbuild bundles the workers and the SDK.                  |
+
+## Build [#build]
+
+```sh
+pnpm install
+pnpm run build
+go build -trimpath -ldflags='-s -w' -o dist/omw ./cmd/omw
+```
+
+`make build` runs the same three steps, with `pnpm install --frozen-lockfile`.
+
+`pnpm run build` runs `scripts/build.mjs`, which:
+
+1. Checks that `package.json`, both extension manifests and `Version` in `internal/bridge/protocol.go` carry the same version.
+2. Bundles `extension/src/worker.ts` with esbuild as an ES module, minified, for `chrome156`.
+3. Bundles `extension/src/firefox/worker.ts` for `firefox153`, and `extension/src/firefox/page.ts` as an IIFE.
+4. Runs the Vite build in `extension/ui` and copies `popup.html`, `app.html` and their assets into both extension directories.
+5. Renders the toolbar and app icons from the SVGs in `packages/brand/icons` with resvg.
+6. Compiles the filter lists and copies the license texts of the bundled npm packages and filter sources.
+7. Bundles `sdk/index.ts` to `dist/sdk.mjs` for Node 24.
+8. Writes `dist/extension.sha256.json` and `dist/extension-firefox.sha256.json`.
+
+The outputs are `dist/omw`, `dist/extension` for Chrome, `dist/extension-firefox` for Firefox and `dist/sdk.mjs`. Chrome loads `dist/extension` as an unpacked extension. Firefox loads `dist/extension-firefox` as a temporary extension.
+
+## Extension pages [#extension-pages]
+
+The popup, the setup page and the settings page are one Vite project. `extension/ui/vite.config.ts` lists `popup.html` and `app.html` as inputs, builds with a relative base so the pages work from a `chrome-extension://` URL, and writes to `dist/extension-ui`. The build also emits `bundled-modules.json`, which `scripts/build.mjs` uses to collect the license of every npm module in the page bundle.
+
+`app/app.tsx` picks the setup or settings page from the URL hash, so `app.html#settings` opens the settings page directly. Components taken from the coss registry live in `extension/ui/src/components/ui` as the registry provides them; compositions such as the side rail and the step list live in `extension/ui/src/components`. `design.md` in the repository root holds the presentation rules for these pages and the docs site. The pages read connection state from `chrome.storage` and call `GET /ping` and `POST /pair` themselves. The background worker owns the WebSocket.
+
+## Checks and tests [#checks-and-tests]
+
+```sh
+pnpm run check
+pnpm run format:check
+pnpm test
+go vet ./...
+go test -race ./...
+```
+
+`make check` runs `go vet`, the type-aware lint and the format check. `make test` runs `go test -race` and the Node suites.
+
+| Command                          | What it runs                                                                                                                      |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm run build`                 | The full build described above.                                                                                                   |
+| `pnpm run check`                 | `oxlint --type-aware --type-check --deny-warnings --format=agent`.                                                                |
+| `pnpm run format`                | `oxfmt`, writing changes. `pnpm run format:check` reports without writing.                                                        |
+| `pnpm test`                      | The unit suites in `tests/`: SDK, worker, actions, presets, preset lifecycle, state, Firefox, release and benchmark.              |
+| `pnpm run test:e2e`              | `tests/e2e.test.mjs` against Chrome. Needs `CHROME_BIN`.                                                                          |
+| `pnpm run test:e2e:firefox`      | `tests/e2e-firefox.test.mjs` against Firefox. Needs `FIREFOX_BIN`.                                                                |
+| `pnpm run test:e2e:dual`         | Both browsers connected to one daemon. Needs both variables.                                                                      |
+| `pnpm run test:e2e:firefox-page` | Runs `page.js` inside Firefox. Needs `FIREFOX_BIN`.                                                                               |
+| `pnpm run bench`                 | `benchmarks/run.mjs`.                                                                                                             |
+| `pnpm run release:plan`          | Previews the next version without consuming fragments.                                                                            |
+| `pnpm run release:check`         | Checks that the versions agree and the fragments parse; CI passes a base commit to also require a fragment for published changes. |
+| `pnpm run release:version`       | Consumes fragments and prepares versions locally.                                                                                 |
+| `pnpm run release:pack`          | Builds the release archives. `pnpm run release:audit` validates them.                                                             |
+
+The end-to-end suites start `dist/omw` and load `dist/extension` or `dist/extension-firefox`, so run the build first. `CHROME_BIN` and `FIREFOX_BIN` are absolute paths to the browser binaries. A suite without its variable is skipped.
+
+## Documentation site [#documentation-site]
+
+```sh
+pnpm --filter @oh-my-webbridge/docs dev
+```
+
+The dev server listens on port 3884. Pages are MDX in `docs/content/docs`. `docs/content/docs/meta.json` lists them in sidebar order, and a new page has to be added there. Every path starts with a language segment, for example `/en/sessions/`; the site root sends a reader to the first browser language. `pnpm --filter @oh-my-webbridge/docs build` produces a static export for GitHub Pages. The build reads the Git history of each page for its contributors and page history, so it needs a full clone.
+
+The demo videos and screenshots live on the orphan `assets` branch, which the Pages workflow checks out into `docs/public/media`. `pnpm run media` records them into `dist/media` with Chrome for Testing; `pnpm run media --language zh-TW` records the scenes that show extension text in another interface language.
+
+## Translations [#translations]
+
+English is the source language. The Traditional Chinese (Taiwan) text is translated from it by hand. `pnpm run i18n` converts the zh-TW text to Simplified Chinese (zh-CN) and to the Hong Kong and Macau variants (zh-HK, zh-MO) with OpenCC, then formats the output with oxfmt. Edit only the English and zh-TW files: the script overwrites the others. `pnpm run i18n:check` fails when a generated file differs from its source, and CI runs it.
+
+| Text                 | English                 | zh-TW source                            | Generated                                                       |
+| -------------------- | ----------------------- | --------------------------------------- | --------------------------------------------------------------- |
+| `extension/locales/` | `en.json`               | `zh-TW.json`                            | `zh-CN.json`, `zh-HK.json`, `zh-MO.json`, `extension/_locales/` |
+| `docs/content/docs/` | `page.mdx`, `meta.json` | `page.zh-tw.mdx`, `meta.zh-tw.json`     | `page.zh-cn.mdx`, `page.zh-hk.mdx`, `page.zh-mo.mdx`, `meta.*`  |
+| `docs/messages/`     | `site.en.json`          | `site.zh-tw.json`, `history.zh-tw.json` | The `zh-cn`, `zh-hk` and `zh-mo` files                          |
+
+The zh-CN conversion applies the OpenCC phrase tables (`twp` to `cn`), then the Mainland software terms listed in `scripts/i18n.mjs`, for example 分頁 to 标签页 and 工作階段 to 会话. The zh-HK and zh-MO conversions change character variants only (`tw` to `hk`); OpenCC has no separate Macau standard.
+
+Each key in `en.json` must also be in `zh-TW.json`, with the same `{placeholders}`; otherwise the script stops. A heading in a translated page keeps the anchor of the English heading, for example `## 選擇器 [#selectors]`, so links to a section work in every language.
+
+The extension pages, the popup, the toolbar title and the activity layer use the language chosen on the settings page, or the browser language. The extension name and description in the browser's extension list come from `extension/_locales` and always follow the browser language.
+
+## Changesets and releases [#changesets-and-releases]
+
+Version numbers and release notes come from fragments, not from commit messages, and nothing is published to npm.
+
+- Add one file per user-visible change under `.changeset/`, named after the change. The front matter holds the bump: `patch` for a fix, `minor` for a capability, `major` for breaking behavior.
+- The body is a short H1 title followed by the result the user sees, migration or scope notes where they apply, and the PR link once the PR exists. Fragments are rendered as GitHub Flavored Markdown, so close every block, keep raw HTML to comments, and write links inline.
+- A PR that changes published inputs, such as source, build scripts, dependencies, the release workflows or the extension manifests, fails CI without a new fragment. Tests and internal docs can omit one. Editing an existing fragment does not count.
+- A push to `main` maintains a draft `release/next` version PR. Its workflow runs `scripts/release-pr.mjs`, which consumes the fragments with `scripts/release.mjs version`, synchronizes the package, lockfile, daemon and manifest versions, and writes `CHANGELOG.md` and `docs/releases/<version>.md`.
+- After the version PR merges, the version workflow tags the `chore(release): prepare <version>` commit. The tag runs the release workflow, which rebuilds, audits every archive, uploads the assets, verifies their SHA-256 digests, and publishes the GitHub Release after that.
+- Archives use zstd level 3 and extract with `zstd -dc archive.tar.zst | tar -xf - -C DIR`.
+
+## License [#license]
+
+The project is licensed under Apache-2.0. `NOTICE` holds the notices, and `THIRD_PARTY.md` lists the bundled filter lists and npm packages. Extension builds ship the full license texts under `licenses/`.
+
+
+# Firefox (https://oh-my-webbridge.github.io/en/firefox/)
+
+The Firefox build is an MV3 extension for Firefox 153 and later. It pairs with the same daemon and exposes the same actions as the Chrome extension, with the differences listed under [Actions](#actions). Where the Chrome extension uses CDP, the Firefox extension uses WebExtension APIs: page actions run in a content script, presets, network capture and extra request headers use blocking `webRequest` listeners, screenshots use `tabs.captureTab`, and `evaluate` uses `userScripts`.
+
+## Install [#install]
+
+Each release has two Firefox files. Check both against `SHA256SUMS`.
+
+- `omw-<version>-firefox-mv3.tar.zst` holds the extension directory. Extract it with `zstd -dc archive.tar.zst | tar -xf - -C <directory>`.
+- `omw-<version>-firefox-mv3-unsigned.xpi` holds the same extension, packaged for signing.
+
+### Temporary extension [#temporary-extension]
+
+A temporary extension is removed when Firefox quits.
+
+1. Open `about:debugging` and select **This Firefox**.
+2. Choose **Load Temporary Add-on…**.
+3. Select `manifest.json` in `dist/extension-firefox` or in the extracted release directory.
+
+`pnpm run build` writes `dist/extension-firefox` next to the Chrome build.
+
+### Signed extension [#signed-extension]
+
+Firefox Release and Beta install only extensions signed by Mozilla. A signed extension stays installed after a restart.
+
+1. Sign the extension on addons.mozilla.org as unlisted and self-distributed. Upload the unsigned `.xpi` in the AMO Developer Hub, or run `web-ext sign --channel=unlisted --api-key=<JWT issuer> --api-secret=<JWT secret>` in the extracted directory. `web-ext` writes the signed `.xpi` to `web-ext-artifacts/`.
+2. In `about:addons`, open the gear menu, choose **Install Add-on From File…**, and select the signed `.xpi`.
+
+AMO validates each submission before it signs it. Signing can take up to 24 hours, and each version needs its own signature.
+
+Firefox ESR, Developer Edition, Nightly and unbranded builds install the unsigned `.xpi` when `xpinstall.signatures.required` is `false` in `about:config`.
+
+## Pairing and permissions [#pairing-and-permissions]
+
+Installing the extension opens the setup page (`app.html`), which lists the setup steps:
+
+1. **Start the daemon**: `omw start`, or `omw service install` to start at login. The step completes when the page reaches the daemon.
+2. **Pair this browser**: run `omw pair`. It prints a six-digit code that is valid for 5 minutes and 5 attempts. Type it into the pairing code field.
+3. **Allow scripts**: grants the optional `userScripts` permission.
+4. **Try it with an agent**: `omw install-skill ~/.agents/skills`, then ask the agent something.
+
+- **Access to all websites** is the `<all_urls>` host permission, requested at installation. You can turn it off under Permissions in `about:addons`. Without it, page actions, `screenshot` and `cookies` return `restricted_tab` and presets stop filtering requests. A `navigate` to a URL that answers 204 No Content or 205 Reset Content then waits until the command deadline. Turning the permission back on restores filtering.
+- **User scripts** is the optional `userScripts` permission. Choose **Allow scripts** in step 3, or under **Settings**, then **Pages**, and confirm the Firefox prompt. Firefox accepts the request only from a user action, so these buttons are the only place to grant it. Until it is granted, `evaluate` and `wait` with `expression` return `unsupported`.
+
+**Pause** in the popup disconnects the extension from the daemon until you select **Resume**.
+
+## Chrome and Firefox together [#chrome-and-firefox-together]
+
+The daemon keeps one Chrome connection and one Firefox connection at the same time. A second connection from the same browser gets HTTP 409.
+
+- A command with `browser` goes to that browser: `omw call --browser firefox SESSION ACTION` on the command line, `connect(session, { browser: "firefox" })` in the SDK.
+- A command without `browser` goes to the browser the session is bound to. An unbound session goes to the only connected browser, or to Chrome when both are connected.
+- The first command the daemon sends binds the session to that browser. Bindings are stored in `bindings.json` and survive extension reconnects and daemon restarts.
+- `browser` naming the other browser returns `session_browser` (HTTP 409). A bound browser that is not connected returns `browser_offline`; the daemon does not move the session to the other browser. `close_session` removes the binding.
+- `/json`, `/json/list`, `/json/version` and `/devtools/page/*` use Chrome. With only Firefox connected they return `unsupported` (HTTP 501).
+
+`omw status` and `omw doctor` print one connection line for each browser.
+
+## Actions [#actions]
+
+Actions behave as in Chrome unless the table lists a difference. An action or parameter that Firefox cannot perform returns `unsupported` (HTTP 501), and the message names the action, the parameter and the reason.
+
+| Action                                                   | Firefox behavior                                                                                                                    |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `navigate`                                               | When a preset blocks the top-level page, the tab keeps its current page; `navigate` returns that URL, or `about:blank` in a new tab |
+| `window_new`                                             | Ignores `focused: false`; the new window takes focus                                                                                |
+| `click`, `dblclick`, `mouse_click`, `hover`, `send_keys` | Untrusted events; a page that checks `isTrusted` ignores them                                                                       |
+| `keyboard` (`down`, `up`), `mouse`, `drag`               | `unsupported`                                                                                                                       |
+| `key_type`, `keyboard` (`insertText`)                    | Returns `element_action_failed` when no editable element has focus                                                                  |
+| `scroll`                                                 | Fires no `wheel` event; an unknown `direction` returns `invalid_args`                                                               |
+| `snapshot`, `read_page`, `find`                          | Roles and names come from the DOM; the same page can give different text than in Chrome                                             |
+| `wait`                                                   | `expression` needs the user scripts permission                                                                                      |
+| `evaluate`                                               | Needs the user scripts permission; `contextId` returns `unsupported`                                                                |
+| `frame`                                                  | Returns a numeric `frameId` as a string and no `contextId`                                                                          |
+| `history`                                                | `back`, `forward` and `reload` work; `list` returns `unsupported`                                                                   |
+| `dialog`, `console`                                      | `unsupported`                                                                                                                       |
+| `dialog_status`                                          | Returns the URL only, without the dialog type or message                                                                            |
+| `emulate`                                                | Only `data` (extra request headers) works                                                                                           |
+| `cookies`                                                | Covers all cookie partitions; `set` writes an unpartitioned cookie                                                                  |
+| `upload`                                                 | The daemon reads the files: 16 MiB per command, 64 MiB in flight                                                                    |
+| `screenshot`                                             | Captures the tab without activating it; `selector` and `fullPage` need the main frame                                               |
+| `save_as_pdf`                                            | `unsupported`; `tabs.saveAsPDF` opens a save dialog and returns no PDF bytes                                                        |
+| `network`                                                | Up to 500 entries; a body over 1 MiB or a dropped body returns an error                                                             |
+| `preset`                                                 | Uses blocking `webRequest`; see [Presets](#presets)                                                                                 |
+| `cdp`, `cdp_attach`, `cdp_detach`, `list_targets`        | `unsupported`; Firefox has no CDP                                                                                                   |
+| `artifact_read`, `artifact_close`                        | `unsupported`; Firefox actions return no artifact streams                                                                           |
+
+A Firefox extension cannot produce trusted input. `click`, `dblclick`, `mouse_click`, `hover` and `send_keys` dispatch `pointer*`, `mouse*` and `key*` events with `isTrusted` set to `false`. The page gets no user activation. Popups from `window.open`, file choosers, fullscreen and clipboard reads that the page starts from these events fail. `click` still calls `element.click()` afterwards, which runs the default action of links, buttons and form controls. `fill` and `key_type` use `document.execCommand` and produce trusted `beforeinput` and `input` events. `hover` does not set `:hover`, so a menu that opens from CSS `:hover` stays closed. `send_keys` accepts `Backspace`, `Delete`, `Enter`, `Tab`, `Shift+Tab`, `Control+A` and `Meta+A`. Other keys return `unsupported`.
+
+## Background lifecycle [#background-lifecycle]
+
+The background runs as an MV3 event page. Firefox suspends an idle event page after 30 seconds, and WebSocket traffic does not count as activity. While the extension is connected it sends a ping every 20 seconds and calls `tabs.query`, which keeps the page loaded. An alarm every 30 seconds reconnects after a suspension. Session metadata lives in `storage.session`, which Firefox clears when it restarts.
+
+A background restart drops the `webRequest` listeners and the frame selection:
+
+- `preset {cmd:"status"}` reports `none` for existing tabs until the next navigation of the tab applies the session preset again.
+- Network recordings stop.
+- Extra request headers apply to new task tabs; existing tabs need `emulate {data}` again.
+
+## Presets [#presets]
+
+Firefox presets use the same modes, filter lists, engine and session settings as Chrome, and they apply only to task tabs. [Page presets](https://oh-my-webbridge.github.io/en/presets/) describes the modes and the bundled lists.
+
+- Each task tab gets its own blocking `webRequest.onBeforeRequest` listener, filtered by `tabId`. It receives the requests of every frame, including cross-process iframes, and there is no per-tab target limit. Each request is matched synchronously once the lists have loaded.
+- A preset change applies to existing task tabs immediately and the response reports `appliesOn: "immediate"`. Reconfiguration replaces the listeners and sends nothing to the page, so a busy page does not delay it. A navigation with an unchanged preset keeps the listeners and the status counters; a preset with `environment` set reconfigures on each navigation.
+- `zen` blocks requests by type: `images` covers image and image set requests, `fonts` covers fonts, `css` covers stylesheets, and `javascript` covers scripts. With `javascript: true`, the extension also adds `Content-Security-Policy: script-src 'none'` to the document and iframe responses of the tab. Inline scripts and event handler attributes stop running, and `<noscript>` content does not render.
+- `environment` is accepted but reports `environmentState: "unavailable"` with a reason. Network filtering continues.
+- A blocked top-level page leaves the tab on its current page, with no error page.
+- Without **Access to all websites**, every request passes. Status reports `network: false` and records the reason. No request counts as blocked.
+- If the lists fail to load, requests pass unfiltered and `zen` type blocking still applies. The next preset configuration loads the lists again.
+- Engine data is released 30 seconds after the last filtering tab stops filtering.
+
+
+# Getting started (https://oh-my-webbridge.github.io/en/getting-started/)
+
+Chrome and Firefox can run side by side, and each browser is paired on its own.
+
+## Requirements [#requirements]
+
+- Chrome 156 or later, or Firefox 153 or later.
+- macOS or Linux, on the same computer as the browser.
+- `zstd` to unpack a release archive.
+- Go 1.27.3, Node 24 and pnpm 11 to build from source.
+
+## Install the daemon [#install-the-daemon]
+
+<Tabs items={["Release archive", "Build from source"]}>
+<Tab value="Release archive">
+
+Download `omw-<version>-<os>-<arch>.tar.zst` for your platform from the [releases page](https://github.com/oh-my-webbridge/oh-my-webbridge/releases) and check it against the `SHA256SUMS` file from the same release. Unpack it:
+
+```sh
+zstd -dc omw-<version>-darwin-arm64.tar.zst | tar -xf - -C "$HOME/.local"
+```
+
+The archive holds `bin/omw`, `README.md` and the license files. Keep the binary on your `PATH`; the login service records that path.
+
+</Tab>
+<Tab value="Build from source">
+
+Build from the repository root:
+
+```sh
+pnpm install
+pnpm run build
+go build -trimpath -ldflags='-s -w' -o dist/omw ./cmd/omw
+```
+
+`pnpm run build` writes the Chrome extension to `dist/extension`, the Firefox extension to `dist/extension-firefox` and the SDK to `dist/sdk.mjs`.
+
+</Tab>
+</Tabs>
+
+## Install the extension [#install-the-extension]
+
+<Tabs items={["Chrome", "Firefox"]}>
+<Tab value="Chrome">
+
+Unpack `omw-<version>-chrome-mv3.tar.zst` into a folder. Open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and select that folder; the manifest sits at the archive root. A source build loads `dist/extension` the same way.
+
+</Tab>
+<Tab value="Firefox">
+
+Unpack `omw-<version>-firefox-mv3.tar.zst`. Open `about:debugging`, choose **This Firefox** and **Load Temporary Add-on…**, then pick `manifest.json` in the unpacked folder. Firefox drops temporary extensions when it restarts. A permanent install needs a signature from addons.mozilla.org in self-distribution mode; submit `omw-<version>-firefox-mv3-unsigned.xpi` there. A source build loads `dist/extension-firefox`.
+
+</Tab>
+</Tabs>
+
+## Set up the browser [#set-up-the-browser]
+
+Installing the extension opens the setup page. The popup reopens it with **Open setup** when the browser is not paired, the daemon is not running, or the daemon refuses the connection.
+
+<Steps>
+<Step>
+### Start the daemon [#start-the-daemon]
+
+Run `omw start`. It starts the daemon in the background and prints `started`, or `already running` when one is up. The step completes by itself once the page reaches the daemon; until then it reads "Waiting for the daemon on 127.0.0.1:17373".
+
+</Step>
+<Step>
+### Pair this browser [#pair-this-browser]
+
+Run `omw pair`. It prints a six-digit code such as `482 913`, valid for 5 minutes and 5 attempts. Type the code into the pairing code field. The extension saves the daemon token and shows "This browser is paired."
+
+</Step>
+<Step>
+### Try it with an agent [#try-it-with-an-agent]
+
+Install the agent skill with `omw install-skill ~/.agents/skills`, then ask the agent for a browser task, for example to read the active tab.
+
+</Step>
+</Steps>
+
+Firefox adds a step of its own before the last one, **Allow scripts**, whose button carries the same label. The `evaluate` action needs the optional user script permission; you can grant it there, or later under **Settings**, then **Pages**.
+
+The extension pages, the popup and the toolbar tooltip use the language of the browser. To choose another language, open the language menu at the bottom of the side rail on the setup or settings page. The extension has English, Traditional Chinese (Taiwan, Hong Kong and Macau) and Simplified Chinese.
+
+<Demo
+  name="setup"
+  alt="The setup page with its steps, the pairing code field and the connected state."
+/>
+
+## Start at login [#start-at-login]
+
+Move the binary to the path you intend to keep, then run:
+
+```sh
+omw service install
+```
+
+On macOS the command writes `~/Library/LaunchAgents/app.oh-my-webbridge.plist` and loads it with `launchctl`. On Linux it writes `~/.config/systemd/user/oh-my-webbridge.service` and enables the unit with `systemctl --user`. The unit runs `omw serve` with the configuration directory used by the install command. Stop a daemon that `omw start` launched before installing the service, because the service starts its own. Stop the service through its manager:
+
+```sh
+launchctl bootout gui/$(id -u)/app.oh-my-webbridge
+```
+
+```sh
+systemctl --user disable --now oh-my-webbridge.service
+```
+
+`omw stop` asks a running daemon to exit and leaves tabs open. With the service installed, use the service manager so the daemon does not start again.
+
+## Install the agent skill [#install-the-agent-skill]
+
+`omw install-skill DIR` writes `DIR/oh-my-webbridge/SKILL.md` and copies the guide built into the binary. It refuses to overwrite an existing file, so delete the old one before installing again. `omw skill` prints the same guide. The guide tells an agent which commands to run, how sessions and tab ownership work, and which errors to expect.
+
+## First commands [#first-commands]
+
+```sh
+omw call research navigate '{"url":"https://example.com","group_title":"Research"}'
+omw call research snapshot
+omw call research evaluate '{"code":"document.title"}'
+omw call research close_session
+```
+
+The first argument after `omw call` is the session name; keep one name per task. Each command prints JSON on stdout.
+
+- `navigate` opens a background tab in a new group titled `Research` and returns the tab id. Later navigations in the same session reuse that tab; pass `newTab` to open another.
+- `snapshot` returns the accessibility tree with `@e` references that `click` and `fill` accept.
+- `evaluate` returns the value of the expression.
+- `close_session` closes the tabs the session owns and releases any borrowed tab.
+
+The third argument is a JSON object. Pass `-` to read it from stdin, which avoids shell quoting:
+
+```sh
+omw call research evaluate - < request.json
+```
+
+When both browsers are connected, name one right after `omw call`:
+
+```sh
+omw call --browser firefox research snapshot
+```
+
+## Check the connection [#check-the-connection]
+
+`omw doctor` prints the config path on stderr and the status JSON on stdout, then one line per browser on stderr:
+
+```text
+chrome: connected (VERSION)
+firefox: not connected
+```
+
+`omw status` prints the same status JSON and browser lines without the config path. Both exit nonzero when the daemon does not answer.
+
+<Callout type="warn" title="The token is the browser credential">
+
+`omw connection` prints the daemon endpoint and token. Anyone who has the token can drive both paired browsers, so keep it out of logs and chat. To pair without the six-digit code, paste the 64 hex characters under **Settings**, then **Advanced**, then **Daemon token**.
+
+</Callout>
+
+
+# oh-my-webbridge (https://oh-my-webbridge.github.io/en/)
+
+A command from an agent or a script runs in your ordinary Chrome or Firefox profile, so pages keep that profile's logins, cookies and extensions. The daemon runs on the same computer as the browser and listens only on `127.0.0.1:17373`.
+
+1. An agent or script sends a command through `omw call` or the SDK.
+2. The `omw` daemon checks the token and forwards the command over a WebSocket to an extension in one browser.
+3. The extension runs the command in a tab and returns JSON.
+
+One daemon serves Chrome and Firefox at the same time. Each browser is paired once, and its extension stores the token.
+
+<Demo
+  name="activity-form"
+  alt="An agent fills a form while the page shows an edge glow, a focus frame on the active field and typed text."
+/>
+
+## What an agent can do [#what-an-agent-can-do]
+
+- Open tabs in the background, in one tab group per session. The group title comes from `group_title` or the session name. Tab groups only separate tasks on screen; every tab shares the profile and its cookies.
+- Read a page as text (`read_page`) or as an accessibility snapshot with `@e` references that later actions target (`snapshot`).
+- Click, type and fill form fields. Chrome sends this input through the DevTools protocol, so pages receive trusted events; Firefox sends clicks and key presses as untrusted events that a page may ignore.
+- Take screenshots in either browser, and save a page as PDF in Chrome.
+- Read network requests in either browser, and console messages in Chrome.
+- Send raw CDP commands in Chrome when no action covers the task.
+
+## Where to go next [#where-to-go-next]
+
+- [Getting started](https://oh-my-webbridge.github.io/en/getting-started/): install the daemon and the extension, pair a browser and run the first commands.
+- [Sessions and tabs](https://oh-my-webbridge.github.io/en/sessions/): one session per task, with its own tabs and tab group.
+- [Agent activity](https://oh-my-webbridge.github.io/en/activity/): the glow, focus frame and toolbar icon that mark a tab an agent controls.
+- [Actions](https://oh-my-webbridge.github.io/en/reference/actions/): every action, its arguments and the errors it returns.
+
+
+# Page presets (https://oh-my-webbridge.github.io/en/presets/)
+
+A preset is part of the session configuration. It applies to the task tabs the session owns, including tabs it opens later.
+
+| Mode      | Network                                   | Environment                                 | Use                                               |
+| --------- | ----------------------------------------- | ------------------------------------------- | ------------------------------------------------- |
+| `anti-ad` | Bundled filter lists                      | Optional, off by default                    | Ordinary task pages                               |
+| `zen`     | `anti-ad` plus resource type restrictions | Optional, skipped when `zen` blocks scripts | Static or archive pages, bulk reading             |
+| `none`    | No preset interception                    | Off                                         | Pages a preset breaks, or a run without filtering |
+
+<Tabs items={["anti-ad", "none"]}>
+  <Tab value="anti-ad">
+    <Demo
+      name="presets"
+      still
+      alt="A news front page in a task tab with the anti-ad preset: the stories fill the page and the ad slots are gone."
+    />
+  </Tab>
+  <Tab value="none">
+    <Demo
+      name="presets-none"
+      still
+      alt="The same news front page with the preset set to none: a leaderboard, a sidebar box and an in-feed box show ads."
+    />
+  </Tab>
+</Tabs>
+
+## Set a preset [#set-a-preset]
+
+```js
+const browser = await connect("archive");
+
+await browser.preset("anti-ad", { environment: true });
+await browser.navigate("https://example.com");
+
+const status = await browser.call("preset", { cmd: "status" });
+console.log(status);
+```
+
+`preset` stores the configuration for the session and applies it to the tabs the session owns. `navigate` accepts the same `preset`, `zen` and `environment` fields. It stores them once the navigation starts. From the command line:
+
+```sh
+omw call archive preset '{"preset":"zen","zen":{"images":true,"fonts":true,"css":false,"javascript":false}}'
+omw call archive preset '{"cmd":"status"}'
+```
+
+A session that has not selected a preset uses `anti-ad`, the default for new task tabs.
+
+## anti-ad [#anti-ad]
+
+The lists are compiled into the extension at build time. `pnpm run filters:update` downloads them and records the URL, SHA-256 value, date and original notices in `third_party/filters/sources.lock.json`. The extension does not fetch rules or updates from a third-party server, and it works offline.
+
+Included lists:
+
+- AdGuard Base, with the EasyList duplicates removed, and AdGuard Tracking Protection
+- EasyList and EasyPrivacy
+- The enabled, non-regional default lists of uBlock Origin: filters, badware, privacy, unbreak, quick fixes, URLHaus and Peter Lowe
+
+Regional lists and annoyance lists are not included. Packaged uBO scriptlets and redirect resources come from Ghostery's pinned copy.
+
+The engine implements request blocking and exceptions. Redirects, response body and HTML rewriting, CSP directives and procedural cosmetics are not implemented. A page can therefore render differently than it does under uBlock Origin or AdGuard with the same lists.
+
+## zen [#zen]
+
+`zen` adds resource type blocking to `anti-ad`. Each switch is a boolean, and `true` blocks that resource type.
+
+| Switch       | Blocks                       | Default |
+| ------------ | ---------------------------- | ------- |
+| `images`     | Image and image set requests | `true`  |
+| `fonts`      | Font requests                | `true`  |
+| `css`        | Stylesheet requests          | `false` |
+| `javascript` | Script requests              | `false` |
+
+`javascript: true` also stops inline scripts and event handler attributes. In Chrome, script execution is disabled through CDP. In Firefox, the extension adds `Content-Security-Policy: script-src 'none'` to the document and iframe responses of the tab. `<noscript>` content then does not render, because the browser still reports scripting as enabled.
+
+The restrictions cover network requests. Inline and data images, inline CSS and installed service worker caches are not affected. A site that needs stylesheets or scripts breaks under these switches. Select `none` or relax a switch and navigate again.
+
+## environment [#environment]
+
+`environment: true` adds cosmetics and scriptlets from the bundled lists, guarded by the document hostname. It is off by default, and skipped in `zen` while `javascript` is on.
+
+Registration happens before the target document loads, so the setting applies to the next document the tab shows. It does not alter a page that is already loaded. Navigate again. A cross-host redirect or an iframe from another host receives network filtering only, because the guard never injects a different host's rules.
+
+Environment injection is not anti-bot fingerprint spoofing. A scriptlet that fails to parse or throws affects only itself. Status reports installation, not successful execution of every scriptlet. In Firefox, `environment: true` is accepted but reported as `environmentState: "unavailable"`, and network filtering continues.
+
+## none [#none]
+
+`none` removes interception from task tabs. A raw CDP Fetch handler installed through `cdp` conflicts with a preset request handler on the same tab. Select `none` first.
+
+## Borrowed tabs [#borrowed-tabs]
+
+Presets apply only to tabs the session owns. A borrowed tab is never filtered, and it keeps no preset state for the session that borrowed it. Preset options on a navigation that targets a borrowed tab return `borrowed_tab`.
+
+## Status [#status]
+
+`preset {cmd:"status"}` reads the current tab and returns:
+
+- the configuration: `name`, `environment`, `images`, `fonts`, `css`, `javascript`
+- `blocked` and `allowed` request counts since the preset was installed
+- `network`, whether interception is active on the tab
+- `environmentState`: `off`, `active` or `unavailable`
+- `fallback`, up to 8 reasons, each cut to 300 characters
+
+Any other `cmd` value returns `invalid_args`. A configuration call returns `config`, a status entry for each task tab, `appliesOn` and `borrowedTabsExcluded`. `appliesOn` is `immediate; environment on next navigation` in Chrome.
+
+## Costs and limits [#costs-and-limits]
+
+- Matching runs in the extension background, in one filter engine shared by every tab. Requests are not sent to the daemon.
+- Engine data is released 30 seconds after the last filtered tab stops filtering. The next preset loads it again.
+- Network and script restrictions apply to existing task tabs and frames immediately. Environment registration applies to the next document.
+- Reconfiguring a tab disables interception on every target of the tab first, so page requests continue while a busy frame delays the rest. Installing the new preset needs the current document to answer. Use `close_session` to recover an unresponsive page.
+- Navigating a task tab whose preset did not change keeps the interception and sends no reconfiguration commands. With `environment` off, status counters continue across the navigation.
+- If the lists fail to load, requests pass unfiltered and status keeps the reason. `zen` type blocking still applies.
+- Chrome intercepts at most 128 targets per tab. Additional frames fail open and status records the reason. Firefox has no per-tab target limit.
+- When Chrome restarts the extension worker, status reports `none` for existing tabs until a controlled navigation reapplies the stored session configuration. No site action is retried.
+- `pnpm run filters:update` downloads the upstream lists, updates the gzip files and `sources.lock.json`, and fails on a download error or an invalid response. The build fails on an integrity mismatch between a list and its recorded SHA-256.
+
+## Firefox [#firefox]
+
+The Firefox build uses the same modes, lists and session settings. Network filtering runs in blocking `webRequest` listeners, environment injection is unavailable, and a blocked top-level page keeps the tab on its current page. [Firefox](https://oh-my-webbridge.github.io/en/firefox/#presets) covers the differences.
+
+
+# Actions (https://oh-my-webbridge.github.io/en/reference/actions/)
+
+Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/en/reference/cli/) and [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/)).
+
+## Requests [#requests]
+
+| Field       | Type   | Meaning                                                                                                            |
+| ----------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| `session`   | string | Session name, 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. Required.                                  |
+| `action`    | string | Action name from the tables below. Required.                                                                       |
+| `args`      | object | Action arguments. Defaults to `{}`.                                                                                |
+| `timeoutMs` | number | Deadline in milliseconds, 1 to 120000, default 30000. It covers queueing and execution.                            |
+| `browser`   | string | `chrome` or `firefox`. Omit to use the browser already bound to the session, or the only connected one, or Chrome. |
+
+The body is one JSON object of at most 2 MiB with no unknown fields. A session name that repeats a binding is routed by the rules on [Sessions and tabs](https://oh-my-webbridge.github.io/en/sessions/).
+
+```json
+{
+  "session": "research",
+  "action": "navigate",
+  "args": { "url": "https://example.com", "group_title": "Research" },
+  "timeoutMs": 30000
+}
+```
+
+A successful call returns the daemon-assigned id and the action result:
+
+```json
+{
+  "id": "8f3c1a7d2b6e4c5a9f01d3b7e2c4a680",
+  "result": { "success": true, "tabId": 412, "url": "https://example.com/" }
+}
+```
+
+A failed call returns the id and a fault instead of a result, with an HTTP status from the [Errors](#errors) table:
+
+```json
+{
+  "id": "8f3c1a7d2b6e4c5a9f01d3b7e2c4a680",
+  "error": { "code": "stale_ref", "message": "element reference expired; take a fresh snapshot" }
+}
+```
+
+Page actions run in the session's current tab. Pass `tabId` (or `tab`) to address another tab the session holds without switching to it.
+
+## Navigation and tabs [#navigation-and-tabs]
+
+| Action          | Arguments                                     | Notes                                                                                                                               |
+| --------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `navigate`      | `url`, `newTab`, `group_title`, preset fields | Opens a background task tab unless the session already has a current tab or `newTab` is set. URLs must be HTTP(S) or `about:blank`. |
+| `find_tab`      | `url` (exact URL or hostname), `active`       | Claims an existing tab for the session. `active: true` borrows the browser's active tab. Returns `tabId`, `url`, `borrowed`.        |
+| `list_tabs`     | none                                          | Lists the tabs this session owns or borrowed, with `tabId`, `url`, `title`, `active`, `borrowed`, `groupTitle`.                     |
+| `switch_tab`    | `tabId`                                       | Makes the tab current. A discarded tab is reloaded first; the result reports `revived`.                                             |
+| `window_new`    | `url`, preset fields                          | Opens a separate window, claims its tab, and returns `tabId` and `windowId`.                                                        |
+| `close_tab`     | `tabId`                                       | Closes a tab the session created. Borrowed tabs are not closed.                                                                     |
+| `close_session` | none                                          | Closes task tabs, releases borrowed ones and drops the browser binding. Returns the number of closed tabs.                          |
+| `history`       | `cmd`: `list`, `back`, `forward`, `reload`    | `list` returns the navigation entries. Every `history` call drops the tab's references and frame selection.                         |
+
+A session holds at most 32 tabs across task and borrowed ones.
+
+## Reading [#reading]
+
+| Action          | Arguments                                               | Notes                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `snapshot`      | `interactive`, `maxDepth`                               | Accessibility tree with `@e` references, plus `url`, `title`, `truncated`. Depth is capped at 64. Output stops at 4000 nodes or 192000 characters.                       |
+| `find`          | `query`, snapshot fields                                | Case-insensitive search over snapshot lines. At most 100 matches.                                                                                                        |
+| `read_page`     | none                                                    | `url`, `title` and the first 192000 characters of `document.body.innerText`.                                                                                             |
+| `evaluate`      | `code`, `contextId`                                     | Runs an expression and returns `{ type: "value", value }`. Use an async IIFE for `await`.                                                                                |
+| `get`           | `selector`, `property`, `attribute`                     | `text`, `html`, `value`, `attr`, `count`, `box`, `styles`, `title`, `url`.                                                                                               |
+| `is`            | `selector`, `property`                                  | `visible`, `enabled`, `checked`, `editable`. Returns a boolean `value`.                                                                                                  |
+| `locate`        | `by`, `value`, `name`, `nth`, `cmd`, `text`, `property` | Builds a selector from `by` (`role`, `text`, `label`, `placeholder`, `alt`, `title`, `testid`, `css`, `xpath`) and runs `cmd`, an element action that defaults to `get`. |
+| `dialog_status` | none                                                    | Returns the pending JavaScript dialog as `dialog`, or `null`.                                                                                                            |
+
+## Input [#input]
+
+| Action                             | Arguments                                                          | Notes                                                                                                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `click`, `dblclick`, `mouse_click` | `selector` or `x` and `y`, `button`                                | Dispatches mouse events at the element center.                                                                                                                                |
+| `hover`                            | `selector`                                                         | Moves the pointer to the element.                                                                                                                                             |
+| `fill`                             | `selector`, `value`                                                | Replaces the content of an input, textarea or contenteditable element. An empty `value` clears it.                                                                            |
+| `key_type`                         | `text`, `selector`                                                 | Inserts text at the focused element, or focuses `selector` first.                                                                                                             |
+| `send_keys`                        | `keys`                                                             | One key or a chord such as `Control+A` or `Meta+A`. Named keys include `Enter`, `Tab`, `Escape`, `Backspace`, `Delete`, arrows, `Home`, `End`, `PageUp`, `PageDown`, `Space`. |
+| `keyboard`                         | `cmd`: `down`, `up`, `insertText`; `key`, `text`                   | Lower-level key control for held modifiers.                                                                                                                                   |
+| `mouse`                            | `cmd`: `move`, `down`, `up`, `wheel`; `x`, `y`, `button`, `amount` | Raw pointer control.                                                                                                                                                          |
+| `scroll`                           | `selector`, or `direction`, `amount`, `x`, `y`                     | With a selector, scrolls it to the middle. Otherwise wheels by `amount` (0 to 100000, default 600) in `up`, `down`, `left` or `right`.                                        |
+| `select_option`                    | `selector`, `value`                                                | Matches an option by value or by visible text, then fires `input` and `change`.                                                                                               |
+| `drag`                             | `from`, `to`                                                       | Presses at `from`, moves in ten steps and releases at `to`.                                                                                                                   |
+| `focus`, `check`, `uncheck`        | `selector`                                                         | `check` and `uncheck` read the current state first and verify the result; repeating them does not toggle. Radios support `check` only.                                        |
+| `dialog`                           | `accept`, `promptText`                                             | Answers the pending dialog. `accept` defaults to `false`.                                                                                                                     |
+
+## Waiting [#waiting]
+
+`wait` returns as soon as the condition holds, polling every 75 ms until the request deadline. Set one of its fields.
+
+| Field        | Meaning                                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `selector`   | The first match exists, has a box and is not `visibility: hidden`.                                          |
+| `text`       | `document.body.innerText` contains the string.                                                              |
+| `url`        | The current URL matches. `*` matches any run of characters.                                                 |
+| `expression` | The JavaScript expression is truthy.                                                                        |
+| `load`       | `load` waits for `readyState === "complete"`; `domcontentloaded` waits for the document to leave `loading`. |
+| `state`      | `visible` (default) or `hidden`, which inverts the condition.                                               |
+
+## Frames [#frames]
+
+| Action or argument                                                          | Meaning                                                                         |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `frame {"cmd": "list"}`                                                     | Lists frames with `id`, `name` and `url`, including cross-process child frames. |
+| `frame {"selector": "iframe#panel"}`                                        | Selects the frame that holds the matching iframe element.                       |
+| `frame {"frameId": "..."}`, `frame {"name": "..."}`, `frame {"url": "..."}` | Selects by id, name or exact URL.                                               |
+| `frame {"cmd": "main"}`                                                     | Returns to the main frame and drops the frame's references.                     |
+
+While a frame is selected, page actions run in it. Selecting a frame drops the previous references and requires a new snapshot.
+
+## Files and capture [#files-and-capture]
+
+| Action        | Arguments                                                                                                                           | Notes                                                                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `screenshot`  | `format` (`png`, `jpeg`), `quality` (0 to 100), `selector`, `fullPage`, `path`                                                      | Returns `path`, `sizeBytes` and `mimeType`. Without `path` the file goes under the daemon's artifacts directory. An existing path is rejected. |
+| `save_as_pdf` | `paper_format` (default `letter`; also `legal`, `a4`, `a3`, `tabloid`), `landscape`, `scale` (0.1 to 2), `print_background`, `path` | Streams the PDF to disk in chunks and returns `path`, `sizeBytes`, `mimeType` and `pageTitle`. Chrome only.                                    |
+| `upload`      | `selector`, `files`                                                                                                                 | Absolute paths on the machine running the browser. The daemon inlines file contents for Firefox: 16 MiB per command and 64 MiB in flight.      |
+| `download`    | `url` (HTTP(S)), `filename`                                                                                                         | Returns `path`, `sizeBytes`, `mimeType` and `id` on the browser's host. A cancel or timeout interrupts the download.                           |
+
+A screenshot whose encoded result exceeds 32 MiB fails with `result_too_large`.
+
+## Network, console, storage and cookies [#network-console-storage-and-cookies]
+
+| Action    | Arguments                                                                                    | Notes                                                                                                     |
+| --------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `network` | `cmd`: `start`, `stop`, `list`, `detail`; `filter`, `requestId`                              | Keeps the last 500 requests per tab. `filter` is a URL substring. `detail` returns the response body.     |
+| `console` | `cmd`: `start`, `list`, `clear`, `stop`                                                      | Stores up to 200 entries per tab, each truncated to 8192 characters.                                      |
+| `storage` | `cmd`: `list`, `get`, `set`, `remove`, `clear`; `kind` (`local`, `session`), `name`, `value` | Reads and writes the current origin only. Returns `origin`, `kind` and either `value` or the whole store. |
+| `cookies` | `cmd`: `list`, `set`, `delete`, `clear`; `data`, `name`                                      | Scoped to the current URL. `set` passes `data` through to the cookie fields.                              |
+
+## Emulation [#emulation]
+
+| Field                         | Meaning                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `width`, `height`             | Viewport in CSS pixels, 1 to 16384 each. Both are required to change the device metrics. |
+| `deviceScaleFactor`, `mobile` | Device pixel ratio and mobile flag for the metrics override.                             |
+| `colorScheme`                 | `dark` or `light` for `prefers-color-scheme`.                                            |
+| `latitude`, `longitude`       | Geolocation. Both are required together.                                                 |
+| `offline`                     | Takes the page offline or back online.                                                   |
+| `data`                        | Extra HTTP headers: at most 128 string values and 32 KiB, without CR or LF.              |
+
+Settings persist for the session and apply to new tabs before they navigate.
+
+## Batch [#batch]
+
+`batch` takes `steps`, an array of `{ action, args }` objects, 1 to 64 entries. Steps run in order in one request and stop at the first error. Completed steps are not rolled back. `batch`, `close_session`, `screenshot`, `save_as_pdf`, `artifact_read` and `artifact_close` cannot appear inside a batch.
+
+## Presets [#presets]
+
+| Field         | Meaning                                                                    |
+| ------------- | -------------------------------------------------------------------------- |
+| `preset`      | `anti-ad` (default), `zen` or `none`.                                      |
+| `environment` | Installs bundled cosmetics and scriptlets. Applies from the next document. |
+| `zen`         | `images`, `fonts`, `css`, `javascript`. `true` blocks that resource type.  |
+| `cmd`         | `status` reads the tab's counters, interception and fallback reasons.      |
+
+The configuration is stored on the session and applied to task tabs. Borrowed tabs are excluded. `navigate` accepts the same fields and stores them once the navigation starts. See [Page presets](https://oh-my-webbridge.github.io/en/presets/).
+
+## CDP [#cdp]
+
+`cdp` sends one Chrome DevTools Protocol command to the tab: `method`, `params`, and an optional `sessionId` for a child target. It returns the protocol result unchanged.
+
+Two methods change the bridge's own state. `Runtime.disable` ends the frame selection of its session, and `Page.disable` without a session id invalidates the tab's `@e` references; the next snapshot or navigation re-enables the events.
+
+The daemon uses `cdp_attach`, `cdp_detach`, `artifact_read`, `artifact_close` and `list_targets` internally. Do not send them yourself.
+
+## Selectors [#selectors]
+
+Every action that takes `selector` accepts these forms.
+
+| Form                             | Example                              | Matching                                                                                        |
+| -------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| CSS                              | `button[type=submit]`, `css=.card a` | Selector query. Also searches open shadow roots.                                                |
+| `@e` reference                   | `@e<generation>.<index>`             | A node from the latest `snapshot`.                                                              |
+| `role=`                          | `role=button[name="Submit"]`         | Accessibility role and optional name. The name is a JSON string and matches exactly.            |
+| `text=`                          | `text=Sign in`, `text="Sign in"`     | Rendered text. Unquoted values match a case-insensitive substring; quoted values match exactly. |
+| `label=`                         | `label=Email`                        | The associated label text or `aria-label`.                                                      |
+| `placeholder=`, `alt=`, `title=` | `placeholder=Search`                 | The matching attribute.                                                                         |
+| `testid=`                        | `testid=search`                      | The `data-testid` attribute.                                                                    |
+| `xpath=`                         | `xpath=//table//a`                   | XPath in the current document only. Shadow roots are not traversed.                             |
+
+Append ` >>nth=0` to take the first match or ` >>nth=-1` to take the last. Text, CSS and attribute locators traverse open shadow roots. Closed shadow roots stay invisible to them.
+
+## Reference lifetime [#reference-lifetime]
+
+`@e` references belong to one document generation. In Chrome, a new snapshot, a frame selection, a new main document (navigation or reload) or a change of the tab's URL invalidates them. A snapshot taken inside a selected frame also expires when that frame navigates, reloads, is removed, or the selection ends. Other iframes loading or navigating leave it valid. In Firefox, references live in the document that produced them; see [Firefox](https://oh-my-webbridge.github.io/en/firefox/).
+
+## Errors [#errors]
+
+Every fault carries `code` and `message`. The HTTP status is shown below; a code not listed here returns 502.
+
+| Code                    | HTTP | Meaning                                                                                                                                                                   | What to do                                                                                             |
+| ----------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `invalid_request`       | 400  | The body was rejected: an unknown field, a missing action or session, a session name outside the allowed characters, a bad `browser`, or `timeoutMs` outside 1 to 120000. | Fix the JSON. The message names the field.                                                             |
+| `invalid_args`          | 400  | An argument is missing, has the wrong type, or is outside its range.                                                                                                      | Read the message; it names the action and argument.                                                    |
+| `unsupported`           | 501  | The action or one of its arguments does not exist in the target browser.                                                                                                  | Do not retry. Use another action, or a Chrome session.                                                 |
+| `busy`                  | 429  | A capacity limit is full: command slots, 32 tabs per session, 128 sessions per browser, the Firefox upload budget, or two concurrent artifact jobs.                       | Reduce concurrency and retry after earlier commands finish.                                            |
+| `browser_offline`       | 503  | The target browser has no extension connection, including a session bound to a browser that is not connected.                                                             | Check `omw doctor` and the extension, or continue in a new session.                                    |
+| `session_browser`       | 409  | The session is bound to the other browser and the request named this one.                                                                                                 | Drop `browser`, or close the session and start a new one.                                              |
+| `outcome_unknown`       | 504  | The command may have run: the deadline, a transport write or a disconnect cut off the reply.                                                                              | Observe the page or network state before repeating. Never replay a submit, payment or publish blindly. |
+| `tab_busy`              | 409  | The tab belongs to another session.                                                                                                                                       | Use a tab this session holds, or another session.                                                      |
+| `stale_ref`             | 409  | An `@e` reference outlived its document.                                                                                                                                  | Take a new `snapshot`.                                                                                 |
+| `no_tab`                | 502  | A page action ran before the session had a tab.                                                                                                                           | Run `navigate` or `find_tab` first.                                                                    |
+| `tab_missing`           | 502  | `find_tab` matched no tab.                                                                                                                                                | Open the page in this session first, or pass `active: true` to borrow the browser's active tab.        |
+| `restricted_tab`        | 502  | The tab is not a normal, non-incognito HTTP(S) page.                                                                                                                      | Navigate to an HTTP(S) page. Browser-internal pages are not scriptable.                                |
+| `borrowed_tab`          | 502  | The action needs a tab the session created: closing it, or applying a preset to a borrowed tab.                                                                           | Open a task tab with `navigate`.                                                                       |
+| `element_missing`       | 502  | The selector matched nothing.                                                                                                                                             | Check the selector, or take a new snapshot.                                                            |
+| `element_hidden`        | 502  | The element has no box, so it has no center to click.                                                                                                                     | Scroll it into view or wait for it to render.                                                          |
+| `element_action_failed` | 502  | The page refused the operation, such as filling a non-editable element or selecting an option that does not exist.                                                        | Inspect with `get` or `is` and adjust the action.                                                      |
+| `state_mismatch`        | 502  | `check` or `uncheck` left the control in the wrong state.                                                                                                                 | Re-read it with `is`, then retry or click it instead.                                                  |
+| `evaluation_failed`     | 502  | `evaluate` threw, or an internal page script did.                                                                                                                         | Fix the expression. The message carries the page exception.                                            |
+| `frame_missing`         | 502  | `frame` found no frame for the given selector, id, name or URL.                                                                                                           | List frames with `frame {"cmd":"list"}` and select one.                                                |
+| `frame_unavailable`     | 502  | The selected frame was replaced, removed or lost its execution context.                                                                                                   | Later commands use the main frame; select the frame again if the work continues there.                 |
+| `history_missing`       | 502  | `history back` or `forward` has no entry in that direction.                                                                                                               | Read `history {"cmd":"list"}` first.                                                                   |
+| `request_missing`       | 502  | No network record exists for the request, or it was evicted.                                                                                                              | Start recording, reproduce, then read `list`.                                                          |
+| `request_pending`       | 502  | The response body is not complete yet.                                                                                                                                    | Wait for `complete: true` in `list`, then retry `detail`.                                              |
+| `request_failed`        | 502  | The request itself failed.                                                                                                                                                | Read the error text on the entry.                                                                      |
+| `download_missing`      | 502  | The browser does not list the download.                                                                                                                                   | Retry the `download`.                                                                                  |
+| `download_failed`       | 502  | The browser interrupted the download.                                                                                                                                     | Read the message and retry.                                                                            |
+| `window_failed`         | 502  | The new window had no tab.                                                                                                                                                | Retry `window_new`.                                                                                    |
+| `result_too_large`      | 502  | A result exceeded 32 MiB on the wire, or a network body exceeded 2 Mi characters in Chrome or 1 MiB in Firefox.                                                           | Narrow the result: use `selector` or `jpeg` for screenshots, and read smaller pieces.                  |
+| `debugger_unavailable`  | 502  | Chrome refused the debugger attach, for example because DevTools is open or policy blocks it.                                                                             | Close DevTools for that tab and retry.                                                                 |
+| `browser_error`         | 502  | The extension reported an error without a code.                                                                                                                           | Read the message, retry once, then report it.                                                          |
+| `internal`              | 502  | A daemon-side failure, such as encoding a request.                                                                                                                        | Retry. If it persists, restart the daemon.                                                             |
+
+
+# CDP (https://oh-my-webbridge.github.io/en/reference/cdp/)
+
+The daemon exposes Chrome DevTools Protocol in two modes at `127.0.0.1:17373`, the same address and port as the rest of its API:
+
+- **Extension mode** serves page targets through `chrome.debugger` in the Chrome extension. It needs a paired Chrome extension and works with the browser profile you already have open.
+- **Native mode** is a WebSocket proxy to a Chrome browser endpoint you start with remote debugging. It is enabled with `omw serve --cdp`.
+
+Every request needs `Authorization: Bearer <token>`, including WebSocket upgrades. Get the token with `omw connection`. The `Host` header must be `127.0.0.1`. Requests that carry a web `Origin` are rejected with 403.
+
+## Endpoints in extension mode [#endpoints-in-extension-mode]
+
+| Endpoint                 | Method    | Reply                                             |
+| ------------------------ | --------- | ------------------------------------------------- |
+| `/json`, `/json/list`    | GET       | The open page targets, as a JSON array.           |
+| `/json/version`          | GET       | A version object without a browser WebSocket URL. |
+| `/devtools/page/{tabId}` | WebSocket | One CDP session for one tab.                      |
+
+When only the Firefox extension is connected, these endpoints answer HTTP 501 with the error code `unsupported`. When no browser is connected, `/json` and `/json/list` answer HTTP 503, while `/json/version` still returns its object.
+
+### /json/list [#jsonlist]
+
+```sh
+TOKEN=$(omw connection | sed -E 's/.*"token":"([^"]+)".*/\1/')
+curl -s -H "Authorization: Bearer $TOKEN" http://127.0.0.1:17373/json/list
+```
+
+```json
+[
+  {
+    "id": "123456789",
+    "type": "page",
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:17373/devtools/page/123456789"
+  }
+]
+```
+
+`id` is the tab id. The list covers non-incognito HTTP(S) and `about:blank` tabs that belong to sessions and tabs you opened, because the extension can attach to both.
+
+### /json/version [#jsonversion]
+
+```json
+{
+  "Browser": "oh-my-webbridge/0.2.0",
+  "Protocol-Version": "1.3",
+  "User-Agent": "oh-my-webbridge",
+  "transport": "chrome.debugger (page targets only)"
+}
+```
+
+The object has no `webSocketDebuggerUrl`, so a client that discovers targets through `/json/version` finds none in this mode.
+
+## Page connections [#page-connections]
+
+Connect to `ws://127.0.0.1:17373/devtools/page/{tabId}` with the Bearer header on the upgrade request. Before the WebSocket is accepted, the daemon asks the extension to attach to that tab.
+
+- A tab another session is using answers HTTP 409 and is not taken over.
+- The tab is released when the client disconnects, when the tab closes, when the debugger detaches, and when the daemon stops or the extension pauses or disconnects. Clients can reconnect afterwards.
+- Events for the tab are subscribed before the attach starts, so events that arrive before the attach reply are still forwarded.
+
+Messages use the CDP shape. Commands need `id` and `method`:
+
+```json
+{ "id": 1, "method": "Page.navigate", "params": { "url": "https://example.com/" } }
+```
+
+A reply carries `result`, or an error object with code `-32000`:
+
+```json
+{ "id": 1, "error": { "code": -32000, "message": "..." } }
+```
+
+Events carry `method`, `params` and, when the event belongs to a child target, `sessionId`. Replies can arrive out of order; the original ids are preserved.
+
+Limits on one page connection:
+
+| Limit                | Value      |
+| -------------------- | ---------- |
+| Commands in flight   | 32         |
+| Deadline per command | 30 seconds |
+| Message size         | 32 MiB     |
+
+An event larger than 32 MiB is not forwarded. The bridge emits `Inspector.detached` for that tab and closes the connection. The daemon also closes the connection for an event whose parameters exceed 256 KiB. A client that cannot keep up with the event stream is disconnected rather than silently losing events.
+
+When the page reports `Inspector.detached` without a `sessionId`, the daemon forwards it and closes the WebSocket, which matches the behavior of Chrome's own page endpoint.
+
+## The cdp action [#the-cdp-action]
+
+The `cdp` action sends one protocol command on the session's current tab, attaching the tab if needed. It is the same transport as a page connection, without the WebSocket.
+
+```sh
+omw call research cdp '{"method":"Page.navigate","params":{"url":"https://example.com/"}}'
+```
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("research");
+const { frameTree } = await task.cdp("Page.getFrameTree");
+```
+
+| Argument    | Type     | Meaning                                                                                                                                               |
+| ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `method`    | `string` | Protocol method, for example `Page.navigate`.                                                                                                         |
+| `params`    | `object` | Method parameters. Defaults to `{}`.                                                                                                                  |
+| `sessionId` | `string` | Child target session, for a flat session opened by `Target.attachToTarget` with `flatten: true`. Omitted, the command goes to the tab's root session. |
+
+The action is available in Chrome only. Firefox answers `unsupported` with HTTP 501 and the message `cdp is not available in Firefox: Firefox has no Chrome DevTools Protocol`.
+
+Two methods interact with the rest of the bridge:
+
+- `Page.disable` on the root session clears the `@e` references of that tab. The next `snapshot` or `navigate` enables Page events again.
+- `Runtime.disable` ends the frame selection of that session. Later commands run in the main frame until `frame` selects one again.
+
+## Native mode [#native-mode]
+
+```sh
+omw serve --cdp ws://127.0.0.1:9222/devtools/browser/8b0d3f7c-...
+```
+
+The URL must start with `ws://` or `wss://` and include a host. Otherwise the daemon refuses to start. Start Chrome with `--remote-debugging-port=9222` to get that URL from `http://127.0.0.1:9222/json/version`.
+
+In native mode, `/json/version` adds the browser WebSocket URL and reports the other transport:
+
+```json
+{
+  "Browser": "oh-my-webbridge/0.2.0",
+  "Protocol-Version": "1.3",
+  "User-Agent": "oh-my-webbridge",
+  "transport": "native CDP passthrough",
+  "webSocketDebuggerUrl": "ws://127.0.0.1:17373/devtools/browser"
+}
+```
+
+`/devtools/browser` opens a WebSocket to that URL and copies frames in both directions, so every CDP domain and every browser-level target is available. It answers HTTP 503 while native mode is not configured (501 while only the Firefox extension is connected), and HTTP 502 when the configured endpoint cannot be reached. The upstream dial has a 10 second timeout.
+
+Playwright can connect to the proxy:
+
+```js
+import { chromium } from "playwright-core";
+
+const browser = await chromium.connectOverCDP("http://127.0.0.1:17373", {
+  headers: { Authorization: `Bearer ${process.env.OMW_TOKEN}` },
+});
+```
+
+Set `OMW_TOKEN` to the `token` value from `omw connection`. Playwright reads `/json/version` and uses the `webSocketDebuggerUrl` it finds.
+
+Native mode does not replace extension mode. `/json/list` still lists targets through the Chrome extension, so without the Chrome extension it answers HTTP 503 (501 while only the Firefox extension is connected) even when the proxy works.
+
+## Limits [#limits]
+
+- Extension mode carries page targets only. The browser target endpoint is not available, and the domains Chrome allows to `chrome.debugger` are a subset of the full protocol. See the [`chrome.debugger` reference](https://developer.chrome.com/docs/extensions/reference/api/debugger) for that list.
+- Native mode forwards whatever the configured endpoint accepts; the daemon does not filter domains or methods.
+- Chrome does not accept `--remote-debugging-port` together with the default profile directory in current versions. Point it at a separate user data directory; see [remote debugging](https://developer.chrome.com/blog/remote-debugging-port).
+- CDP replies, events and the `cdp` action's result share the 32 MiB message limit of the rest of the bridge. The action's arguments, like any `/command` body, are limited to 2 MiB.
+
+
+# CLI (https://oh-my-webbridge.github.io/en/reference/cli/)
+
+`omw` is the Go daemon and its command line client. It listens on `127.0.0.1:17373` and has no option to bind another address or a network interface. `serve` and `start` run the daemon. `stop`, `status`, `doctor`, `pair` and `call` need one already running. `connection`, `skill`, `install-skill`, `service install`, `version` and `help` work without it.
+
+| Command               | Purpose                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| `omw serve`           | Run the daemon in the foreground.                           |
+| `omw start`           | Start a background daemon; safe to run when one is running. |
+| `omw stop`            | Stop the daemon and leave tabs open.                        |
+| `omw status`          | Print the daemon status and one line per browser.           |
+| `omw doctor`          | Same as `status`, plus the configuration path.              |
+| `omw pair`            | Print a pairing code for a browser extension.               |
+| `omw connection`      | Print the endpoint, token and protocol version.             |
+| `omw call`            | Send one action to a session.                               |
+| `omw service install` | Install a launchd or systemd user service.                  |
+| `omw install-skill`   | Write the bundled agent guide below a directory.            |
+| `omw skill`           | Print the bundled agent guide.                              |
+| `omw version`         | Print the daemon version.                                   |
+| `omw help`            | Print the command list.                                     |
+
+Every command exits with status 0 on success. On failure it prints `omw: ` and the error to stderr, then exits with status 1.
+
+## serve [#serve]
+
+```sh
+omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
+```
+
+Runs the daemon in the foreground until SIGINT or SIGTERM. The listener is fixed at `127.0.0.1:17373`. If `config.json` names another address, the daemon refuses to start.
+
+`--cdp` points the daemon at a Chrome browser endpoint already running with remote debugging. The URL must start with `ws://` or `wss://` and carry a host. With this flag, `/devtools/browser` proxies that endpoint; see [CDP](https://oh-my-webbridge.github.io/en/reference/cdp/#native-mode).
+
+The endpoint is not written to `config.json`. A `cdp` field already present in that file is read at startup, and the flag replaces it for that process.
+
+## start [#start]
+
+```sh
+omw start
+```
+
+Starts `omw serve` in a new session, detached from the terminal, with `OMW_HOME` set to the configuration directory. Output goes to `daemon.log` in that directory. The file is emptied on every start. The command waits about two seconds for the daemon to answer `/status`.
+
+It prints `started` on success and `already running` when the daemon answers on the port. When another process holds the port, or the token does not match, it reports a port or credential mismatch and exits with status 1. When the new daemon does not answer in that window, it prints the contents of `daemon.log`.
+
+## stop [#stop]
+
+```sh
+omw stop
+```
+
+Sends `POST /shutdown` and prints the reply, `{"stopping":true}`. Tabs that sessions opened stay open. Bindings in `bindings.json` are kept.
+
+## status and doctor [#status-and-doctor]
+
+```sh
+omw status
+omw doctor
+```
+
+Both print the daemon's `/status` JSON to stdout and one line per browser to stderr:
+
+```text
+chrome: connected (156.0.8078.80)
+firefox: not connected
+```
+
+`doctor` adds the path of `config.json` to stderr before those lines.
+
+`status` is an authenticated request. Without a running daemon it exits with status 1 and the connection error.
+
+## pair [#pair]
+
+```sh
+omw pair
+```
+
+Asks the daemon for a pairing code and prints it in two groups of three digits:
+
+```text
+Enter this code in the oh-my-webbridge extension:
+
+    482 913
+
+It works once and expires in 5 minutes.
+```
+
+The code is valid for 5 minutes and 5 attempts. The command polls the daemon every 500 ms and prints `Paired with Chrome.` or `Paired with Firefox.` when the extension redeems the code. It exits with status 1 when the code expires. Without a running daemon it prints the hint to run `omw start`.
+
+## connection [#connection]
+
+```sh
+omw connection
+```
+
+Prints one JSON object:
+
+```json
+{
+  "endpoint": "ws://127.0.0.1:17373/extension",
+  "token": "64 hex characters",
+  "protocol": 1
+}
+```
+
+The token is 32 random bytes in hex, the same value that `config.json` holds. It authorizes every request other than `GET /ping` and `POST /pair`, including WebSocket upgrades and CDP connections. Treat it as a secret: do not paste it into issues, logs or pages.
+
+## call [#call]
+
+```sh
+omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
+```
+
+Sends one action to the daemon and prints its JSON reply. The session name is 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. `ACTION` is one of the actions in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/).
+
+The optional third argument is a JSON object with the action arguments. With `-`, the command reads that object from stdin, up to 2 MiB. Without it, the daemon receives `{}`.
+
+```sh
+omw call research navigate '{"url":"https://example.com/"}'
+echo '{"selector":"#submit"}' | omw call --browser firefox form click -
+```
+
+`--browser` sends the action to the named browser. Without it the daemon routes by the session binding, then the only connected browser, then Chrome.
+
+The client waits up to 125 seconds. The daemon applies the command's own deadline, which defaults to 30 seconds. The reply is printed as the daemon sends it. An HTTP status of 400 or above makes the command exit with status 1 after printing the reply.
+
+## service install [#service-install]
+
+```sh
+omw service install
+```
+
+Installs a user service that runs `omw serve` at login, with `OMW_HOME` set to the configuration directory the command used.
+
+| Platform | File                                               | Activation                                                                                     |
+| -------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| macOS    | `~/Library/LaunchAgents/app.oh-my-webbridge.plist` | `launchctl bootstrap gui/$UID`                                                                 |
+| Linux    | `~/.config/systemd/user/oh-my-webbridge.service`   | `systemctl --user daemon-reload`, then `systemctl --user enable --now oh-my-webbridge.service` |
+
+The service keeps the daemon running: `KeepAlive` on macOS, `Restart=on-failure` with a 3 second delay on Linux. Output is discarded on macOS; the systemd unit keeps the default journal.
+
+## install-skill and skill [#install-skill-and-skill]
+
+```sh
+omw install-skill DIRECTORY
+omw skill
+```
+
+`install-skill` writes the bundled agent guide to `DIRECTORY/oh-my-webbridge/SKILL.md` with mode 0600, and creates the directory with mode 0700. It refuses to overwrite an existing file.
+
+`skill` prints the same guide to stdout.
+
+```sh
+omw install-skill ~/.agents/skills
+```
+
+## version and help [#version-and-help]
+
+```sh
+omw version
+omw --version
+omw help
+```
+
+`version` prints the daemon version. `help`, `--help` and a bare `omw` print the command list.
+
+An unknown command prints `omw: unknown command "NAME"; run omw help` and exits with status 1.
+
+## Configuration directory [#configuration-directory]
+
+The directory is resolved in this order:
+
+1. `OMW_HOME`, when set.
+2. macOS: `~/Library/Application Support/oh-my-webbridge`.
+3. Linux: `$XDG_CONFIG_HOME/oh-my-webbridge`, or `~/.config/oh-my-webbridge` when `XDG_CONFIG_HOME` is unset.
+
+The CLI, the daemon, the user service and the [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/) all read the same directory. Every command that reads the configuration creates it with mode 0700 when it is missing.
+
+| File            | Contents                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| `config.json`   | `token` (64 hex characters), `address`, and an optional `cdp` endpoint. Created with mode 0600 on first use. |
+| `bindings.json` | Session to browser bindings, mode 0600, read at startup.                                                     |
+| `daemon.log`    | Output of the daemon started by `omw start`, emptied on every start.                                         |
+| `artifacts/`    | Screenshots and PDFs saved without an explicit `path`.                                                       |
+
+The token in `config.json` is the only credential. Anyone who reads the file can drive the paired browsers, so keep the directory private and do not copy `config.json` between machines.
+
+
+# JavaScript SDK (https://oh-my-webbridge.github.io/en/reference/sdk/)
+
+The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/en/reference/cli/#configuration-directory) and sends actions to `POST /command`.
+
+`connect` returns a task object bound to one session name. The extension opens that session's tabs and tab group on demand, as it does for `omw call`.
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("research");
+await task.navigate("https://example.com/");
+const page = await task.evaluate("({title:document.title,url:location.href})");
+console.log(page.title);
+await task.close();
+```
+
+## connect(session, options) [#connectsession-options]
+
+```ts
+const task = await connect("research", { browser: "firefox" });
+```
+
+| Argument          | Type                    | Meaning                                                                                                                               |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `session`         | `string`                | Session name: 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. Validated by the daemon.                                      |
+| `options.browser` | `"chrome" \| "firefox"` | Sends every command to this browser. Omitted, the daemon routes by the session binding, then the only connected browser, then Chrome. |
+
+`connect` rejects when:
+
+- `config.json` is missing or unreadable. Run `omw start` first; it creates the file.
+- `address` in the file is not `127.0.0.1:17373`; the message is `unsupported daemon address`.
+- `browser` is another string; the message is `unsupported browser: safari`.
+
+The returned object has `session`, `browser` (undefined when no browser was given), and the methods below.
+
+## Task methods [#task-methods]
+
+| Method                            | Sends                | Resolves with                                                                                |
+| --------------------------------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| `call(action, args, options)`     | `action` with `args` | The command result, untyped unless you pass a type argument.                                 |
+| `navigate(url, newTab = false)`   | `navigate`           | `{ success, tabId, url }`                                                                    |
+| `preset(preset, options)`         | `preset`             | `{ config, tabs }` with the state of each task tab. `options` takes `zen` and `environment`. |
+| `snapshot()`                      | `snapshot`           | `{ tree, truncated, url, title }`                                                            |
+| `click(selector)`                 | `click`              | `{ success: true }`                                                                          |
+| `fill(selector, value)`           | `fill`               | `{ success: true }`                                                                          |
+| `evaluate(code)`                  | `evaluate`           | The expression value, not the wrapper object.                                                |
+| `cdp(method, params, sessionId?)` | `cdp`                | The CDP command result.                                                                      |
+| `close()`                         | `close_session`      | `{ success, closed }` with the number of closed tabs.                                        |
+
+`evaluate` runs a JavaScript expression in the page. Wrap asynchronous code in an IIFE:
+
+```js
+const count = await task.evaluate("(async () => (await fetch('/api/count')).text())()");
+```
+
+```js
+const links = await task.evaluate("document.querySelectorAll('a').length");
+```
+
+Selectors accept the forms listed in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/#selectors), including CSS, `@e` references from a snapshot, `role=`, `text=` and `xpath=`.
+
+## call(action, args, options) [#callaction-args-options]
+
+```ts
+const result = await task.call(
+  "get",
+  { selector: "#price", property: "text" },
+  { timeoutMs: 5000 },
+);
+```
+
+| Option      | Type          | Default | Meaning                                                                                    |
+| ----------- | ------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `timeoutMs` | `number`      | `30000` | Deadline for the command, including its time in the queue. The daemon accepts 1 to 120000. |
+| `signal`    | `AbortSignal` | none    | Cancels the request. It is combined with an internal timeout of `timeoutMs + 5000`.        |
+
+The request is aborted locally 5 seconds after the daemon deadline. That gives the daemon time to answer with `outcome_unknown` when the page did not finish.
+
+```js
+const controller = new AbortController();
+setTimeout(() => controller.abort(), 2000);
+try {
+  await task.call("wait", { selector: "#done", state: "visible" }, { signal: controller.signal });
+} catch (error) {
+  console.log(error.name);
+}
+```
+
+## Errors [#errors]
+
+A rejected call is an `Error` with a `code` property. When the daemon answers with a command error, `code` and `message` are the daemon's `error.code` and `error.message`.
+
+```js
+try {
+  await task.click("@e12");
+} catch (error) {
+  if (error.code === "stale_ref") {
+    await task.snapshot();
+  } else {
+    throw error;
+  }
+}
+```
+
+| `code`                                     | Cause                                                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `stale_ref`, `tab_busy`, `session_browser` | The reference expired, another session holds the tab, or the session is bound to another browser. HTTP 409.                          |
+| `browser_offline`                          | The target browser has no connected extension. HTTP 503.                                                                             |
+| `unsupported`                              | The action or argument is not available in that browser. HTTP 501.                                                                   |
+| `busy`                                     | Command capacity is full. HTTP 429. Retry after a running command finishes.                                                          |
+| `outcome_unknown`                          | The command may have taken effect. Read the page before retrying. HTTP 504.                                                          |
+| `invalid_args`, `invalid_request`          | The arguments were rejected before dispatch. HTTP 400.                                                                               |
+| `http_error`                               | The reply was not JSON, so the daemon's error object is missing. The message is `HTTP <status>: <first 200 characters of the body>`. |
+
+The request never reached the command handler when the reply has no JSON content type. Causes: a rejected token, a non-loopback `Host`, a web `Origin`, or another service on port 17373.
+
+An aborted request rejects with an `AbortError` and no daemon fault code. A refused connection rejects with the `fetch` `TypeError`.
+
+The full list of codes and recovery steps is in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/#errors).
+
+## Parallel tasks [#parallel-tasks]
+
+Each session owns its tabs. Give every task its own session name, then start them together with `Promise.all`. The daemon runs the commands concurrently, up to 128 in flight per browser.
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const tasks = [
+  { session: "chrome-docs", url: "https://developer.chrome.com/docs/extensions/" },
+  { session: "go-docs", url: "https://go.dev/doc/" },
+];
+
+const results = await Promise.all(
+  tasks.map(async ({ session, url }) => {
+    const task = await connect(session);
+    try {
+      await task.navigate(url);
+      const page = await task.evaluate("({title:document.title,url:location.href})");
+      return { session, ...page };
+    } finally {
+      await task.close();
+    }
+  }),
+);
+
+console.log(JSON.stringify(results, null, 2));
+```
+
+```json
+[
+  {
+    "session": "chrome-docs",
+    "title": "Chrome Extensions documentation",
+    "url": "https://developer.chrome.com/docs/extensions/"
+  },
+  {
+    "session": "go-docs",
+    "title": "The Go Programming Language",
+    "url": "https://go.dev/doc/"
+  }
+]
+```
+
+Two tasks with the same session name share their tabs and CDP state, so give independent work distinct names.
+
+Closing a task closes the tabs the session opened, releases borrowed tabs and deletes the session binding. When `close` is not called, the tabs stay open and the binding is kept, so a later `connect` with the same name resumes the session.
+
+## Types [#types]
+
+`sdk/index.ts` imports `Args`, `Browser`, `Json` and `Fault` from the extension protocol. `call` accepts a type parameter for the result:
+
+```ts
+const box = await task.call<{ x: number; y: number }>("get", {
+  selector: "#cart",
+  property: "box",
+});
+```
+
+
+# Sessions and tabs (https://oh-my-webbridge.github.io/en/sessions/)
+
+A session is the unit of work in oh-my-webbridge. Every command names a session, and the daemon routes it to the tabs that session holds. Tabs opened by a session sit in a tab group titled with the session name or the title the agent passed, so a task's pages stay together and apart from the pages you use.
+
+<Demo
+  name="activity-read"
+  alt="Session demo reads an article in the tab it opened: the page scrolls from section to section, and the chip in the corner names the session."
+/>
+
+## One session per task [#one-session-per-task]
+
+Give each task its own session name and reuse it for everything the task does. Tasks that run at the same time use different names. Each session keeps its own tabs, tab group, current tab, presets and frame selection. The browser runs commands from different sessions at the same time.
+
+```sh
+omw call research navigate '{"url":"https://example.com/docs","group_title":"Research"}'
+omw call billing navigate '{"url":"https://example.com/pricing","group_title":"Billing"}'
+```
+
+A session starts with its first command. Its name is 1 to 96 letters (including CJK), digits, `_`, `.` or `-`.
+
+## A session stays in one browser [#a-session-stays-in-one-browser]
+
+A session's first command decides the browser it stays in: the browser named by `browser`, the only connected browser, or Chrome when both are connected. Later commands for that session go there, even after the other browser connects. `close_session` removes the binding. A command that asks for the other browser fails with `session_browser`.
+
+## Commands run in arrival order [#commands-run-in-arrival-order]
+
+Each session has one queue. Commands for a session run one at a time, in the order the daemon receives them, so a click that follows a snapshot acts on the page that snapshot described. Sessions do not share a queue, and a page that responds slowly in one session does not hold another session.
+
+`dialog` and `close_session` are answered outside the session queue, so they still reach a tab whose command is waiting. One session can have 32 commands running or waiting at once.
+
+## New tabs open in the background [#new-tabs-open-in-the-background]
+
+`navigate` opens a tab when the session has no current tab or the command sets `newTab`. The tab opens in the background and joins the session's tab group:
+
+```json
+{
+  "session": "research",
+  "action": "navigate",
+  "args": { "url": "https://example.com/docs", "newTab": true, "group_title": "Research" }
+}
+```
+
+- `group_title` sets the title of the group. A navigation that opens a tab can change it; otherwise the current title stays. The default is the session name.
+- The group is created collapsed, so task tabs do not widen the tab strip. Expand it to look at the pages.
+- A later `navigate` without `newTab` reuses the current tab. A session holds at most 32 tabs, task and borrowed together.
+- `list_tabs` returns only the session's tabs, with URL, title, active flag, group title and whether the tab is borrowed.
+
+## Borrowing one of your tabs [#borrowing-one-of-your-tabs]
+
+`find_tab` with `active: true` claims the tab that is active in the last focused window. The URL must match exactly or by hostname:
+
+```sh
+omw call research find_tab '{"url":"example.com","active":true}'
+```
+
+Without `active: true`, `find_tab` only looks at tabs the session already holds. A borrowed tab stays open, and `close_tab` refuses it with `borrowed_tab`. The session uses it and releases it when it ends. One tab belongs to one session at a time, and another session that asks for it gets `tab_busy`. Presets apply only to tabs the session opened. Borrow a tab when the task needs the page you have open; otherwise open a task tab.
+
+## Ending a session [#ending-a-session]
+
+`close_session` cancels the commands still running or waiting for the session, closes the tabs the session opened, and releases the ones it borrowed, which stay open. It removes the session's browser binding and drops what the session recorded on borrowed tabs: frame selection, network entries, console output and `@e` references. Closing a tab yourself removes it from the session; the session ends only with `close_session`.
+
+## Limits [#limits]
+
+| Limit                    | Value                                                     |
+| ------------------------ | --------------------------------------------------------- |
+| Sessions                 | 128 per browser                                           |
+| Tabs per session         | 32, task and borrowed together                            |
+| Commands running at once | 128 per browser; `close_session` and `dialog` use 16 more |
+| Commands per session     | 32 running or waiting                                     |
+| Session name             | 1 to 96 letters (including CJK), digits, `_`, `.` or `-`  |
+| `timeoutMs`              | 1 to 120000, default 30000                                |
+
+When a limit is reached the command fails with `busy` and HTTP 429 instead of waiting. Reduce concurrency, or close sessions that are finished.
+
+## Timeouts and uncertain results [#timeouts-and-uncertain-results]
+
+`timeoutMs` covers the whole request, including time spent waiting in the session queue. When it runs out, or when the browser disconnects in the middle of a command, the call returns `outcome_unknown`. The action may already have reached the page: a click may have happened, a form may be submitted.
+
+<Callout type="warn" title="Retrying after outcome_unknown">
+  Observe the page before reusing a command. `snapshot`, `read_page`, the tab URL, `get` and the
+  network log show what the page did. Send a command again only when the state shows the action did
+  not happen, and never replay a payment, publish or submit automatically.
+</Callout>
+
+## Logins come from your profile [#logins-come-from-your-profile]
+
+Task tabs and borrowed tabs run in your browser profile, with its cookies, sessions and logins. Sessions and tab groups organize tabs, not accounts: every session sees the same logins, and clearing cookies or site storage for one task clears them for the profile. Sign out of a site when the next task should start signed out.

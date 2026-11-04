@@ -1,0 +1,60 @@
+3:"$Sreact.fragment"
+4:"/_next/static/chunks/2rplusqmmiuud.js"
+5:I[29529,["$4"],"default"]
+6:I[8050,["$4"],"default"]
+b:"/_next/static/chunks/1sod20rx4fyyu.js"
+c:"/_next/static/chunks/29hmlgcbwt2yv.js"
+d:"/_next/static/chunks/0mt0q6c-rp1_h.js"
+e:"/_next/static/chunks/17zc7406-s_4s.js"
+f:"/_next/static/chunks/0hqd9x-tyk_gl.js"
+10:"/_next/static/chunks/3mgefmn1b--rj.js"
+11:"/_next/static/chunks/2n-ye_5qkd7ql.js"
+12:"/_next/static/chunks/40ii3lqvvwwi4.js"
+13:"/_next/static/chunks/1a6h9k3z7r200.js"
+14:I[12709,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"DocsPage"]
+15:"GitChangelogLabel"
+16:I[72958,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"$15"]
+17:"MarkdownCopyButton"
+18:I[12709,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"$17"]
+19:"ViewOptionsPopover"
+1a:I[13037,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"$19"]
+1b:I[12709,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"DocsBody"]
+1c:I[94816,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"Demo"]
+1d:I[10255,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"Heading"]
+2c:"ViewportBoundary"
+2d:I[71067,["$4"],"$2c"]
+2e:"MetadataBoundary"
+2f:I[71067,["$4"],"$2e"]
+30:"$Sreact.suspense"
+31:I[47452,["$4"],"IconMark"]
+8:X
+8:C
+9:X
+a:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$3","c",{"children":[["$","$L14",null,{"toc":[{"depth":2,"url":"#toolbar-icon","title":"工具列圖示"},{"depth":2,"url":"#the-popup","title":"彈出式視窗"},{"depth":2,"url":"#on-the-page","title":"在頁面上"},{"depth":2,"url":"#how-it-stays-out-of-the-way","title":"它如何不干擾頁面"},{"depth":2,"url":"#turn-it-off","title":"關閉活動層"},{"title":["$","$L16",null,{"section":"contributors"}],"url":"#git-contributors","depth":2},{"title":["$","$L16",null,{"section":"history"}],"url":"#git-history","depth":2}],"tableOfContent":{"style":"clerk","container":{"role":"navigation","aria-labelledby":"toc-title"}},"breadcrumb":{"enabled":false},"className":"sm:px-6 md:px-8 md:pt-8 xl:pt-8","children":[["$","h1",null,{"className":"text-h1","children":"Agent 活動"}],["$","p",null,{"className":"text-body text-fd-muted-foreground","children":"Agent 控制分頁時，工具列圖示、彈出式視窗與活動層會顯示什麼，以及如何關閉活動層。"}],["$","div",null,{"className":"flex flex-row flex-wrap items-center gap-2 border-b pb-6","children":[["$","$L18",null,{"markdownUrl":"/md/zh-mo/activity/content.md"}],["$","$L1a",null,{"markdownUrl":"/md/zh-mo/activity/content.md","githubUrl":"https://github.com/oh-my-webbridge/oh-my-webbridge/blob/main/docs/content/docs/activity.zh-mo.mdx","pageUrl":"https://oh-my-webbridge.github.io/zh-mo/activity/","locale":"zh-TW"}]]}],["$","$L1b",null,{"children":["\n",["$","p",null,{"children":"Agent 在你自己瀏覽器的分頁中工作，所以擴充功能會標示它所控制的分頁。標示出現在工具列圖示、彈出式視窗，以及畫在頁面上方的活動層。"}],"\n",["$","$L1c",null,{"name":"activity-form","alt":"Agent 填寫訂位表單：分頁顯示邊緣光暈，焦點框在各欄位之間移動，文字逐一出現在每個欄位中。"}],"\n",["$","$L1d",null,{"as":"h2","id":"toolbar-icon","children":"工具列圖示"}],"\n",["$","div",null,{"className":"relative overflow-auto prose-no-margin my-6","tabIndex":0,"children":["$","table",null,{"children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th",null,{"className":"whitespace-nowrap","children":"圖示"}],["$","th",null,{"className":"whitespace-nowrap","children":"時機"}],["$","th",null,{"className":"whitespace-nowrap","children":"工具提示"}]]}]}],["$","tbody",null,{"children":[["$","tr",null,{"children":[["$","td",null,{"className":"whitespace-nowrap","children":"藍綠色"}],["$","td",null,{"children":"已連線，這個分頁未受控制"}],["$","td",null,{"children":"「oh-my-webbridge：已連線」"}]]}],["$","tr",null,{"children":[["$","td",null,{"className":"whitespace-nowrap","children":"藍綠色帶橘色圓點"}],["$","td",null,{"children":"有工作階段控制這個分頁"}],["$","td",null,{"children":"「oh-my-webbridge：工作階段 research 正在控制這個分頁」"}]]}],["$","tr",null,{"children":[["$","td",null,{"className":"whitespace-nowrap","children":"灰色"}],["$","td",null,{"children":"未配對，或連線中"}],["$","td",null,{"children":"「oh-my-webbridge：未配對」、「oh-my-webbridge：連線中」"}]]}],["$","tr",null,{"children":[["$","td",null,{"className":"whitespace-nowrap","children":"灰色帶紅色圓點"}],["$","td",null,{"children":"daemon 未執行，或 daemon 拒絕"}],["$","td",null,{"children":"「oh-my-webbridge：daemon 未執行」、「oh-my-webbridge：連線遭拒」"}]]}],["$","tr",null,{"children":[["$","td",null,{"className":"whitespace-nowrap","children":"灰色帶暫停符號"}],["$","td",null,{"children":"已暫停"}],["$","td",null,{"children":"「oh-my-webbridge：已暫停」"}]]}]]}]]}]}],"\n",["$","p",null,{"children":"橘色圓點只標在受控制的分頁上。其他分頁維持顯示連線狀態的圖示。工具提示使用擴充功能的介面語言。"}],"\n",["$","$L1d",null,{"as":"h2","id":"the-popup","children":"彈出式視窗"}],"\n",["$","p",null,{"children":"連線時，彈出式視窗最上方是標為「這個分頁」的一列。一般分頁顯示「未受控制」，受控制的分頁顯示「工作階段 research」，動作執行期間顯示「工作階段 research 執行中」。這一列會跟隨作用中的分頁。"}],"\n",["$","$L1c",null,{"name":"popup","alt":"彈出式視窗位於 Agent 正在填寫的訂位表單上方：已連線，「這個分頁」顯示「工作階段 demo」，分頁中有提示範例，另有「暫停」與「設定」按鈕。","still":true}],"\n",["$","$L1d",null,{"as":"h2","id":"on-the-page","children":"在頁面上"}],"\n",["$","p",null,{"children":"活動層會繪製在 Chrome 與 Firefox 中，涵蓋工作階段開啓的分頁，以及它向你借用的分頁。工作階段釋放或關閉該分頁時，活動層隨之結束。繪製期間，頁面會顯示："}],"\n",["$","ul",null,{"children":["\n",["$","li",null,{"children":"動作執行期間的邊緣光暈，動作結束後不久淡出。"}],"\n",["$","li",null,{"children":"右下角的標籤，帶有橘色圓點與工作階段名稱。"}],"\n",["$","li",null,{"children":"以橘色圓點圖示作為網站圖示，取代頁面自己的圖示。"}],"\n",["$","li",null,{"children":"動作所針對的元素周圍有焦點框，框上方標示動作名稱：Click、Hover、Type、Select、Check、Focus、Scroll、Drag 或 Upload。元素靠近上邊緣時，標籤會移到元素下方。焦點框跟隨主文件中的元素；工作階段選取了某個框架時，頁面只顯示光暈與標籤。"}],"\n"]}],"\n",["$","p",null,{"children":"動作結束後，焦點框會再停留片刻，所以連續的點擊看起來是一次活動，而不是一閃一閃的框。導覽會取代文件，活動層會在新頁面上重新繪製。"}],"\n",["$","$L1d",null,{"as":"h2","id":"how-it-stays-out-of-the-way","children":"它如何不干擾頁面"}],"\n",["$","ul",null,{"children":["\n",["$","li",null,{"children":"活動層是一個帶有 shadow root 的宿主元素。頁面的樣式不會影響它的各個部分。"}],"\n","$L1e","\n","$L1f","\n","$L20","\n","$L21","\n"]}],"\n","$L22","\n","$L23","\n","$L24","\n","$L25"]}],"$L26"]}],["$L27","$L28","$L29"],"$L2a"]}],"p":"$@2b","v":null,"s":"$9"}}]]
+2:[["children",{"s":{"n":"slug","t":"oc","k":"activity","s":["llms-full.txt","llms.txt"]},"h":65600,"d":{"r":["$","$3","c",{"children":[null,["$","$L5",null,{"parallelRouterKey":"children","template":["$","$L6",null,{}]}]]}],"p":"$@7","v":"$8","s":"$9"},"c":"$Qa"}]]
+1:[["children",{"s":{"n":"lang","t":"d","k":"zh-mo","s":["api","llms.txt","md","og"]},"h":196656,"c":"$Q2"}]]
+0:{"t":{"t":{"s":"","h":131152,"c":"$Q1"},"h":{"r":["$","$3","h",{"children":[null,["$","$L2d",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L2f",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$30",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Agent 活動 · oh-my-webbridge 文件"}],["$","meta","1",{"name":"description","content":"Agent 控制分頁時，工具列圖示、彈出式視窗與活動層會顯示什麼，以及如何關閉活動層。"}],["$","link","2",{"rel":"canonical","href":"https://oh-my-webbridge.github.io/zh-mo/activity/"}],["$","link","3",{"rel":"alternate","hrefLang":"en","href":"https://oh-my-webbridge.github.io/en/activity/"}],["$","link","4",{"rel":"alternate","hrefLang":"zh-TW","href":"https://oh-my-webbridge.github.io/zh-tw/activity/"}],["$","link","5",{"rel":"alternate","hrefLang":"zh-CN","href":"https://oh-my-webbridge.github.io/zh-cn/activity/"}],["$","link","6",{"rel":"alternate","hrefLang":"zh-HK","href":"https://oh-my-webbridge.github.io/zh-hk/activity/"}],["$","link","7",{"rel":"alternate","hrefLang":"zh-MO","href":"https://oh-my-webbridge.github.io/zh-mo/activity/"}],["$","meta","8",{"property":"og:title","content":"Agent 活動"}],["$","meta","9",{"property":"og:description","content":"Agent 控制分頁時，工具列圖示、彈出式視窗與活動層會顯示什麼，以及如何關閉活動層。"}],["$","meta","10",{"property":"og:url","content":"https://oh-my-webbridge.github.io/zh-mo/activity/"}],["$","meta","11",{"property":"og:site_name","content":"oh-my-webbridge 文件"}],["$","meta","12",{"property":"og:locale","content":"zh-MO"}],["$","meta","13",{"property":"og:image","content":"https://oh-my-webbridge.github.io/og/zh-mo/activity/image.png"}],["$","meta","14",{"property":"og:image:width","content":"1200"}],["$","meta","15",{"property":"og:image:height","content":"630"}],["$","meta","16",{"property":"og:type","content":"article"}],["$","meta","17",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","18",{"name":"twitter:title","content":"Agent 活動"}],["$","meta","19",{"name":"twitter:description","content":"Agent 控制分頁時，工具列圖示、彈出式視窗與活動層會顯示什麼，以及如何關閉活動層。"}],["$","meta","20",{"name":"twitter:image","content":"https://oh-my-webbridge.github.io/og/zh-mo/activity/image.png"}],["$","link","21",{"rel":"icon","href":"/icon.svg?icon.0mrms0csogsrs.svg","sizes":"any","type":"image/svg+xml"}],["$","$L31","22",{}]]}]}],null]}],null]}],"p":"$@32","v":null,"s":"$9"}},"a":"$@33","u":"$@34","b":"OrsnjW68yJiTrQxt9dCS7"}
+35:I[72958,["$b","$c","$d","$e","$f","$10","$11","$12","$13"],"GitChangelog"]
+36:I[71067,["$4"],"OutletBoundary"]
+:HL["/_next/static/chunks/0iaxnelvtqw2u.css","style"]
+1e:["$","li",null,{"children":["它使用 ",["$","code",null,{"children":"pointer-events: none"}],"，所以點擊、選取與懸停都會抵達下方的頁面。"]}]
+1f:["$","li",null,{"children":["它是 ",["$","code",null,{"children":"inert"}]," 且 ",["$","code",null,{"children":"aria-hidden"}],"，所以螢幕閲讀器與頁面的無障礙樹都會略過它。",["$","code",null,{"children":"read_page"}]," 回傳的頁面文字不含標籤，",["$","code",null,{"children":"snapshot"}]," 也不會列出活動層。"]}]
+20:["$","li",null,{"children":"擷取螢幕截圖與 PDF 時會先隱藏活動層，完成後再重新顯示。"}]
+21:["$","li",null,{"children":"活動層帶有 75 秒的租約，擴充功能每 30 秒續約一次。擴充功能停止續約時，頁面會自行移除活動層並還原自己的網站圖示，因此即使 worker 停止或偵錯工具工作階段中斷，也不會留下任何標記。"}]
+22:["$","$L1d",null,{"as":"h2","id":"turn-it-off","children":"關閉活動層"}]
+23:["$","$L1c",null,{"name":"settings","alt":"設定頁面，有「連線」、「頁面」與「進階」羣組。「顯示 Agent 活動」已開啓。","still":true}]
+24:["$","p",null,{"children":["到",["$","strong",null,{"children":"設定"}],"，再到",["$","strong",null,{"children":"網頁"}],"，關閉",["$","strong",null,{"children":"顯示 Agent 活動"}],"。活動層會同時從所有受控制的分頁消失，之後才被工作階段認領的分頁也不會繪製活動層。Agent 仍會繼續工作，工具列圖示與彈出式視窗的那一列仍會顯示哪個工作階段控制該分頁。重新開啓開關，會在仍受控制的分頁上繪製活動層。"]}]
+25:["$","p",null,{"children":"活動層遵循系統的減少動態效果與減少透明度設定：光暈不再脈動，標籤改用實心背景。"}]
+26:["$","$L35",null,{"commits":[{"sha":"c846b09db510780ff9413f6f8498e6f9151dc6f0","shortSha":"c846b09","date":"2026-11-04T11:15:24+09:00","authoredAt":"2026-11-04T11:15:24+09:00","committedAt":"2026-11-04T11:15:24+09:00","message":"chore: initial commit","description":"","authors":[{"name":"Alice39s","avatarUrl":"https://github.com/Alice39s.png","url":"https://github.com/Alice39s"}],"url":"https://github.com/oh-my-webbridge/oh-my-webbridge/commit/c846b09db510780ff9413f6f8498e6f9151dc6f0","repositoryUrl":"https://github.com/oh-my-webbridge/oh-my-webbridge"}],"locale":"zh-MO","repository":{"url":"https://github.com/oh-my-webbridge/oh-my-webbridge"},"id":"git-history","contributorsId":"git-contributors","className":"omw-page-history"}]
+27:["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0iaxnelvtqw2u.css","precedence":"next"}]
+28:["$","script","script-0",{"src":"/_next/static/chunks/40ii3lqvvwwi4.js","async":true}]
+29:["$","script","script-1",{"src":"/_next/static/chunks/1a6h9k3z7r200.js","async":true}]
+2a:["$","$L36",null,{"children":["$","$30",null,{"name":"Next.MetadataOutlet","children":"$@37"}]}]
+34:true
+9:300
+37:null
+9:C
+33:0
+7:"$undefined"
+32:"$undefined"
+2b:"$undefined"
