@@ -1,5 +1,9 @@
 # oh-my-webbridge (https://oh-my-webbridge.github.io/zh-tw/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 Agent 或指令碼送出的指令，會在你日常使用的 Chrome 或 Firefox 設定檔中執行，因此頁面保有該設定檔的登入狀態、cookie 與擴充功能。daemon 與瀏覽器在同一台電腦上執行，只監聽 `127.0.0.1:17373`。
 
 1. Agent 或指令碼透過 `omw call` 或 SDK 送出指令。

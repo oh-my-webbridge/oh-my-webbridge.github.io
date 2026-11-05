@@ -1,5 +1,9 @@
 # Getting started (https://oh-my-webbridge.github.io/en/getting-started/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 Chrome and Firefox can run side by side, and each browser is paired on its own.
 
 ## Requirements [#requirements]

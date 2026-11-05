@@ -1,5 +1,9 @@
 # CLI (https://oh-my-webbridge.github.io/zh-hk/reference/cli/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from cli.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 `omw` 是 Go daemon，也是它的命令列用户端。它監聽 `127.0.0.1:17373`，沒有選項可以綁定其他位址或網路介面。`serve` 與 `start` 執行 daemon。`stop`、`status`、`doctor`、`pair` 與 `call` 需要已在執行中的 daemon。`connection`、`skill`、`install-skill`、`service install`、`version` 與 `help` 不需要 daemon。

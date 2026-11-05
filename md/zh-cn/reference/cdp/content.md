@@ -1,5 +1,9 @@
 # CDP (https://oh-my-webbridge.github.io/zh-cn/reference/cdp/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from cdp.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 daemon 以两种模式在 `127.0.0.1:17373` 提供 Chrome DevTools Protocol，地址与连接端口和它其余的 API 相同：

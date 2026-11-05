@@ -1,5 +1,9 @@
 # Agent 活動 (https://oh-my-webbridge.github.io/zh-mo/activity/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from activity.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Agent 在你自己瀏覽器的分頁中工作，所以擴充功能會標示它所控制的分頁。標示出現在工具列圖示、彈出式視窗，以及畫在頁面上方的活動層。

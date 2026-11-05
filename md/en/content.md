@@ -1,5 +1,9 @@
 # oh-my-webbridge (https://oh-my-webbridge.github.io/en/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 A command from an agent or a script runs in your ordinary Chrome or Firefox profile, so pages keep that profile's logins, cookies and extensions. The daemon runs on the same computer as the browser and listens only on `127.0.0.1:17373`.
 
 1. An agent or script sends a command through `omw call` or the SDK.

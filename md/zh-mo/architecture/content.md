@@ -1,5 +1,9 @@
 # 架構 (https://oh-my-webbridge.github.io/zh-mo/architecture/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from architecture.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 oh-my-webbridge 由兩個行程組成。daemon `omw` 是 Go 二進位檔，監聽 `127.0.0.1:17373`。擴充功能在 Chrome 或 Firefox 內執行，透過瀏覽器 API 操作分頁。Agent、CLI 與 SDK 透過 HTTP 呼叫 daemon；daemon 透過 WebSocket 呼叫擴充功能。

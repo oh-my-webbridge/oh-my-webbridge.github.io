@@ -1,5 +1,9 @@
 # 架构 (https://oh-my-webbridge.github.io/zh-cn/architecture/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from architecture.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 oh-my-webbridge 由两个进程组成。daemon `omw` 是 Go 二进制文件，监听 `127.0.0.1:17373`。扩展程序在 Chrome 或 Firefox 内运行，通过浏览器 API 操作标签页。Agent、CLI 与 SDK 通过 HTTP 调用 daemon；daemon 通过 WebSocket 调用扩展程序。

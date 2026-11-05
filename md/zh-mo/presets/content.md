@@ -1,5 +1,9 @@
 # 頁面預設集 (https://oh-my-webbridge.github.io/zh-mo/presets/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from presets.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 預設集是工作階段組態的一部分。它套用在工作階段擁有的任務分頁上，包括之後才開啓的分頁。

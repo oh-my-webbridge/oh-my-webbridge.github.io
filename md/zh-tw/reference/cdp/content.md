@@ -1,5 +1,9 @@
 # CDP (https://oh-my-webbridge.github.io/zh-tw/reference/cdp/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 daemon 以兩種模式在 `127.0.0.1:17373` 提供 Chrome DevTools Protocol，位址與連接埠和它其餘的 API 相同：
 
 - **擴充功能模式**透過 Chrome 擴充功能中的 `chrome.debugger` 提供頁面目標。它需要已配對的 Chrome 擴充功能，並可搭配你已開啟的設定檔使用。

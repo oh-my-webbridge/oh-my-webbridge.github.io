@@ -1,5 +1,9 @@
 # JavaScript SDK (https://oh-my-webbridge.github.io/zh-tw/reference/sdk/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/zh-tw/reference/cli/#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。
 
 `connect` 回傳一個綁定到單一工作階段名稱的 task 物件。如同 `omw call`，擴充功能會依需求開啟該工作階段的分頁與分頁群組。

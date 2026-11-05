@@ -1,5 +1,9 @@
 # Firefox (https://oh-my-webbridge.github.io/zh-hk/firefox/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from firefox.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Firefox 版本是適用於 Firefox 153 以上的 MV3 擴充功能。它與同一個 daemon 配對，並提供與 Chrome 擴充功能相同的動作，差異列於[動作](#actions)。Chrome 擴充功能使用 CDP 之處，Firefox 擴充功能改用 WebExtension API：頁面動作在內容指令碼中執行；預設集、網路擷取與額外的請求標頭使用會阻擋的 `webRequest` 監聽器；螢幕截圖使用 `tabs.captureTab`；`evaluate` 使用 `userScripts`。

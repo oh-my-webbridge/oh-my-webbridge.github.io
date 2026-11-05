@@ -1,5 +1,9 @@
 # 会话与标签页 (https://oh-my-webbridge.github.io/zh-cn/sessions/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from sessions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 会话是 oh-my-webbridge 的工作单位。每个命令都会指定一个会话，daemon 再把命令送往该会话持有的标签页。会话打开的标签页会放进一个标签页分组，分组标题为会话名称，或 Agent 传入的标题。因此任务的页面会聚在一起，并与你自己使用的页面分开。

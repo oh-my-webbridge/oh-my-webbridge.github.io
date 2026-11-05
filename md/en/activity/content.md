@@ -1,5 +1,9 @@
 # Agent activity (https://oh-my-webbridge.github.io/en/activity/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 An agent works in tabs of your own browser, so the extension marks the tab it controls. The mark appears in the toolbar icon, the popup and the activity layer drawn over the page.
 
 <Demo

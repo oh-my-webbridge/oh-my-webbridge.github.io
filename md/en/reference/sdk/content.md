@@ -1,5 +1,9 @@
 # JavaScript SDK (https://oh-my-webbridge.github.io/en/reference/sdk/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/en/reference/cli/#configuration-directory) and sends actions to `POST /command`.
 
 `connect` returns a task object bound to one session name. The extension opens that session's tabs and tab group on demand, as it does for `omw call`.

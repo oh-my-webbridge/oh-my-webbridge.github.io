@@ -1,5 +1,9 @@
 # 開發 (https://oh-my-webbridge.github.io/zh-tw/development/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 這個儲存庫產出一個 Go 二進位檔、兩個擴充功能套件、一個 SDK 檔案與文件網站。建置需要 Go 1.27.3 或更新版本、Node 24 與 pnpm 11。封裝發行版本還需要 `PATH` 中有 `tar` 與 `zstd`。
 
 ## 儲存庫結構 [#repository-layout]

@@ -1,5 +1,9 @@
 # Firefox (https://oh-my-webbridge.github.io/en/firefox/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The Firefox build is an MV3 extension for Firefox 153 and later. It pairs with the same daemon and exposes the same actions as the Chrome extension, with the differences listed under [Actions](#actions). Where the Chrome extension uses CDP, the Firefox extension uses WebExtension APIs: page actions run in a content script, presets, network capture and extra request headers use blocking `webRequest` listeners, screenshots use `tabs.captureTab`, and `evaluate` uses `userScripts`.
 
 ## Install [#install]

@@ -1,5 +1,9 @@
 # 快速開始 (https://oh-my-webbridge.github.io/zh-tw/getting-started/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 Chrome 與 Firefox 可以並行使用，且各自獨立配對。
 
 ## 系統需求 [#requirements]

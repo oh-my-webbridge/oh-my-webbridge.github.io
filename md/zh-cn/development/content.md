@@ -1,5 +1,9 @@
 # 开发 (https://oh-my-webbridge.github.io/zh-cn/development/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from development.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 这个仓库产出一个 Go 二进制文件、两个扩展程序套件、一个 SDK 文件与文档网站。构建需要 Go 1.27.3 或更新版本、Node 24 与 pnpm 11。封装发布版本还需要 `PATH` 中有 `tar` 与 `zstd`。

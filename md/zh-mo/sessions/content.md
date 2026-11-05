@@ -1,5 +1,9 @@
 # 工作階段與分頁 (https://oh-my-webbridge.github.io/zh-mo/sessions/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from sessions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 工作階段是 oh-my-webbridge 的工作單位。每個指令都會指定一個工作階段，daemon 再把指令送往該工作階段持有的分頁。工作階段開啓的分頁會放進一個分頁羣組，羣組標題為工作階段名稱，或 Agent 傳入的標題。因此任務的頁面會聚在一起，並與你自己使用的頁面分開。

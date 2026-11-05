@@ -1,5 +1,9 @@
 # Architecture (https://oh-my-webbridge.github.io/en/architecture/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 Two processes make up oh-my-webbridge. The daemon `omw` is a Go binary that listens on `127.0.0.1:17373`. The extension runs inside Chrome or Firefox and drives tabs through browser APIs. Agents, the CLI and the SDK call the daemon over HTTP; the daemon calls the extension over a WebSocket.
 
 ## Components [#components]

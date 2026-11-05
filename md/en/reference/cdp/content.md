@@ -1,5 +1,9 @@
 # CDP (https://oh-my-webbridge.github.io/en/reference/cdp/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The daemon exposes Chrome DevTools Protocol in two modes at `127.0.0.1:17373`, the same address and port as the rest of its API:
 
 - **Extension mode** serves page targets through `chrome.debugger` in the Chrome extension. It needs a paired Chrome extension and works with the browser profile you already have open.

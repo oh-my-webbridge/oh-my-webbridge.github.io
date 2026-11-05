@@ -1,5 +1,9 @@
 # Agent 活动 (https://oh-my-webbridge.github.io/zh-cn/activity/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from activity.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Agent 在你自己浏览器的标签页中工作，所以扩展程序会标示它所控制的标签页。标示出现在工具栏图标、弹出式窗口，以及画在页面上方的活动层。

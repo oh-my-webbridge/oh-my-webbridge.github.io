@@ -1,5 +1,9 @@
 # oh-my-webbridge (https://oh-my-webbridge.github.io/zh-cn/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from index.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个人资料中运行，因此页面保有该个人资料的登录状态、cookie 与扩展程序。daemon 与浏览器在同一台电脑上运行，只监听 `127.0.0.1:17373`。

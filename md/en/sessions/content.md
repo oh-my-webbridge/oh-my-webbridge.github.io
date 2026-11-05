@@ -1,5 +1,9 @@
 # Sessions and tabs (https://oh-my-webbridge.github.io/en/sessions/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 A session is the unit of work in oh-my-webbridge. Every command names a session, and the daemon routes it to the tabs that session holds. Tabs opened by a session sit in a tab group titled with the session name or the title the agent passed, so a task's pages stay together and apart from the pages you use.
 
 <Demo

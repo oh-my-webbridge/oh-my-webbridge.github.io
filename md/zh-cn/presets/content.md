@@ -1,5 +1,9 @@
 # 页面预设 (https://oh-my-webbridge.github.io/zh-cn/presets/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from presets.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 预设是会话配置的一部分。它套用在会话拥有的任务标签页上，包括之后才打开的标签页。

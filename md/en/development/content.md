@@ -1,5 +1,9 @@
 # Development (https://oh-my-webbridge.github.io/en/development/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The repository produces one Go binary, two extension bundles, one SDK file and the documentation site. Building needs Go 1.27.3 or newer, Node 24 and pnpm 11. Packaging a release also needs `tar` and `zstd` on `PATH`.
 
 ## Repository layout [#repository-layout]

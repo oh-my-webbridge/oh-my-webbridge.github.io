@@ -1,5 +1,9 @@
 # Page presets (https://oh-my-webbridge.github.io/en/presets/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 A preset is part of the session configuration. It applies to the task tabs the session owns, including tabs it opens later.
 
 | Mode      | Network                                   | Environment                                 | Use                                               |

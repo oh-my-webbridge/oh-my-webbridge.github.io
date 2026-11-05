@@ -1,5 +1,9 @@
 # JavaScript SDK (https://oh-my-webbridge.github.io/zh-mo/reference/sdk/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from sdk.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/zh-mo/reference/cli/#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。

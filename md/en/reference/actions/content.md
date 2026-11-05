@@ -1,5 +1,9 @@
 # Actions (https://oh-my-webbridge.github.io/en/reference/actions/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/en/reference/cli/) and [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/)).
 
 ## Requests [#requests]

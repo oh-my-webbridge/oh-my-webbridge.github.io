@@ -1,5 +1,9 @@
 # CLI (https://oh-my-webbridge.github.io/en/reference/cli/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 `omw` is the Go daemon and its command line client. It listens on `127.0.0.1:17373` and has no option to bind another address or a network interface. `serve` and `start` run the daemon. `stop`, `status`, `doctor`, `pair` and `call` need one already running. `connection`, `skill`, `install-skill`, `service install`, `version` and `help` work without it.
 
 | Command               | Purpose                                                     |

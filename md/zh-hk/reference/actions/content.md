@@ -1,5 +1,9 @@
 # 動作 (https://oh-my-webbridge.github.io/zh-hk/reference/actions/)
 
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
 {/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 每個瀏覽器動作都經由 daemon 的 `POST /command`，位址為 `http://127.0.0.1:17373`。請求帶有 `omw connection` 印出的 Bearer token。CLI 以 `omw call` 包裝它，SDK 以 `call` 包裝它（請見 [CLI](https://oh-my-webbridge.github.io/zh-hk/reference/cli/) 與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/)）。

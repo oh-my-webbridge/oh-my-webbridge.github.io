@@ -1,5 +1,9 @@
 # Agent activity (https://oh-my-webbridge.github.io/en/activity/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 An agent works in tabs of your own browser, so the extension marks the tab it controls. The mark appears in the toolbar icon, the popup and the activity layer drawn over the page.
 
 <Demo
@@ -63,6 +67,10 @@ The layer follows the system's reduced motion and reduced transparency settings:
 
 
 # Architecture (https://oh-my-webbridge.github.io/en/architecture/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 Two processes make up oh-my-webbridge. The daemon `omw` is a Go binary that listens on `127.0.0.1:17373`. The extension runs inside Chrome or Firefox and drives tabs through browser APIs. Agents, the CLI and the SDK call the daemon over HTTP; the daemon calls the extension over a WebSocket.
 
@@ -160,6 +168,10 @@ These are capacity guards, not a bound on RSS: concurrent screenshots and Chrome
 
 
 # Development (https://oh-my-webbridge.github.io/en/development/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 The repository produces one Go binary, two extension bundles, one SDK file and the documentation site. Building needs Go 1.27.3 or newer, Node 24 and pnpm 11. Packaging a release also needs `tar` and `zstd` on `PATH`.
 
@@ -297,6 +309,10 @@ The project is licensed under Apache-2.0. `NOTICE` holds the notices, and `THIRD
 
 # Firefox (https://oh-my-webbridge.github.io/en/firefox/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The Firefox build is an MV3 extension for Firefox 153 and later. It pairs with the same daemon and exposes the same actions as the Chrome extension, with the differences listed under [Actions](#actions). Where the Chrome extension uses CDP, the Firefox extension uses WebExtension APIs: page actions run in a content script, presets, network capture and extra request headers use blocking `webRequest` listeners, screenshots use `tabs.captureTab`, and `evaluate` uses `userScripts`.
 
 ## Install [#install]
@@ -409,6 +425,10 @@ Firefox presets use the same modes, filter lists, engine and session settings as
 
 
 # Getting started (https://oh-my-webbridge.github.io/en/getting-started/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 Chrome and Firefox can run side by side, and each browser is paired on its own.
 
@@ -569,6 +589,10 @@ firefox: not connected
 
 # oh-my-webbridge (https://oh-my-webbridge.github.io/en/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 A command from an agent or a script runs in your ordinary Chrome or Firefox profile, so pages keep that profile's logins, cookies and extensions. The daemon runs on the same computer as the browser and listens only on `127.0.0.1:17373`.
 
 1. An agent or script sends a command through `omw call` or the SDK.
@@ -600,6 +624,10 @@ One daemon serves Chrome and Firefox at the same time. Each browser is paired on
 
 
 # Page presets (https://oh-my-webbridge.github.io/en/presets/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 A preset is part of the session configuration. It applies to the task tabs the session owns, including tabs it opens later.
 
@@ -722,6 +750,10 @@ The Firefox build uses the same modes, lists and session settings. Network filte
 
 
 # Actions (https://oh-my-webbridge.github.io/en/reference/actions/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/en/reference/cli/) and [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/)).
 
@@ -953,6 +985,10 @@ Every fault carries `code` and `message`. The HTTP status is shown below; a code
 
 # CDP (https://oh-my-webbridge.github.io/en/reference/cdp/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The daemon exposes Chrome DevTools Protocol in two modes at `127.0.0.1:17373`, the same address and port as the rest of its API:
 
 - **Extension mode** serves page targets through `chrome.debugger` in the Chrome extension. It needs a paired Chrome extension and works with the browser profile you already have open.
@@ -1111,6 +1147,10 @@ Native mode does not replace extension mode. `/json/list` still lists targets th
 
 
 # CLI (https://oh-my-webbridge.github.io/en/reference/cli/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 `omw` is the Go daemon and its command line client. It listens on `127.0.0.1:17373` and has no option to bind another address or a network interface. `serve` and `start` run the daemon. `stop`, `status`, `doctor`, `pair` and `call` need one already running. `connection`, `skill`, `install-skill`, `service install`, `version` and `help` work without it.
 
@@ -1299,6 +1339,10 @@ The token in `config.json` is the only credential. Anyone who reads the file can
 
 # JavaScript SDK (https://oh-my-webbridge.github.io/en/reference/sdk/)
 
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
 The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/en/reference/cli/#configuration-directory) and sends actions to `POST /command`.
 
 `connect` returns a task object bound to one session name. The extension opens that session's tabs and tab group on demand, as it does for `omw call`.
@@ -1477,6 +1521,10 @@ const box = await task.call<{ x: number; y: number }>("get", {
 
 
 # Sessions and tabs (https://oh-my-webbridge.github.io/en/sessions/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 A session is the unit of work in oh-my-webbridge. Every command names a session, and the daemon routes it to the tabs that session holds. Tabs opened by a session sit in a tab group titled with the session name or the title the agent passed, so a task's pages stay together and apart from the pages you use.
 

@@ -1,5 +1,9 @@
 # Agent 活动 (https://oh-my-webbridge.github.io/zh-cn/activity/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from activity.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Agent 在你自己浏览器的标签页中工作，所以扩展程序会标示它所控制的标签页。标示出现在工具栏图标、弹出式窗口，以及画在页面上方的活动层。
@@ -65,6 +69,10 @@ Agent 在你自己浏览器的标签页中工作，所以扩展程序会标示�
 
 
 # 架构 (https://oh-my-webbridge.github.io/zh-cn/architecture/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from architecture.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
@@ -164,6 +172,10 @@ daemon 只能从它所在的机器连接，token 是唯一的凭证。
 
 
 # 开发 (https://oh-my-webbridge.github.io/zh-cn/development/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from development.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
@@ -303,6 +315,10 @@ zh-CN 的转换先套用 OpenCC 的词汇表（`twp` 转 `cn`），再套用 `sc
 
 # Firefox (https://oh-my-webbridge.github.io/zh-cn/firefox/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from firefox.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Firefox 版本是适用于 Firefox 153 以上的 MV3 扩展程序。它与同一个 daemon 配对，并提供与 Chrome 扩展程序相同的动作，差异列于[动作](#actions)。Chrome 扩展程序使用 CDP 之处，Firefox 扩展程序改用 WebExtension API：页面动作在内容脚本中运行；预设、网络提取与额外的请求标头使用会阻挡的 `webRequest` 监听器；屏幕截图使用 `tabs.captureTab`；`evaluate` 使用 `userScripts`。
@@ -417,6 +433,10 @@ Firefox 预设使用与 Chrome 相同的模式、过滤清单、引擎与会话�
 
 
 # 快速开始 (https://oh-my-webbridge.github.io/zh-cn/getting-started/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from getting-started.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
@@ -576,6 +596,10 @@ firefox: not connected
 
 # oh-my-webbridge (https://oh-my-webbridge.github.io/zh-cn/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from index.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个人资料中运行，因此页面保有该个人资料的登录状态、cookie 与扩展程序。daemon 与浏览器在同一台电脑上运行，只监听 `127.0.0.1:17373`。
@@ -609,6 +633,10 @@ Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个
 
 
 # 页面预设 (https://oh-my-webbridge.github.io/zh-cn/presets/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from presets.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
@@ -733,6 +761,10 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 
 
 # 动作 (https://oh-my-webbridge.github.io/zh-cn/reference/actions/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
@@ -966,6 +998,10 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 # CDP (https://oh-my-webbridge.github.io/zh-cn/reference/cdp/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from cdp.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 daemon 以两种模式在 `127.0.0.1:17373` 提供 Chrome DevTools Protocol，地址与连接端口和它其余的 API 相同：
@@ -1126,6 +1162,10 @@ const browser = await chromium.connectOverCDP("http://127.0.0.1:17373", {
 
 
 # CLI (https://oh-my-webbridge.github.io/zh-cn/reference/cli/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from cli.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
@@ -1316,6 +1356,10 @@ CLI、daemon、用户服务与 [SDK](https://oh-my-webbridge.github.io/zh-cn/ref
 
 # JavaScript SDK (https://oh-my-webbridge.github.io/zh-cn/reference/sdk/)
 
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
 {/* Generated from sdk.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
 SDK 是单一模块 `sdk/index.ts`，由 `pnpm run build` 构建为 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模块。它从[配置目录](https://oh-my-webbridge.github.io/zh-cn/reference/cli/#configuration-directory)读取 `config.json`，并把动作送到 `POST /command`。
@@ -1496,6 +1540,10 @@ const box = await task.call<{ x: number; y: number }>("get", {
 
 
 # 会话与标签页 (https://oh-my-webbridge.github.io/zh-cn/sessions/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
 
 {/* Generated from sessions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
