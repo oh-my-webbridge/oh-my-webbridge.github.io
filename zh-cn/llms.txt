@@ -18,3 +18,4 @@
 - **项目**
 - [架构](https://oh-my-webbridge.github.io/md/zh-cn/architecture/content.md): omw daemon 与浏览器扩展程序如何分工，以及一个命令如何抵达标签页。
 - [开发](https://oh-my-webbridge.github.io/md/zh-cn/development/content.md): 仓库结构、工具链、构建输出、测试命令与发布流程。
+- [隐私权](https://oh-my-webbridge.github.io/md/zh-cn/privacy/content.md): 扩展程序与 daemon 读取哪些数据、数据送往何处，以及在磁盘上保存哪些内容。

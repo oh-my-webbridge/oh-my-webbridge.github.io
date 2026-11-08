@@ -18,3 +18,4 @@
 - **Project**
 - [Architecture](https://oh-my-webbridge.github.io/md/en/architecture/content.md): How the omw daemon and the browser extension split work, and how a command reaches a tab.
 - [Development](https://oh-my-webbridge.github.io/md/en/development/content.md): Repository layout, toolchain, build output, test commands, and the release path.
+- [Privacy](https://oh-my-webbridge.github.io/md/en/privacy/content.md): What the extension and the daemon read, where the data goes and what they keep on disk.

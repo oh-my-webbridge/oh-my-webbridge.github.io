@@ -18,3 +18,4 @@
 - **專案**
 - [架構](https://oh-my-webbridge.github.io/md/zh-hk/architecture/content.md): omw daemon 與瀏覽器擴充功能如何分工，以及一個指令如何抵達分頁。
 - [開發](https://oh-my-webbridge.github.io/md/zh-hk/development/content.md): 儲存庫結構、工具鏈、建置輸出、測試指令與發行流程。
+- [隱私權](https://oh-my-webbridge.github.io/md/zh-hk/privacy/content.md): 擴充功能與 daemon 讀取哪些資料、資料送往何處，以及在磁碟上保存哪些內容。

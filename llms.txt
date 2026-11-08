@@ -18,6 +18,7 @@
 - **Project**
 - [Architecture](https://oh-my-webbridge.github.io/md/en/architecture/content.md): How the omw daemon and the browser extension split work, and how a command reaches a tab.
 - [Development](https://oh-my-webbridge.github.io/md/en/development/content.md): Repository layout, toolchain, build output, test commands, and the release path.
+- [Privacy](https://oh-my-webbridge.github.io/md/en/privacy/content.md): What the extension and the daemon read, where the data goes and what they keep on disk.
 
 # oh-my-webbridge 文件
 
@@ -39,6 +40,7 @@
 - **專案**
 - [架構](https://oh-my-webbridge.github.io/md/zh-tw/architecture/content.md): omw daemon 與瀏覽器擴充功能如何分工，以及一個指令如何抵達分頁。
 - [開發](https://oh-my-webbridge.github.io/md/zh-tw/development/content.md): 儲存庫結構、工具鏈、建置輸出、測試指令與發行流程。
+- [隱私權](https://oh-my-webbridge.github.io/md/zh-tw/privacy/content.md): 擴充功能與 daemon 讀取哪些資料、資料送往何處，以及在磁碟上保存哪些內容。
 
 # oh-my-webbridge 文档
 
@@ -60,6 +62,7 @@
 - **项目**
 - [架构](https://oh-my-webbridge.github.io/md/zh-cn/architecture/content.md): omw daemon 与浏览器扩展程序如何分工，以及一个命令如何抵达标签页。
 - [开发](https://oh-my-webbridge.github.io/md/zh-cn/development/content.md): 仓库结构、工具链、构建输出、测试命令与发布流程。
+- [隐私权](https://oh-my-webbridge.github.io/md/zh-cn/privacy/content.md): 扩展程序与 daemon 读取哪些数据、数据送往何处，以及在磁盘上保存哪些内容。
 
 # oh-my-webbridge 文件
 
@@ -81,6 +84,7 @@
 - **專案**
 - [架構](https://oh-my-webbridge.github.io/md/zh-hk/architecture/content.md): omw daemon 與瀏覽器擴充功能如何分工，以及一個指令如何抵達分頁。
 - [開發](https://oh-my-webbridge.github.io/md/zh-hk/development/content.md): 儲存庫結構、工具鏈、建置輸出、測試指令與發行流程。
+- [隱私權](https://oh-my-webbridge.github.io/md/zh-hk/privacy/content.md): 擴充功能與 daemon 讀取哪些資料、資料送往何處，以及在磁碟上保存哪些內容。
 
 # oh-my-webbridge 文件
 
@@ -102,3 +106,4 @@
 - **專案**
 - [架構](https://oh-my-webbridge.github.io/md/zh-mo/architecture/content.md): omw daemon 與瀏覽器擴充功能如何分工，以及一個指令如何抵達分頁。
 - [開發](https://oh-my-webbridge.github.io/md/zh-mo/development/content.md): 儲存庫結構、工具鏈、建置輸出、測試指令與發行流程。
+- [隱私權](https://oh-my-webbridge.github.io/md/zh-mo/privacy/content.md): 擴充功能與 daemon 讀取哪些資料、資料送往何處，以及在磁碟上保存哪些內容。
