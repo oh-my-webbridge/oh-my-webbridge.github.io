@@ -27,9 +27,11 @@ The amber pointer is set on the controlled tab only. Other tabs keep the connect
 
 While connected, the popup starts with a row labeled "This tab". It reads "Not controlled" for an ordinary tab, "Session research" for a controlled tab, and "Session research is working" while an action runs. The row follows the active tab.
 
+Below the row is a prompt for your agent with a copy button. It shows suggestions for the active tab in turn, a new one every six seconds, starting with the ones that fit the page best. The popup picks them from the address, the title and what the page holds, such as tables, form fields, code blocks, a video or selected text. The pointer or the focus on the prompt holds the current suggestion; once you edit the prompt, it keeps your text.
+
 <Demo
   name="popup"
-  alt="The popup over The Password Game, which an agent is playing: Connected, This tab reads Session demo, prompt examples in tabs, and Pause and Settings buttons."
+  alt="The popup over The Password Game, which an agent is playing: Connected, This tab reads Session demo, a suggested prompt with a copy button, and Pause and Settings buttons."
   still
 />
 
@@ -759,12 +761,14 @@ The browser extension and the omw daemon run on your computer. The project runs 
 
 ## Data the extension reads [#data-the-extension-reads]
 
-The extension reads data from the browser only to carry out a command from the daemon. Depending on the command, it reads:
+To carry out a command from the daemon, the extension reads data from the browser. Depending on the command, it reads:
 
 - the address, title and content of pages in the tabs a session uses, or in a tab that a [CDP](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md) client connects to: text, the accessibility tree, element values, screenshots and PDFs
 - cookies and page storage, for the `cookies` and `storage` actions
 - the requests and responses of a tab while a session records its network traffic
 - the addresses and titles of open tabs, for the CDP target list (`/json/list`) and when a session looks for a tab to borrow
+
+When you open the popup, it reads the address and title of the active tab. On a page that the extension can access, it also reads the page language, the structured-data types, the length of the selected text, and how many tables, form fields, code blocks, videos, images and articles the page has. The popup uses these values to rank prompt suggestions and does not send them anywhere.
 
 ## Where the data goes [#where-the-data-goes]
 
