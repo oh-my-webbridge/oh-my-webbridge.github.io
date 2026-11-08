@@ -1,5 +1,19 @@
 # oh-my-webbridge Docs
 
+> A local daemon and browser extensions that let an agent or script work in the Chrome or Firefox you already use.
+
+<tips>
+This index lists the pages in English (en). Each language has its own index at `https://oh-my-webbridge.github.io/md/[language code]/llms.txt`:
+
+- en: [English](https://oh-my-webbridge.github.io/md/en/llms.txt)
+- zh-tw: [繁體中文（台灣）](https://oh-my-webbridge.github.io/md/zh-tw/llms.txt)
+- zh-cn: [简体中文](https://oh-my-webbridge.github.io/md/zh-cn/llms.txt)
+- zh-hk: [繁體中文（香港）](https://oh-my-webbridge.github.io/md/zh-hk/llms.txt)
+- zh-mo: [繁體中文（澳門）](https://oh-my-webbridge.github.io/md/zh-mo/llms.txt)
+
+A page has the same path in every language: change the language code in its link to read the page in another language.
+</tips>
+
 - [oh-my-webbridge](https://oh-my-webbridge.github.io/md/en/content.md): A local daemon and browser extensions that let an agent or script work in the Chrome or Firefox you already use.
 - [Getting started](https://oh-my-webbridge.github.io/md/en/getting-started/content.md): Install the daemon and the browser extension, pair a browser and run the first commands.
 

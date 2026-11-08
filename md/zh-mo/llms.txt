@@ -1,4 +1,18 @@
-# oh-my-webbridge 文件
+# oh-my-webbridge 使用手冊
+
+> 本機 daemon 與瀏覽器擴充功能，讓 Agent 或指令碼在你平常使用的 Chrome 或 Firefox 裏工作。
+
+<tips>
+This index lists the pages in 繁體中文（澳門） (zh-mo). Each language has its own index at `https://oh-my-webbridge.github.io/md/[language code]/llms.txt`:
+
+- en: [English](https://oh-my-webbridge.github.io/md/en/llms.txt)
+- zh-tw: [繁體中文（台灣）](https://oh-my-webbridge.github.io/md/zh-tw/llms.txt)
+- zh-cn: [简体中文](https://oh-my-webbridge.github.io/md/zh-cn/llms.txt)
+- zh-hk: [繁體中文（香港）](https://oh-my-webbridge.github.io/md/zh-hk/llms.txt)
+- zh-mo: [繁體中文（澳門）](https://oh-my-webbridge.github.io/md/zh-mo/llms.txt)
+
+A page has the same path in every language: change the language code in its link to read the page in another language.
+</tips>
 
 - [oh-my-webbridge](https://oh-my-webbridge.github.io/md/zh-mo/content.md): 本機 daemon 加上瀏覽器擴充功能，讓 Agent 或指令碼在你平常使用的 Chrome 或 Firefox 裏工作。
 - [快速開始](https://oh-my-webbridge.github.io/md/zh-mo/getting-started/content.md): 安裝 daemon 與瀏覽器擴充功能，配對瀏覽器，並執行第一批指令。
