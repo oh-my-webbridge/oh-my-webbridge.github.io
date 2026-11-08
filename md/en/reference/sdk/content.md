@@ -4,7 +4,7 @@
 >
 > omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
-The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/en/reference/cli/#configuration-directory) and sends actions to `POST /command`.
+The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/md/en/reference/cli/content.md#configuration-directory) and sends actions to `POST /command`.
 
 `connect` returns a task object bound to one session name. The extension opens that session's tabs and tab group on demand, as it does for `omw call`.
 
@@ -61,7 +61,7 @@ const count = await task.evaluate("(async () => (await fetch('/api/count')).text
 const links = await task.evaluate("document.querySelectorAll('a').length");
 ```
 
-Selectors accept the forms listed in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/#selectors), including CSS, `@e` references from a snapshot, `role=`, `text=` and `xpath=`.
+Selectors accept the forms listed in the [action reference](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md#selectors), including CSS, `@e` references from a snapshot, `role=`, `text=` and `xpath=`.
 
 ## call(action, args, options) [#callaction-args-options]
 
@@ -120,7 +120,7 @@ The request never reached the command handler when the reply has no JSON content
 
 An aborted request rejects with an `AbortError` and no daemon fault code. A refused connection rejects with the `fetch` `TypeError`.
 
-The full list of codes and recovery steps is in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/#errors).
+The full list of codes and recovery steps is in the [action reference](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md#errors).
 
 ## Parallel tasks [#parallel-tasks]
 

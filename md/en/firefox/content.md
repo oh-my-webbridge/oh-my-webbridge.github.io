@@ -103,7 +103,7 @@ A background restart drops the `webRequest` listeners and the frame selection:
 
 ## Presets [#presets]
 
-Firefox presets use the same modes, filter lists, engine and session settings as Chrome, and they apply only to task tabs. [Page presets](https://oh-my-webbridge.github.io/en/presets/) describes the modes and the bundled lists.
+Firefox presets use the same modes, filter lists, engine and session settings as Chrome, and they apply only to task tabs. [Page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md) describes the modes and the bundled lists.
 
 - Each task tab gets its own blocking `webRequest.onBeforeRequest` listener, filtered by `tabId`. It receives the requests of every frame, including cross-process iframes, and there is no per-tab target limit. Each request is matched synchronously once the lists have loaded.
 - A preset change applies to existing task tabs immediately and the response reports `appliesOn: "immediate"`. Reconfiguration replaces the listeners and sends nothing to the page, so a busy page does not delay it. A navigation with an unchanged preset keeps the listeners and the status counters; a preset with `environment` set reconfigures on each navigation.

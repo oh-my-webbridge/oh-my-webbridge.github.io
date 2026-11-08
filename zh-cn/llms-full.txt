@@ -103,7 +103,7 @@ daemon 保存的状态，不会随浏览器窗口关闭而消失。
 - 每个受控标签页的网络项目与控制台纪录。
 - 绘制在受控页面上方的活动层。
 
-Firefox 对部分动作响应 `unsupported`，因为它的扩展程序 API 没有对应的功能。差异列于 [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/)。
+Firefox 对部分动作响应 `unsupported`，因为它的扩展程序 API 没有对应的功能。差异列于 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md)。
 
 一个标签页同一时间只属于一个会话。创建标签页的会话把它们放在自己的标签页分组；借用的标签页留在你的分组，并在释放时归还。标签页分组不是 cookie 边界，也不是安全边界：个人资料内的每个标签页共用相同的登录状态。
 
@@ -420,7 +420,7 @@ Firefox 扩展程序无法产生受信任的输入。`click`、`dblclick`、`mou
 
 ## 预设 [#presets]
 
-Firefox 预设使用与 Chrome 相同的模式、过滤清单、引擎与会话设置，且只套用于任务标签页。[页面预设](https://oh-my-webbridge.github.io/zh-cn/presets/)说明各个模式与内置清单。
+Firefox 预设使用与 Chrome 相同的模式、过滤清单、引擎与会话设置，且只套用于任务标签页。[页面预设](https://oh-my-webbridge.github.io/md/zh-cn/presets/content.md)说明各个模式与内置清单。
 
 - 每个任务标签页都有自己会阻挡的 `webRequest.onBeforeRequest` 监听器，并以 `tabId` 过滤。它会收到每个框架的请求，包括跨处理程序的框架，且没有每个标签页的目标数上限。清单加载后，每个请求都会同步比对。
 - 预设变更会立即套用到既有的任务标签页，响应会回报 `appliesOn: "immediate"`。重新设置会替换监听器，且不会对页面发送任何东西，所以忙碌的页面不会延迟它。预设未变更的导航会保留监听器与状态计数器；设置了 `environment` 的预设，每次导航都会重新设置。
@@ -626,10 +626,10 @@ Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个
 
 ## 接下来看哪里 [#where-to-go-next]
 
-- [快速开始](https://oh-my-webbridge.github.io/zh-cn/getting-started/)：安装 daemon 与扩展程序，配对浏览器，并运行第一批命令。
-- [会话与标签页](https://oh-my-webbridge.github.io/zh-cn/sessions/)：每项任务一个会话，各有自己的标签页与标签页分组。
-- [Agent 活动](https://oh-my-webbridge.github.io/zh-cn/activity/)：光晕、焦点框与工具栏图标，用来标示 Agent 正在控制的标签页。
-- [动作](https://oh-my-webbridge.github.io/zh-cn/reference/actions/)：所有动作、其参数，以及会返回的错误。
+- [快速开始](https://oh-my-webbridge.github.io/md/zh-cn/getting-started/content.md)：安装 daemon 与扩展程序，配对浏览器，并运行第一批命令。
+- [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md)：每项任务一个会话，各有自己的标签页与标签页分组。
+- [Agent 活动](https://oh-my-webbridge.github.io/md/zh-cn/activity/content.md)：光晕、焦点框与工具栏图标，用来标示 Agent 正在控制的标签页。
+- [动作](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md)：所有动作、其参数，以及会返回的错误。
 
 
 # 页面预设 (https://oh-my-webbridge.github.io/zh-cn/presets/)
@@ -757,7 +757,7 @@ omw call archive preset '{"cmd":"status"}'
 
 ## Firefox [#firefox]
 
-Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会阻挡的 `webRequest` 监听器中运行，环境注入无法使用，被拦截的顶层页面会让标签页停留在目前的页面。差异请见 [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/#presets)。
+Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会阻挡的 `webRequest` 监听器中运行，环境注入无法使用，被拦截的顶层页面会让标签页停留在目前的页面。差异请见 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md#presets)。
 
 
 # 动作 (https://oh-my-webbridge.github.io/zh-cn/reference/actions/)
@@ -768,7 +768,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 
 {/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-每个浏览器动作都经由 daemon 的 `POST /command`，地址为 `http://127.0.0.1:17373`。请求带有 `omw connection` 输出的 Bearer token。CLI 以 `omw call` 包装它，SDK 以 `call` 包装它（请见 [CLI](https://oh-my-webbridge.github.io/zh-cn/reference/cli/) 与 [SDK](https://oh-my-webbridge.github.io/zh-cn/reference/sdk/)）。
+每个浏览器动作都经由 daemon 的 `POST /command`，地址为 `http://127.0.0.1:17373`。请求带有 `omw connection` 输出的 Bearer token。CLI 以 `omw call` 包装它，SDK 以 `call` 包装它（请见 [CLI](https://oh-my-webbridge.github.io/md/zh-cn/reference/cli/content.md) 与 [SDK](https://oh-my-webbridge.github.io/md/zh-cn/reference/sdk/content.md)）。
 
 ## 请求 [#requests]
 
@@ -780,7 +780,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 | `timeoutMs` | number | 期限，单位为毫秒，范围 1 到 120000，默认 30000。它涵盖排队与运行。                             |
 | `browser`   | string | `chrome` 或 `firefox`。省略时，依序使用已绑定到该会话的浏览器、唯一已连接的浏览器，或 Chrome。 |
 
-本文是一个 JSON 对象，上限 2 MiB，不可含有未知字段。名称与既有绑定重复的会话，依 [会话与标签页](https://oh-my-webbridge.github.io/zh-cn/sessions/) 的规则路由。
+本文是一个 JSON 对象，上限 2 MiB，不可含有未知字段。名称与既有绑定重复的会话，依 [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md) 的规则路由。
 
 ```json
 {
@@ -926,7 +926,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 | `zen`         | `images`、`fonts`、`css`、`javascript`。`true` 会拦截该资源类型。 |
 | `cmd`         | `status` 读取该标签页的计数器、拦截与后备原因。                   |
 
-配置保存在会话上，并套用到任务标签页。借用的标签页不在其内。`navigate` 接受相同的字段，并在导航开始后保存它们。请见[页面预设](https://oh-my-webbridge.github.io/zh-cn/presets/)。
+配置保存在会话上，并套用到任务标签页。借用的标签页不在其内。`navigate` 接受相同的字段，并在导航开始后保存它们。请见[页面预设](https://oh-my-webbridge.github.io/md/zh-cn/presets/content.md)。
 
 ## CDP [#cdp]
 
@@ -955,7 +955,7 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 ## 引用的存续期间 [#reference-lifetime]
 
-`@e` 引用属于单一文档世代。在 Chrome 中，新的快照、框架选择、新的主文档（导航或重新加载），或标签页 URL 的变更，都会使它们失效。在所选框架内取得的快照，也会在该框架导航、重新加载、被移除，或选取结束时过期。其他 iframe 加载或导航，不影响它的有效性。在 Firefox 中，引用存在于产生它们的文档内；请见 [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/)。
+`@e` 引用属于单一文档世代。在 Chrome 中，新的快照、框架选择、新的主文档（导航或重新加载），或标签页 URL 的变更，都会使它们失效。在所选框架内取得的快照，也会在该框架导航、重新加载、被移除，或选取结束时过期。其他 iframe 加载或导航，不影响它的有效性。在 Firefox 中，引用存在于产生它们的文档内；请见 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md)。
 
 ## 错误 [#errors]
 
@@ -1197,7 +1197,7 @@ omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
 
 在前景运行 daemon，直到收到 SIGINT 或 SIGTERM。监听地址固定为 `127.0.0.1:17373`。如果 `config.json` 指定了其他地址，daemon 会拒绝启动。
 
-`--cdp` 让 daemon 指向一个已激活远程调试的 Chrome 浏览器端点。URL 必须以 `ws://` 或 `wss://` 开头，并带有主机。使用这个旗标时，`/devtools/browser` 会代理该端点；请见 [CDP](https://oh-my-webbridge.github.io/zh-cn/reference/cdp/#native-mode)。
+`--cdp` 让 daemon 指向一个已激活远程调试的 Chrome 浏览器端点。URL 必须以 `ws://` 或 `wss://` 开头，并带有主机。使用这个旗标时，`/devtools/browser` 会代理该端点；请见 [CDP](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md#native-mode)。
 
 端点不会写入 `config.json`。该文件中已有的 `cdp` 字段会在启动时读取，旗标会在该进程中取代它。
 
@@ -1279,7 +1279,7 @@ token 是以十六进制表示的 32 个随机字节，与 `config.json` 保存�
 omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
 ```
 
-对 daemon 发送一个动作，并输出它的 JSON 回复。会话名称由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。`ACTION` 是[动作参考](https://oh-my-webbridge.github.io/zh-cn/reference/actions/)中的其中一个动作。
+对 daemon 发送一个动作，并输出它的 JSON 回复。会话名称由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。`ACTION` 是[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md)中的其中一个动作。
 
 选用的第三个参数是含有动作参数的 JSON 对象。使用 `-` 时，命令从 stdin 读取该对象，上限 2 MiB。省略时，daemon 收到 `{}`。
 
@@ -1342,7 +1342,7 @@ omw help
 2. macOS：`~/Library/Application Support/oh-my-webbridge`。
 3. Linux：`$XDG_CONFIG_HOME/oh-my-webbridge`；`XDG_CONFIG_HOME` 未设置时为 `~/.config/oh-my-webbridge`。
 
-CLI、daemon、用户服务与 [SDK](https://oh-my-webbridge.github.io/zh-cn/reference/sdk/) 都读取同一个目录。每个读取配置的命令，在目录不存在时都会以 0700 权限创建它。
+CLI、daemon、用户服务与 [SDK](https://oh-my-webbridge.github.io/md/zh-cn/reference/sdk/content.md) 都读取同一个目录。每个读取配置的命令，在目录不存在时都会以 0700 权限创建它。
 
 | 文件            | 内容                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------- |
@@ -1362,7 +1362,7 @@ CLI、daemon、用户服务与 [SDK](https://oh-my-webbridge.github.io/zh-cn/ref
 
 {/* Generated from sdk.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-SDK 是单一模块 `sdk/index.ts`，由 `pnpm run build` 构建为 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模块。它从[配置目录](https://oh-my-webbridge.github.io/zh-cn/reference/cli/#configuration-directory)读取 `config.json`，并把动作送到 `POST /command`。
+SDK 是单一模块 `sdk/index.ts`，由 `pnpm run build` 构建为 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模块。它从[配置目录](https://oh-my-webbridge.github.io/md/zh-cn/reference/cli/content.md#configuration-directory)读取 `config.json`，并把动作送到 `POST /command`。
 
 `connect` 返回一个绑定到单一会话名称的 task 对象。如同 `omw call`，扩展程序会依需求打开该会话的标签页与标签页分组。
 
@@ -1419,7 +1419,7 @@ const count = await task.evaluate("(async () => (await fetch('/api/count')).text
 const links = await task.evaluate("document.querySelectorAll('a').length");
 ```
 
-选择器接受[动作参考](https://oh-my-webbridge.github.io/zh-cn/reference/actions/#selectors)中列出的形式，包括 CSS、快照中的 `@e` 引用、`role=`、`text=` 与 `xpath=`。
+选择器接受[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#selectors)中列出的形式，包括 CSS、快照中的 `@e` 引用、`role=`、`text=` 与 `xpath=`。
 
 ## call(action, args, options) [#callaction-args-options]
 
@@ -1478,7 +1478,7 @@ try {
 
 被中止的请求以 `AbortError` 拒绝，没有 daemon 的错误码。被拒绝的连接以 `fetch` 的 `TypeError` 拒绝。
 
-完整的错误码清单与复原步骤位于[动作参考](https://oh-my-webbridge.github.io/zh-cn/reference/actions/#errors)。
+完整的错误码清单与复原步骤位于[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#errors)。
 
 ## 并行任务 [#parallel-tasks]
 

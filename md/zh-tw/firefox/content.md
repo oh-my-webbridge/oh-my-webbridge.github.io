@@ -103,7 +103,7 @@ Firefox 擴充功能無法產生受信任的輸入。`click`、`dblclick`、`mou
 
 ## 預設集 [#presets]
 
-Firefox 預設集使用與 Chrome 相同的模式、過濾清單、引擎與工作階段設定，且只套用於任務分頁。[頁面預設集](https://oh-my-webbridge.github.io/zh-tw/presets/)說明各個模式與內建清單。
+Firefox 預設集使用與 Chrome 相同的模式、過濾清單、引擎與工作階段設定，且只套用於任務分頁。[頁面預設集](https://oh-my-webbridge.github.io/md/zh-tw/presets/content.md)說明各個模式與內建清單。
 
 - 每個任務分頁都有自己會阻擋的 `webRequest.onBeforeRequest` 監聽器，並以 `tabId` 過濾。它會收到每個框架的請求，包括跨處理程序的框架，且沒有每個分頁的目標數上限。清單載入後，每個請求都會同步比對。
 - 預設集變更會立即套用到既有的任務分頁，回應會回報 `appliesOn: "immediate"`。重新設定會替換監聽器，且不會對頁面送出任何東西，所以忙碌的頁面不會延遲它。預設集未變更的導覽會保留監聽器與狀態計數器；設定了 `environment` 的預設集，每次導覽都會重新設定。

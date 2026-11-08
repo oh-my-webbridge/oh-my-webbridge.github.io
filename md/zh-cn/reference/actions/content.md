@@ -6,7 +6,7 @@
 
 {/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-每个浏览器动作都经由 daemon 的 `POST /command`，地址为 `http://127.0.0.1:17373`。请求带有 `omw connection` 输出的 Bearer token。CLI 以 `omw call` 包装它，SDK 以 `call` 包装它（请见 [CLI](https://oh-my-webbridge.github.io/zh-cn/reference/cli/) 与 [SDK](https://oh-my-webbridge.github.io/zh-cn/reference/sdk/)）。
+每个浏览器动作都经由 daemon 的 `POST /command`，地址为 `http://127.0.0.1:17373`。请求带有 `omw connection` 输出的 Bearer token。CLI 以 `omw call` 包装它，SDK 以 `call` 包装它（请见 [CLI](https://oh-my-webbridge.github.io/md/zh-cn/reference/cli/content.md) 与 [SDK](https://oh-my-webbridge.github.io/md/zh-cn/reference/sdk/content.md)）。
 
 ## 请求 [#requests]
 
@@ -18,7 +18,7 @@
 | `timeoutMs` | number | 期限，单位为毫秒，范围 1 到 120000，默认 30000。它涵盖排队与运行。                             |
 | `browser`   | string | `chrome` 或 `firefox`。省略时，依序使用已绑定到该会话的浏览器、唯一已连接的浏览器，或 Chrome。 |
 
-本文是一个 JSON 对象，上限 2 MiB，不可含有未知字段。名称与既有绑定重复的会话，依 [会话与标签页](https://oh-my-webbridge.github.io/zh-cn/sessions/) 的规则路由。
+本文是一个 JSON 对象，上限 2 MiB，不可含有未知字段。名称与既有绑定重复的会话，依 [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md) 的规则路由。
 
 ```json
 {
@@ -164,7 +164,7 @@
 | `zen`         | `images`、`fonts`、`css`、`javascript`。`true` 会拦截该资源类型。 |
 | `cmd`         | `status` 读取该标签页的计数器、拦截与后备原因。                   |
 
-配置保存在会话上，并套用到任务标签页。借用的标签页不在其内。`navigate` 接受相同的字段，并在导航开始后保存它们。请见[页面预设](https://oh-my-webbridge.github.io/zh-cn/presets/)。
+配置保存在会话上，并套用到任务标签页。借用的标签页不在其内。`navigate` 接受相同的字段，并在导航开始后保存它们。请见[页面预设](https://oh-my-webbridge.github.io/md/zh-cn/presets/content.md)。
 
 ## CDP [#cdp]
 
@@ -193,7 +193,7 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 ## 引用的存续期间 [#reference-lifetime]
 
-`@e` 引用属于单一文档世代。在 Chrome 中，新的快照、框架选择、新的主文档（导航或重新加载），或标签页 URL 的变更，都会使它们失效。在所选框架内取得的快照，也会在该框架导航、重新加载、被移除，或选取结束时过期。其他 iframe 加载或导航，不影响它的有效性。在 Firefox 中，引用存在于产生它们的文档内；请见 [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/)。
+`@e` 引用属于单一文档世代。在 Chrome 中，新的快照、框架选择、新的主文档（导航或重新加载），或标签页 URL 的变更，都会使它们失效。在所选框架内取得的快照，也会在该框架导航、重新加载、被移除，或选取结束时过期。其他 iframe 加载或导航，不影响它的有效性。在 Firefox 中，引用存在于产生它们的文档内；请见 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md)。
 
 ## 错误 [#errors]
 

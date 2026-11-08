@@ -28,7 +28,7 @@ Agent 或指令碼送出的指令，會在你日常使用的 Chrome 或 Firefox 
 
 ## 接下來看哪裡 [#where-to-go-next]
 
-- [快速開始](https://oh-my-webbridge.github.io/zh-tw/getting-started/)：安裝 daemon 與擴充功能，配對瀏覽器，並執行第一批指令。
-- [工作階段與分頁](https://oh-my-webbridge.github.io/zh-tw/sessions/)：每項任務一個工作階段，各有自己的分頁與分頁群組。
-- [Agent 活動](https://oh-my-webbridge.github.io/zh-tw/activity/)：光暈、焦點框與工具列圖示，用來標示 Agent 正在控制的分頁。
-- [動作](https://oh-my-webbridge.github.io/zh-tw/reference/actions/)：所有動作、其引數，以及會回傳的錯誤。
+- [快速開始](https://oh-my-webbridge.github.io/md/zh-tw/getting-started/content.md)：安裝 daemon 與擴充功能，配對瀏覽器，並執行第一批指令。
+- [工作階段與分頁](https://oh-my-webbridge.github.io/md/zh-tw/sessions/content.md)：每項任務一個工作階段，各有自己的分頁與分頁群組。
+- [Agent 活動](https://oh-my-webbridge.github.io/md/zh-tw/activity/content.md)：光暈、焦點框與工具列圖示，用來標示 Agent 正在控制的分頁。
+- [動作](https://oh-my-webbridge.github.io/md/zh-tw/reference/actions/content.md)：所有動作、其引數，以及會回傳的錯誤。

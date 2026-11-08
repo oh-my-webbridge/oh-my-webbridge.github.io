@@ -34,7 +34,7 @@ omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
 
 在前景运行 daemon，直到收到 SIGINT 或 SIGTERM。监听地址固定为 `127.0.0.1:17373`。如果 `config.json` 指定了其他地址，daemon 会拒绝启动。
 
-`--cdp` 让 daemon 指向一个已激活远程调试的 Chrome 浏览器端点。URL 必须以 `ws://` 或 `wss://` 开头，并带有主机。使用这个旗标时，`/devtools/browser` 会代理该端点；请见 [CDP](https://oh-my-webbridge.github.io/zh-cn/reference/cdp/#native-mode)。
+`--cdp` 让 daemon 指向一个已激活远程调试的 Chrome 浏览器端点。URL 必须以 `ws://` 或 `wss://` 开头，并带有主机。使用这个旗标时，`/devtools/browser` 会代理该端点；请见 [CDP](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md#native-mode)。
 
 端点不会写入 `config.json`。该文件中已有的 `cdp` 字段会在启动时读取，旗标会在该进程中取代它。
 
@@ -116,7 +116,7 @@ token 是以十六进制表示的 32 个随机字节，与 `config.json` 保存�
 omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
 ```
 
-对 daemon 发送一个动作，并输出它的 JSON 回复。会话名称由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。`ACTION` 是[动作参考](https://oh-my-webbridge.github.io/zh-cn/reference/actions/)中的其中一个动作。
+对 daemon 发送一个动作，并输出它的 JSON 回复。会话名称由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。`ACTION` 是[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md)中的其中一个动作。
 
 选用的第三个参数是含有动作参数的 JSON 对象。使用 `-` 时，命令从 stdin 读取该对象，上限 2 MiB。省略时，daemon 收到 `{}`。
 
@@ -179,7 +179,7 @@ omw help
 2. macOS：`~/Library/Application Support/oh-my-webbridge`。
 3. Linux：`$XDG_CONFIG_HOME/oh-my-webbridge`；`XDG_CONFIG_HOME` 未设置时为 `~/.config/oh-my-webbridge`。
 
-CLI、daemon、用户服务与 [SDK](https://oh-my-webbridge.github.io/zh-cn/reference/sdk/) 都读取同一个目录。每个读取配置的命令，在目录不存在时都会以 0700 权限创建它。
+CLI、daemon、用户服务与 [SDK](https://oh-my-webbridge.github.io/md/zh-cn/reference/sdk/content.md) 都读取同一个目录。每个读取配置的命令，在目录不存在时都会以 0700 权限创建它。
 
 | 文件            | 内容                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------- |

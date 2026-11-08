@@ -32,7 +32,7 @@ omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
 
 Runs the daemon in the foreground until SIGINT or SIGTERM. The listener is fixed at `127.0.0.1:17373`. If `config.json` names another address, the daemon refuses to start.
 
-`--cdp` points the daemon at a Chrome browser endpoint already running with remote debugging. The URL must start with `ws://` or `wss://` and carry a host. With this flag, `/devtools/browser` proxies that endpoint; see [CDP](https://oh-my-webbridge.github.io/en/reference/cdp/#native-mode).
+`--cdp` points the daemon at a Chrome browser endpoint already running with remote debugging. The URL must start with `ws://` or `wss://` and carry a host. With this flag, `/devtools/browser` proxies that endpoint; see [CDP](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md#native-mode).
 
 The endpoint is not written to `config.json`. A `cdp` field already present in that file is read at startup, and the flag replaces it for that process.
 
@@ -114,7 +114,7 @@ The token is 32 random bytes in hex, the same value that `config.json` holds. It
 omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
 ```
 
-Sends one action to the daemon and prints its JSON reply. The session name is 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. `ACTION` is one of the actions in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/).
+Sends one action to the daemon and prints its JSON reply. The session name is 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. `ACTION` is one of the actions in the [action reference](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md).
 
 The optional third argument is a JSON object with the action arguments. With `-`, the command reads that object from stdin, up to 2 MiB. Without it, the daemon receives `{}`.
 
@@ -177,7 +177,7 @@ The directory is resolved in this order:
 2. macOS: `~/Library/Application Support/oh-my-webbridge`.
 3. Linux: `$XDG_CONFIG_HOME/oh-my-webbridge`, or `~/.config/oh-my-webbridge` when `XDG_CONFIG_HOME` is unset.
 
-The CLI, the daemon, the user service and the [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/) all read the same directory. Every command that reads the configuration creates it with mode 0700 when it is missing.
+The CLI, the daemon, the user service and the [SDK](https://oh-my-webbridge.github.io/md/en/reference/sdk/content.md) all read the same directory. Every command that reads the configuration creates it with mode 0700 when it is missing.
 
 | File            | Contents                                                                                                     |
 | --------------- | ------------------------------------------------------------------------------------------------------------ |

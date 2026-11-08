@@ -4,7 +4,7 @@
 >
 > omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
-Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/en/reference/cli/) and [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/)).
+Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/md/en/reference/cli/content.md) and [SDK](https://oh-my-webbridge.github.io/md/en/reference/sdk/content.md)).
 
 ## Requests [#requests]
 
@@ -16,7 +16,7 @@ Every browser action goes through `POST /command` on the daemon at `http://127.0
 | `timeoutMs` | number | Deadline in milliseconds, 1 to 120000, default 30000. It covers queueing and execution.                            |
 | `browser`   | string | `chrome` or `firefox`. Omit to use the browser already bound to the session, or the only connected one, or Chrome. |
 
-The body is one JSON object of at most 2 MiB with no unknown fields. A session name that repeats a binding is routed by the rules on [Sessions and tabs](https://oh-my-webbridge.github.io/en/sessions/).
+The body is one JSON object of at most 2 MiB with no unknown fields. A session name that repeats a binding is routed by the rules on [Sessions and tabs](https://oh-my-webbridge.github.io/md/en/sessions/content.md).
 
 ```json
 {
@@ -162,7 +162,7 @@ Settings persist for the session and apply to new tabs before they navigate.
 | `zen`         | `images`, `fonts`, `css`, `javascript`. `true` blocks that resource type.  |
 | `cmd`         | `status` reads the tab's counters, interception and fallback reasons.      |
 
-The configuration is stored on the session and applied to task tabs. Borrowed tabs are excluded. `navigate` accepts the same fields and stores them once the navigation starts. See [Page presets](https://oh-my-webbridge.github.io/en/presets/).
+The configuration is stored on the session and applied to task tabs. Borrowed tabs are excluded. `navigate` accepts the same fields and stores them once the navigation starts. See [Page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md).
 
 ## CDP [#cdp]
 
@@ -191,7 +191,7 @@ Append ` >>nth=0` to take the first match or ` >>nth=-1` to take the last. Text,
 
 ## Reference lifetime [#reference-lifetime]
 
-`@e` references belong to one document generation. In Chrome, a new snapshot, a frame selection, a new main document (navigation or reload) or a change of the tab's URL invalidates them. A snapshot taken inside a selected frame also expires when that frame navigates, reloads, is removed, or the selection ends. Other iframes loading or navigating leave it valid. In Firefox, references live in the document that produced them; see [Firefox](https://oh-my-webbridge.github.io/en/firefox/).
+`@e` references belong to one document generation. In Chrome, a new snapshot, a frame selection, a new main document (navigation or reload) or a change of the tab's URL invalidates them. A snapshot taken inside a selected frame also expires when that frame navigates, reloads, is removed, or the selection ends. Other iframes loading or navigating leave it valid. In Firefox, references live in the document that produced them; see [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md).
 
 ## Errors [#errors]
 

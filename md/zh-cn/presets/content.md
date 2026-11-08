@@ -123,4 +123,4 @@ omw call archive preset '{"cmd":"status"}'
 
 ## Firefox [#firefox]
 
-Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会阻挡的 `webRequest` 监听器中运行，环境注入无法使用，被拦截的顶层页面会让标签页停留在目前的页面。差异请见 [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/#presets)。
+Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会阻挡的 `webRequest` 监听器中运行，环境注入无法使用，被拦截的顶层页面会让标签页停留在目前的页面。差异请见 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md#presets)。

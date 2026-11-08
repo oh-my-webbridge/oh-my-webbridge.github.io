@@ -103,7 +103,7 @@ daemon 保存的狀態，不會隨瀏覽器視窗關閉而消失。
 - 每個受控分頁的網路項目與主控台紀錄。
 - 繪製在受控頁面上方的活動層。
 
-Firefox 對部分動作回應 `unsupported`，因為它的擴充功能 API 沒有對應的功能。差異列於 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/)。
+Firefox 對部分動作回應 `unsupported`，因為它的擴充功能 API 沒有對應的功能。差異列於 [Firefox](https://oh-my-webbridge.github.io/md/zh-hk/firefox/content.md)。
 
 一個分頁同一時間只屬於一個工作階段。建立分頁的工作階段把它們放在自己的分頁羣組；借用的分頁留在你的羣組，並在釋放時歸還。分頁羣組不是 cookie 邊界，也不是安全邊界：設定檔內的每個分頁共用相同的登入狀態。
 
@@ -420,7 +420,7 @@ Firefox 擴充功能無法產生受信任的輸入。`click`、`dblclick`、`mou
 
 ## 預設集 [#presets]
 
-Firefox 預設集使用與 Chrome 相同的模式、過濾清單、引擎與工作階段設定，且只套用於任務分頁。[頁面預設集](https://oh-my-webbridge.github.io/zh-hk/presets/)説明各個模式與內建清單。
+Firefox 預設集使用與 Chrome 相同的模式、過濾清單、引擎與工作階段設定，且只套用於任務分頁。[頁面預設集](https://oh-my-webbridge.github.io/md/zh-hk/presets/content.md)説明各個模式與內建清單。
 
 - 每個任務分頁都有自己會阻擋的 `webRequest.onBeforeRequest` 監聽器，並以 `tabId` 過濾。它會收到每個框架的請求，包括跨處理程序的框架，且沒有每個分頁的目標數上限。清單載入後，每個請求都會同步比對。
 - 預設集變更會立即套用到既有的任務分頁，回應會回報 `appliesOn: "immediate"`。重新設定會替換監聽器，且不會對頁面送出任何東西，所以忙碌的頁面不會延遲它。預設集未變更的導覽會保留監聽器與狀態計數器；設定了 `environment` 的預設集，每次導覽都會重新設定。
@@ -626,10 +626,10 @@ Agent 或指令碼送出的指令，會在你日常使用的 Chrome 或 Firefox 
 
 ## 接下來看哪裏 [#where-to-go-next]
 
-- [快速開始](https://oh-my-webbridge.github.io/zh-hk/getting-started/)：安裝 daemon 與擴充功能，配對瀏覽器，並執行第一批指令。
-- [工作階段與分頁](https://oh-my-webbridge.github.io/zh-hk/sessions/)：每項任務一個工作階段，各有自己的分頁與分頁羣組。
-- [Agent 活動](https://oh-my-webbridge.github.io/zh-hk/activity/)：光暈、焦點框與工具列圖示，用來標示 Agent 正在控制的分頁。
-- [動作](https://oh-my-webbridge.github.io/zh-hk/reference/actions/)：所有動作、其引數，以及會回傳的錯誤。
+- [快速開始](https://oh-my-webbridge.github.io/md/zh-hk/getting-started/content.md)：安裝 daemon 與擴充功能，配對瀏覽器，並執行第一批指令。
+- [工作階段與分頁](https://oh-my-webbridge.github.io/md/zh-hk/sessions/content.md)：每項任務一個工作階段，各有自己的分頁與分頁羣組。
+- [Agent 活動](https://oh-my-webbridge.github.io/md/zh-hk/activity/content.md)：光暈、焦點框與工具列圖示，用來標示 Agent 正在控制的分頁。
+- [動作](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md)：所有動作、其引數，以及會回傳的錯誤。
 
 
 # 頁面預設集 (https://oh-my-webbridge.github.io/zh-hk/presets/)
@@ -757,7 +757,7 @@ omw call archive preset '{"cmd":"status"}'
 
 ## Firefox [#firefox]
 
-Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾在會阻擋的 `webRequest` 監聽器中執行，環境注入無法使用，被封鎖的頂層頁面會讓分頁停留在目前的頁面。差異請見 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/#presets)。
+Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾在會阻擋的 `webRequest` 監聽器中執行，環境注入無法使用，被封鎖的頂層頁面會讓分頁停留在目前的頁面。差異請見 [Firefox](https://oh-my-webbridge.github.io/md/zh-hk/firefox/content.md#presets)。
 
 
 # 動作 (https://oh-my-webbridge.github.io/zh-hk/reference/actions/)
@@ -768,7 +768,7 @@ Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾
 
 {/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-每個瀏覽器動作都經由 daemon 的 `POST /command`，位址為 `http://127.0.0.1:17373`。請求帶有 `omw connection` 印出的 Bearer token。CLI 以 `omw call` 包裝它，SDK 以 `call` 包裝它（請見 [CLI](https://oh-my-webbridge.github.io/zh-hk/reference/cli/) 與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/)）。
+每個瀏覽器動作都經由 daemon 的 `POST /command`，位址為 `http://127.0.0.1:17373`。請求帶有 `omw connection` 印出的 Bearer token。CLI 以 `omw call` 包裝它，SDK 以 `call` 包裝它（請見 [CLI](https://oh-my-webbridge.github.io/md/zh-hk/reference/cli/content.md) 與 [SDK](https://oh-my-webbridge.github.io/md/zh-hk/reference/sdk/content.md)）。
 
 ## 請求 [#requests]
 
@@ -780,7 +780,7 @@ Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾
 | `timeoutMs` | number | 期限，單位為毫秒，範圍 1 到 120000，預設 30000。它涵蓋排隊與執行。                                 |
 | `browser`   | string | `chrome` 或 `firefox`。省略時，依序使用已綁定到該工作階段的瀏覽器、唯一已連線的瀏覽器，或 Chrome。 |
 
-本文是一個 JSON 物件，上限 2 MiB，不可含有未知欄位。名稱與既有綁定重複的工作階段，依 [工作階段與分頁](https://oh-my-webbridge.github.io/zh-hk/sessions/) 的規則路由。
+本文是一個 JSON 物件，上限 2 MiB，不可含有未知欄位。名稱與既有綁定重複的工作階段，依 [工作階段與分頁](https://oh-my-webbridge.github.io/md/zh-hk/sessions/content.md) 的規則路由。
 
 ```json
 {
@@ -926,7 +926,7 @@ Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾
 | `zen`         | `images`、`fonts`、`css`、`javascript`。`true` 會封鎖該資源類型。 |
 | `cmd`         | `status` 讀取該分頁的計數器、攔截與後備原因。                     |
 
-組態儲存在工作階段上，並套用到任務分頁。借用的分頁不在其內。`navigate` 接受相同的欄位，並在導覽開始後儲存它們。請見[頁面預設集](https://oh-my-webbridge.github.io/zh-hk/presets/)。
+組態儲存在工作階段上，並套用到任務分頁。借用的分頁不在其內。`navigate` 接受相同的欄位，並在導覽開始後儲存它們。請見[頁面預設集](https://oh-my-webbridge.github.io/md/zh-hk/presets/content.md)。
 
 ## CDP [#cdp]
 
@@ -955,7 +955,7 @@ daemon 在內部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 ## 參照的存續期間 [#reference-lifetime]
 
-`@e` 參照屬於單一文件世代。在 Chrome 中，新的快照、框架選擇、新的主文件（導覽或重新載入），或分頁 URL 的變更，都會使它們失效。在所選框架內取得的快照，也會在該框架導覽、重新載入、被移除，或選取結束時過期。其他 iframe 載入或導覽，不影響它的有效性。在 Firefox 中，參照存在於產生它們的文件內；請見 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/)。
+`@e` 參照屬於單一文件世代。在 Chrome 中，新的快照、框架選擇、新的主文件（導覽或重新載入），或分頁 URL 的變更，都會使它們失效。在所選框架內取得的快照，也會在該框架導覽、重新載入、被移除，或選取結束時過期。其他 iframe 載入或導覽，不影響它的有效性。在 Firefox 中，參照存在於產生它們的文件內；請見 [Firefox](https://oh-my-webbridge.github.io/md/zh-hk/firefox/content.md)。
 
 ## 錯誤 [#errors]
 
@@ -1197,7 +1197,7 @@ omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
 
 在前景執行 daemon，直到收到 SIGINT 或 SIGTERM。監聽位址固定為 `127.0.0.1:17373`。如果 `config.json` 指定了其他位址，daemon 會拒絕啓動。
 
-`--cdp` 讓 daemon 指向一個已啓用遠端偵錯的 Chrome 瀏覽器端點。URL 必須以 `ws://` 或 `wss://` 開頭，並帶有主機。使用這個旗標時，`/devtools/browser` 會代理該端點；請見 [CDP](https://oh-my-webbridge.github.io/zh-hk/reference/cdp/#native-mode)。
+`--cdp` 讓 daemon 指向一個已啓用遠端偵錯的 Chrome 瀏覽器端點。URL 必須以 `ws://` 或 `wss://` 開頭，並帶有主機。使用這個旗標時，`/devtools/browser` 會代理該端點；請見 [CDP](https://oh-my-webbridge.github.io/md/zh-hk/reference/cdp/content.md#native-mode)。
 
 端點不會寫入 `config.json`。該檔案中已有的 `cdp` 欄位會在啓動時讀取，旗標會在該行程中取代它。
 
@@ -1279,7 +1279,7 @@ token 是以十六進位表示的 32 個隨機位元組，與 `config.json` 保�
 omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
 ```
 
-對 daemon 送出一個動作，並印出它的 JSON 回覆。工作階段名稱由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。`ACTION` 是[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/)中的其中一個動作。
+對 daemon 送出一個動作，並印出它的 JSON 回覆。工作階段名稱由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。`ACTION` 是[動作參考](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md)中的其中一個動作。
 
 選用的第三個引數是含有動作引數的 JSON 物件。使用 `-` 時，指令從 stdin 讀取該物件，上限 2 MiB。省略時，daemon 收到 `{}`。
 
@@ -1342,7 +1342,7 @@ omw help
 2. macOS：`~/Library/Application Support/oh-my-webbridge`。
 3. Linux：`$XDG_CONFIG_HOME/oh-my-webbridge`；`XDG_CONFIG_HOME` 未設定時為 `~/.config/oh-my-webbridge`。
 
-CLI、daemon、使用者服務與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/) 都讀取同一個目錄。每個讀取組態的指令，在目錄不存在時都會以 0700 權限建立它。
+CLI、daemon、使用者服務與 [SDK](https://oh-my-webbridge.github.io/md/zh-hk/reference/sdk/content.md) 都讀取同一個目錄。每個讀取組態的指令，在目錄不存在時都會以 0700 權限建立它。
 
 | 檔案            | 內容                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------- |
@@ -1362,7 +1362,7 @@ CLI、daemon、使用者服務與 [SDK](https://oh-my-webbridge.github.io/zh-hk/
 
 {/* Generated from sdk.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/zh-hk/reference/cli/#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。
+SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/md/zh-hk/reference/cli/content.md#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。
 
 `connect` 回傳一個綁定到單一工作階段名稱的 task 物件。如同 `omw call`，擴充功能會依需求開啓該工作階段的分頁與分頁羣組。
 
@@ -1419,7 +1419,7 @@ const count = await task.evaluate("(async () => (await fetch('/api/count')).text
 const links = await task.evaluate("document.querySelectorAll('a').length");
 ```
 
-選擇器接受[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/#selectors)中列出的形式，包括 CSS、快照中的 `@e` 參照、`role=`、`text=` 與 `xpath=`。
+選擇器接受[動作參考](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md#selectors)中列出的形式，包括 CSS、快照中的 `@e` 參照、`role=`、`text=` 與 `xpath=`。
 
 ## call(action, args, options) [#callaction-args-options]
 
@@ -1478,7 +1478,7 @@ try {
 
 被中止的請求以 `AbortError` 拒絕，沒有 daemon 的錯誤碼。被拒絕的連線以 `fetch` 的 `TypeError` 拒絕。
 
-完整的錯誤碼清單與復原步驟位於[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/#errors)。
+完整的錯誤碼清單與復原步驟位於[動作參考](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md#errors)。
 
 ## 並行任務 [#parallel-tasks]
 

@@ -1,20 +1,20 @@
 # oh-my-webbridge 文件
 
-- [oh-my-webbridge](https://oh-my-webbridge.github.io/zh-mo/): 本機 daemon 加上瀏覽器擴充功能，讓 Agent 或指令碼在你平常使用的 Chrome 或 Firefox 裏工作。
-- [快速開始](https://oh-my-webbridge.github.io/zh-mo/getting-started/): 安裝 daemon 與瀏覽器擴充功能，配對瀏覽器，並執行第一批指令。
+- [oh-my-webbridge](https://oh-my-webbridge.github.io/md/zh-mo/content.md): 本機 daemon 加上瀏覽器擴充功能，讓 Agent 或指令碼在你平常使用的 Chrome 或 Firefox 裏工作。
+- [快速開始](https://oh-my-webbridge.github.io/md/zh-mo/getting-started/content.md): 安裝 daemon 與瀏覽器擴充功能，配對瀏覽器，並執行第一批指令。
 
 - **指南**
-- [工作階段與分頁](https://oh-my-webbridge.github.io/zh-mo/sessions/): Agent 如何把工作拆成工作階段、分頁如何開啓、分組與借用，以及適用的限制。
-- [Agent 活動](https://oh-my-webbridge.github.io/zh-mo/activity/): Agent 控制分頁時，工具列圖示、彈出式視窗與活動層會顯示什麼，以及如何關閉活動層。
-- [頁面預設集](https://oh-my-webbridge.github.io/zh-mo/presets/): 以 anti-ad、zen 與 none 預設集，控制工作階段所擁有的分頁可以發出哪些網路請求。
-- [Firefox](https://oh-my-webbridge.github.io/zh-mo/firefox/): 安裝 Firefox 擴充功能，與 daemon 配對，並了解它的動作與 Chrome 有何不同。
+- [工作階段與分頁](https://oh-my-webbridge.github.io/md/zh-mo/sessions/content.md): Agent 如何把工作拆成工作階段、分頁如何開啓、分組與借用，以及適用的限制。
+- [Agent 活動](https://oh-my-webbridge.github.io/md/zh-mo/activity/content.md): Agent 控制分頁時，工具列圖示、彈出式視窗與活動層會顯示什麼，以及如何關閉活動層。
+- [頁面預設集](https://oh-my-webbridge.github.io/md/zh-mo/presets/content.md): 以 anti-ad、zen 與 none 預設集，控制工作階段所擁有的分頁可以發出哪些網路請求。
+- [Firefox](https://oh-my-webbridge.github.io/md/zh-mo/firefox/content.md): 安裝 Firefox 擴充功能，與 daemon 配對，並了解它的動作與 Chrome 有何不同。
 
 - **參考**
-- [CLI](https://oh-my-webbridge.github.io/zh-mo/reference/cli/): omw daemon 與命令列用户端的指令。
-- [動作](https://oh-my-webbridge.github.io/zh-mo/reference/actions/): 指令端點、每個瀏覽器動作、選擇器語法與錯誤碼。
-- [JavaScript SDK](https://oh-my-webbridge.github.io/zh-mo/reference/sdk/): 對 daemon 工作階段送出動作的 Node.js 用户端。
-- [CDP](https://oh-my-webbridge.github.io/zh-mo/reference/cdp/): 透過 daemon 存取 Chrome DevTools Protocol，分為擴充功能模式與原生模式。
+- [CLI](https://oh-my-webbridge.github.io/md/zh-mo/reference/cli/content.md): omw daemon 與命令列用户端的指令。
+- [動作](https://oh-my-webbridge.github.io/md/zh-mo/reference/actions/content.md): 指令端點、每個瀏覽器動作、選擇器語法與錯誤碼。
+- [JavaScript SDK](https://oh-my-webbridge.github.io/md/zh-mo/reference/sdk/content.md): 對 daemon 工作階段送出動作的 Node.js 用户端。
+- [CDP](https://oh-my-webbridge.github.io/md/zh-mo/reference/cdp/content.md): 透過 daemon 存取 Chrome DevTools Protocol，分為擴充功能模式與原生模式。
 
 - **專案**
-- [架構](https://oh-my-webbridge.github.io/zh-mo/architecture/): omw daemon 與瀏覽器擴充功能如何分工，以及一個指令如何抵達分頁。
-- [開發](https://oh-my-webbridge.github.io/zh-mo/development/): 儲存庫結構、工具鏈、建置輸出、測試指令與發行流程。
+- [架構](https://oh-my-webbridge.github.io/md/zh-mo/architecture/content.md): omw daemon 與瀏覽器擴充功能如何分工，以及一個指令如何抵達分頁。
+- [開發](https://oh-my-webbridge.github.io/md/zh-mo/development/content.md): 儲存庫結構、工具鏈、建置輸出、測試指令與發行流程。

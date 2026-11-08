@@ -4,7 +4,7 @@
 >
 > omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
 
-SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/zh-tw/reference/cli/#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。
+SDK 是單一模組 `sdk/index.ts`，由 `pnpm run build` 建置為 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模組。它從[組態目錄](https://oh-my-webbridge.github.io/md/zh-tw/reference/cli/content.md#configuration-directory)讀取 `config.json`，並把動作送到 `POST /command`。
 
 `connect` 回傳一個綁定到單一工作階段名稱的 task 物件。如同 `omw call`，擴充功能會依需求開啟該工作階段的分頁與分頁群組。
 
@@ -61,7 +61,7 @@ const count = await task.evaluate("(async () => (await fetch('/api/count')).text
 const links = await task.evaluate("document.querySelectorAll('a').length");
 ```
 
-選擇器接受[動作參考](https://oh-my-webbridge.github.io/zh-tw/reference/actions/#selectors)中列出的形式，包括 CSS、快照中的 `@e` 參照、`role=`、`text=` 與 `xpath=`。
+選擇器接受[動作參考](https://oh-my-webbridge.github.io/md/zh-tw/reference/actions/content.md#selectors)中列出的形式，包括 CSS、快照中的 `@e` 參照、`role=`、`text=` 與 `xpath=`。
 
 ## call(action, args, options) [#callaction-args-options]
 
@@ -120,7 +120,7 @@ try {
 
 被中止的請求以 `AbortError` 拒絕，沒有 daemon 的錯誤碼。被拒絕的連線以 `fetch` 的 `TypeError` 拒絕。
 
-完整的錯誤碼清單與復原步驟位於[動作參考](https://oh-my-webbridge.github.io/zh-tw/reference/actions/#errors)。
+完整的錯誤碼清單與復原步驟位於[動作參考](https://oh-my-webbridge.github.io/md/zh-tw/reference/actions/content.md#errors)。
 
 ## 並行任務 [#parallel-tasks]
 

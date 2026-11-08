@@ -28,7 +28,7 @@ One daemon serves Chrome and Firefox at the same time. Each browser is paired on
 
 ## Where to go next [#where-to-go-next]
 
-- [Getting started](https://oh-my-webbridge.github.io/en/getting-started/): install the daemon and the extension, pair a browser and run the first commands.
-- [Sessions and tabs](https://oh-my-webbridge.github.io/en/sessions/): one session per task, with its own tabs and tab group.
-- [Agent activity](https://oh-my-webbridge.github.io/en/activity/): the glow, focus frame and toolbar icon that mark a tab an agent controls.
-- [Actions](https://oh-my-webbridge.github.io/en/reference/actions/): every action, its arguments and the errors it returns.
+- [Getting started](https://oh-my-webbridge.github.io/md/en/getting-started/content.md): install the daemon and the extension, pair a browser and run the first commands.
+- [Sessions and tabs](https://oh-my-webbridge.github.io/md/en/sessions/content.md): one session per task, with its own tabs and tab group.
+- [Agent activity](https://oh-my-webbridge.github.io/md/en/activity/content.md): the glow, focus frame and toolbar icon that mark a tab an agent controls.
+- [Actions](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md): every action, its arguments and the errors it returns.

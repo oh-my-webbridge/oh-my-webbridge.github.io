@@ -121,4 +121,4 @@ Any other `cmd` value returns `invalid_args`. A configuration call returns `conf
 
 ## Firefox [#firefox]
 
-The Firefox build uses the same modes, lists and session settings. Network filtering runs in blocking `webRequest` listeners, environment injection is unavailable, and a blocked top-level page keeps the tab on its current page. [Firefox](https://oh-my-webbridge.github.io/en/firefox/#presets) covers the differences.
+The Firefox build uses the same modes, lists and session settings. Network filtering runs in blocking `webRequest` listeners, environment injection is unavailable, and a blocked top-level page keeps the tab on its current page. [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md#presets) covers the differences.

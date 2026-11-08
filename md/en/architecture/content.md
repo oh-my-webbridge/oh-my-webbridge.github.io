@@ -31,7 +31,7 @@ The extension owns the browser side.
 - Network entries and console records for each controlled tab.
 - The activity layer drawn over a controlled page.
 
-Firefox answers some actions with `unsupported`, because its extension APIs have no equivalent. The differences are listed in [Firefox](https://oh-my-webbridge.github.io/en/firefox/).
+Firefox answers some actions with `unsupported`, because its extension APIs have no equivalent. The differences are listed in [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md).
 
 One tab belongs to one session at a time. A session that creates tabs keeps them in its own tab group; a borrowed tab stays in your group and returns on release. A tab group is neither a cookie boundary nor a security boundary: every tab in the profile shares the same logins.
 

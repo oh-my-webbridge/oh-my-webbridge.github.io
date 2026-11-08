@@ -33,7 +33,7 @@ daemon 保存的状态，不会随浏览器窗口关闭而消失。
 - 每个受控标签页的网络项目与控制台纪录。
 - 绘制在受控页面上方的活动层。
 
-Firefox 对部分动作响应 `unsupported`，因为它的扩展程序 API 没有对应的功能。差异列于 [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/)。
+Firefox 对部分动作响应 `unsupported`，因为它的扩展程序 API 没有对应的功能。差异列于 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md)。
 
 一个标签页同一时间只属于一个会话。创建标签页的会话把它们放在自己的标签页分组；借用的标签页留在你的分组，并在释放时归还。标签页分组不是 cookie 边界，也不是安全边界：个人资料内的每个标签页共用相同的登录状态。
 

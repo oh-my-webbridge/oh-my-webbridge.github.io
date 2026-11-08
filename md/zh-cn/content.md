@@ -30,7 +30,7 @@ Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个
 
 ## 接下来看哪里 [#where-to-go-next]
 
-- [快速开始](https://oh-my-webbridge.github.io/zh-cn/getting-started/)：安装 daemon 与扩展程序，配对浏览器，并运行第一批命令。
-- [会话与标签页](https://oh-my-webbridge.github.io/zh-cn/sessions/)：每项任务一个会话，各有自己的标签页与标签页分组。
-- [Agent 活动](https://oh-my-webbridge.github.io/zh-cn/activity/)：光晕、焦点框与工具栏图标，用来标示 Agent 正在控制的标签页。
-- [动作](https://oh-my-webbridge.github.io/zh-cn/reference/actions/)：所有动作、其参数，以及会返回的错误。
+- [快速开始](https://oh-my-webbridge.github.io/md/zh-cn/getting-started/content.md)：安装 daemon 与扩展程序，配对浏览器，并运行第一批命令。
+- [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md)：每项任务一个会话，各有自己的标签页与标签页分组。
+- [Agent 活动](https://oh-my-webbridge.github.io/md/zh-cn/activity/content.md)：光晕、焦点框与工具栏图标，用来标示 Agent 正在控制的标签页。
+- [动作](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md)：所有动作、其参数，以及会返回的错误。

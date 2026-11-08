@@ -121,4 +121,4 @@ omw call archive preset '{"cmd":"status"}'
 
 ## Firefox [#firefox]
 
-Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾在會阻擋的 `webRequest` 監聽器中執行，環境注入無法使用，被封鎖的頂層頁面會讓分頁停留在目前的頁面。差異請見 [Firefox](https://oh-my-webbridge.github.io/zh-tw/firefox/#presets)。
+Firefox 版本使用相同的模式、清單與工作階段設定。網路過濾在會阻擋的 `webRequest` 監聽器中執行，環境注入無法使用，被封鎖的頂層頁面會讓分頁停留在目前的頁面。差異請見 [Firefox](https://oh-my-webbridge.github.io/md/zh-tw/firefox/content.md#presets)。

@@ -6,7 +6,7 @@
 
 {/* Generated from sdk.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-SDK 是单一模块 `sdk/index.ts`，由 `pnpm run build` 构建为 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模块。它从[配置目录](https://oh-my-webbridge.github.io/zh-cn/reference/cli/#configuration-directory)读取 `config.json`，并把动作送到 `POST /command`。
+SDK 是单一模块 `sdk/index.ts`，由 `pnpm run build` 构建为 `dist/sdk.mjs`。它是供 Node.js 24 及更新版本使用的 ESM 模块。它从[配置目录](https://oh-my-webbridge.github.io/md/zh-cn/reference/cli/content.md#configuration-directory)读取 `config.json`，并把动作送到 `POST /command`。
 
 `connect` 返回一个绑定到单一会话名称的 task 对象。如同 `omw call`，扩展程序会依需求打开该会话的标签页与标签页分组。
 
@@ -63,7 +63,7 @@ const count = await task.evaluate("(async () => (await fetch('/api/count')).text
 const links = await task.evaluate("document.querySelectorAll('a').length");
 ```
 
-选择器接受[动作参考](https://oh-my-webbridge.github.io/zh-cn/reference/actions/#selectors)中列出的形式，包括 CSS、快照中的 `@e` 引用、`role=`、`text=` 与 `xpath=`。
+选择器接受[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#selectors)中列出的形式，包括 CSS、快照中的 `@e` 引用、`role=`、`text=` 与 `xpath=`。
 
 ## call(action, args, options) [#callaction-args-options]
 
@@ -122,7 +122,7 @@ try {
 
 被中止的请求以 `AbortError` 拒绝，没有 daemon 的错误码。被拒绝的连接以 `fetch` 的 `TypeError` 拒绝。
 
-完整的错误码清单与复原步骤位于[动作参考](https://oh-my-webbridge.github.io/zh-cn/reference/actions/#errors)。
+完整的错误码清单与复原步骤位于[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#errors)。
 
 ## 并行任务 [#parallel-tasks]
 

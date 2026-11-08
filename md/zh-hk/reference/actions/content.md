@@ -6,7 +6,7 @@
 
 {/* Generated from actions.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
 
-每個瀏覽器動作都經由 daemon 的 `POST /command`，位址為 `http://127.0.0.1:17373`。請求帶有 `omw connection` 印出的 Bearer token。CLI 以 `omw call` 包裝它，SDK 以 `call` 包裝它（請見 [CLI](https://oh-my-webbridge.github.io/zh-hk/reference/cli/) 與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/)）。
+每個瀏覽器動作都經由 daemon 的 `POST /command`，位址為 `http://127.0.0.1:17373`。請求帶有 `omw connection` 印出的 Bearer token。CLI 以 `omw call` 包裝它，SDK 以 `call` 包裝它（請見 [CLI](https://oh-my-webbridge.github.io/md/zh-hk/reference/cli/content.md) 與 [SDK](https://oh-my-webbridge.github.io/md/zh-hk/reference/sdk/content.md)）。
 
 ## 請求 [#requests]
 
@@ -18,7 +18,7 @@
 | `timeoutMs` | number | 期限，單位為毫秒，範圍 1 到 120000，預設 30000。它涵蓋排隊與執行。                                 |
 | `browser`   | string | `chrome` 或 `firefox`。省略時，依序使用已綁定到該工作階段的瀏覽器、唯一已連線的瀏覽器，或 Chrome。 |
 
-本文是一個 JSON 物件，上限 2 MiB，不可含有未知欄位。名稱與既有綁定重複的工作階段，依 [工作階段與分頁](https://oh-my-webbridge.github.io/zh-hk/sessions/) 的規則路由。
+本文是一個 JSON 物件，上限 2 MiB，不可含有未知欄位。名稱與既有綁定重複的工作階段，依 [工作階段與分頁](https://oh-my-webbridge.github.io/md/zh-hk/sessions/content.md) 的規則路由。
 
 ```json
 {
@@ -164,7 +164,7 @@
 | `zen`         | `images`、`fonts`、`css`、`javascript`。`true` 會封鎖該資源類型。 |
 | `cmd`         | `status` 讀取該分頁的計數器、攔截與後備原因。                     |
 
-組態儲存在工作階段上，並套用到任務分頁。借用的分頁不在其內。`navigate` 接受相同的欄位，並在導覽開始後儲存它們。請見[頁面預設集](https://oh-my-webbridge.github.io/zh-hk/presets/)。
+組態儲存在工作階段上，並套用到任務分頁。借用的分頁不在其內。`navigate` 接受相同的欄位，並在導覽開始後儲存它們。請見[頁面預設集](https://oh-my-webbridge.github.io/md/zh-hk/presets/content.md)。
 
 ## CDP [#cdp]
 
@@ -193,7 +193,7 @@ daemon 在內部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 ## 參照的存續期間 [#reference-lifetime]
 
-`@e` 參照屬於單一文件世代。在 Chrome 中，新的快照、框架選擇、新的主文件（導覽或重新載入），或分頁 URL 的變更，都會使它們失效。在所選框架內取得的快照，也會在該框架導覽、重新載入、被移除，或選取結束時過期。其他 iframe 載入或導覽，不影響它的有效性。在 Firefox 中，參照存在於產生它們的文件內；請見 [Firefox](https://oh-my-webbridge.github.io/zh-hk/firefox/)。
+`@e` 參照屬於單一文件世代。在 Chrome 中，新的快照、框架選擇、新的主文件（導覽或重新載入），或分頁 URL 的變更，都會使它們失效。在所選框架內取得的快照，也會在該框架導覽、重新載入、被移除，或選取結束時過期。其他 iframe 載入或導覽，不影響它的有效性。在 Firefox 中，參照存在於產生它們的文件內；請見 [Firefox](https://oh-my-webbridge.github.io/md/zh-hk/firefox/content.md)。
 
 ## 錯誤 [#errors]
 

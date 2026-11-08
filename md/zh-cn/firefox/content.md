@@ -105,7 +105,7 @@ Firefox 扩展程序无法产生受信任的输入。`click`、`dblclick`、`mou
 
 ## 预设 [#presets]
 
-Firefox 预设使用与 Chrome 相同的模式、过滤清单、引擎与会话设置，且只套用于任务标签页。[页面预设](https://oh-my-webbridge.github.io/zh-cn/presets/)说明各个模式与内置清单。
+Firefox 预设使用与 Chrome 相同的模式、过滤清单、引擎与会话设置，且只套用于任务标签页。[页面预设](https://oh-my-webbridge.github.io/md/zh-cn/presets/content.md)说明各个模式与内置清单。
 
 - 每个任务标签页都有自己会阻挡的 `webRequest.onBeforeRequest` 监听器，并以 `tabId` 过滤。它会收到每个框架的请求，包括跨处理程序的框架，且没有每个标签页的目标数上限。清单加载后，每个请求都会同步比对。
 - 预设变更会立即套用到既有的任务标签页，响应会回报 `appliesOn: "immediate"`。重新设置会替换监听器，且不会对页面发送任何东西，所以忙碌的页面不会延迟它。预设未变更的导航会保留监听器与状态计数器；设置了 `environment` 的预设，每次导航都会重新设置。

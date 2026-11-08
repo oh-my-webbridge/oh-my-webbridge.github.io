@@ -34,7 +34,7 @@ omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
 
 在前景執行 daemon，直到收到 SIGINT 或 SIGTERM。監聽位址固定為 `127.0.0.1:17373`。如果 `config.json` 指定了其他位址，daemon 會拒絕啓動。
 
-`--cdp` 讓 daemon 指向一個已啓用遠端偵錯的 Chrome 瀏覽器端點。URL 必須以 `ws://` 或 `wss://` 開頭，並帶有主機。使用這個旗標時，`/devtools/browser` 會代理該端點；請見 [CDP](https://oh-my-webbridge.github.io/zh-hk/reference/cdp/#native-mode)。
+`--cdp` 讓 daemon 指向一個已啓用遠端偵錯的 Chrome 瀏覽器端點。URL 必須以 `ws://` 或 `wss://` 開頭，並帶有主機。使用這個旗標時，`/devtools/browser` 會代理該端點；請見 [CDP](https://oh-my-webbridge.github.io/md/zh-hk/reference/cdp/content.md#native-mode)。
 
 端點不會寫入 `config.json`。該檔案中已有的 `cdp` 欄位會在啓動時讀取，旗標會在該行程中取代它。
 
@@ -116,7 +116,7 @@ token 是以十六進位表示的 32 個隨機位元組，與 `config.json` 保�
 omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
 ```
 
-對 daemon 送出一個動作，並印出它的 JSON 回覆。工作階段名稱由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。`ACTION` 是[動作參考](https://oh-my-webbridge.github.io/zh-hk/reference/actions/)中的其中一個動作。
+對 daemon 送出一個動作，並印出它的 JSON 回覆。工作階段名稱由 1 到 96 個字元組成，可用字母（包括 CJK）、數字、`_`、`.` 或 `-`。`ACTION` 是[動作參考](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md)中的其中一個動作。
 
 選用的第三個引數是含有動作引數的 JSON 物件。使用 `-` 時，指令從 stdin 讀取該物件，上限 2 MiB。省略時，daemon 收到 `{}`。
 
@@ -179,7 +179,7 @@ omw help
 2. macOS：`~/Library/Application Support/oh-my-webbridge`。
 3. Linux：`$XDG_CONFIG_HOME/oh-my-webbridge`；`XDG_CONFIG_HOME` 未設定時為 `~/.config/oh-my-webbridge`。
 
-CLI、daemon、使用者服務與 [SDK](https://oh-my-webbridge.github.io/zh-hk/reference/sdk/) 都讀取同一個目錄。每個讀取組態的指令，在目錄不存在時都會以 0700 權限建立它。
+CLI、daemon、使用者服務與 [SDK](https://oh-my-webbridge.github.io/md/zh-hk/reference/sdk/content.md) 都讀取同一個目錄。每個讀取組態的指令，在目錄不存在時都會以 0700 權限建立它。
 
 | 檔案            | 內容                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------- |

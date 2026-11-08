@@ -1,20 +1,20 @@
 # oh-my-webbridge 文档
 
-- [oh-my-webbridge](https://oh-my-webbridge.github.io/zh-cn/): 本机 daemon 加上浏览器扩展程序，让 Agent 或脚本在你平常使用的 Chrome 或 Firefox 里工作。
-- [快速开始](https://oh-my-webbridge.github.io/zh-cn/getting-started/): 安装 daemon 与浏览器扩展程序，配对浏览器，并运行第一批命令。
+- [oh-my-webbridge](https://oh-my-webbridge.github.io/md/zh-cn/content.md): 本机 daemon 加上浏览器扩展程序，让 Agent 或脚本在你平常使用的 Chrome 或 Firefox 里工作。
+- [快速开始](https://oh-my-webbridge.github.io/md/zh-cn/getting-started/content.md): 安装 daemon 与浏览器扩展程序，配对浏览器，并运行第一批命令。
 
 - **指南**
-- [会话与标签页](https://oh-my-webbridge.github.io/zh-cn/sessions/): Agent 如何把工作拆成会话、标签页如何打开、分组与借用，以及适用的限制。
-- [Agent 活动](https://oh-my-webbridge.github.io/zh-cn/activity/): Agent 控制标签页时，工具栏图标、弹出式窗口与活动层会显示什么，以及如何关闭活动层。
-- [页面预设](https://oh-my-webbridge.github.io/zh-cn/presets/): 以 anti-ad、zen 与 none 预设，控制会话所拥有的标签页可以发出哪些网络请求。
-- [Firefox](https://oh-my-webbridge.github.io/zh-cn/firefox/): 安装 Firefox 扩展程序，与 daemon 配对，并了解它的动作与 Chrome 有何不同。
+- [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md): Agent 如何把工作拆成会话、标签页如何打开、分组与借用，以及适用的限制。
+- [Agent 活动](https://oh-my-webbridge.github.io/md/zh-cn/activity/content.md): Agent 控制标签页时，工具栏图标、弹出式窗口与活动层会显示什么，以及如何关闭活动层。
+- [页面预设](https://oh-my-webbridge.github.io/md/zh-cn/presets/content.md): 以 anti-ad、zen 与 none 预设，控制会话所拥有的标签页可以发出哪些网络请求。
+- [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md): 安装 Firefox 扩展程序，与 daemon 配对，并了解它的动作与 Chrome 有何不同。
 
 - **参考**
-- [CLI](https://oh-my-webbridge.github.io/zh-cn/reference/cli/): omw daemon 与命令行客户端的命令。
-- [动作](https://oh-my-webbridge.github.io/zh-cn/reference/actions/): 命令端点、每个浏览器动作、选择器语法与错误码。
-- [JavaScript SDK](https://oh-my-webbridge.github.io/zh-cn/reference/sdk/): 对 daemon 会话发送动作的 Node.js 客户端。
-- [CDP](https://oh-my-webbridge.github.io/zh-cn/reference/cdp/): 通过 daemon 访问 Chrome DevTools Protocol，分为扩展程序模式与原生模式。
+- [CLI](https://oh-my-webbridge.github.io/md/zh-cn/reference/cli/content.md): omw daemon 与命令行客户端的命令。
+- [动作](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md): 命令端点、每个浏览器动作、选择器语法与错误码。
+- [JavaScript SDK](https://oh-my-webbridge.github.io/md/zh-cn/reference/sdk/content.md): 对 daemon 会话发送动作的 Node.js 客户端。
+- [CDP](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md): 通过 daemon 访问 Chrome DevTools Protocol，分为扩展程序模式与原生模式。
 
 - **项目**
-- [架构](https://oh-my-webbridge.github.io/zh-cn/architecture/): omw daemon 与浏览器扩展程序如何分工，以及一个命令如何抵达标签页。
-- [开发](https://oh-my-webbridge.github.io/zh-cn/development/): 仓库结构、工具链、构建输出、测试命令与发布流程。
+- [架构](https://oh-my-webbridge.github.io/md/zh-cn/architecture/content.md): omw daemon 与浏览器扩展程序如何分工，以及一个命令如何抵达标签页。
+- [开发](https://oh-my-webbridge.github.io/md/zh-cn/development/content.md): 仓库结构、工具链、构建输出、测试命令与发布流程。

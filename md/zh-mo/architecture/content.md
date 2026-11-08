@@ -33,7 +33,7 @@ daemon 保存的狀態，不會隨瀏覽器視窗關閉而消失。
 - 每個受控分頁的網路項目與主控台紀錄。
 - 繪製在受控頁面上方的活動層。
 
-Firefox 對部分動作回應 `unsupported`，因為它的擴充功能 API 沒有對應的功能。差異列於 [Firefox](https://oh-my-webbridge.github.io/zh-mo/firefox/)。
+Firefox 對部分動作回應 `unsupported`，因為它的擴充功能 API 沒有對應的功能。差異列於 [Firefox](https://oh-my-webbridge.github.io/md/zh-mo/firefox/content.md)。
 
 一個分頁同一時間只屬於一個工作階段。建立分頁的工作階段把它們放在自己的分頁羣組；借用的分頁留在你的羣組，並在釋放時歸還。分頁羣組不是 cookie 邊界，也不是安全邊界：設定檔內的每個分頁共用相同的登入狀態。
 

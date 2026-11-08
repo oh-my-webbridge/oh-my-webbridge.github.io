@@ -99,7 +99,7 @@ The extension owns the browser side.
 - Network entries and console records for each controlled tab.
 - The activity layer drawn over a controlled page.
 
-Firefox answers some actions with `unsupported`, because its extension APIs have no equivalent. The differences are listed in [Firefox](https://oh-my-webbridge.github.io/en/firefox/).
+Firefox answers some actions with `unsupported`, because its extension APIs have no equivalent. The differences are listed in [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md).
 
 One tab belongs to one session at a time. A session that creates tabs keeps them in its own tab group; a borrowed tab stays in your group and returns on release. A tab group is neither a cookie boundary nor a security boundary: every tab in the profile shares the same logins.
 
@@ -412,7 +412,7 @@ A background restart drops the `webRequest` listeners and the frame selection:
 
 ## Presets [#presets]
 
-Firefox presets use the same modes, filter lists, engine and session settings as Chrome, and they apply only to task tabs. [Page presets](https://oh-my-webbridge.github.io/en/presets/) describes the modes and the bundled lists.
+Firefox presets use the same modes, filter lists, engine and session settings as Chrome, and they apply only to task tabs. [Page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md) describes the modes and the bundled lists.
 
 - Each task tab gets its own blocking `webRequest.onBeforeRequest` listener, filtered by `tabId`. It receives the requests of every frame, including cross-process iframes, and there is no per-tab target limit. Each request is matched synchronously once the lists have loaded.
 - A preset change applies to existing task tabs immediately and the response reports `appliesOn: "immediate"`. Reconfiguration replaces the listeners and sends nothing to the page, so a busy page does not delay it. A navigation with an unchanged preset keeps the listeners and the status counters; a preset with `environment` set reconfigures on each navigation.
@@ -617,10 +617,10 @@ One daemon serves Chrome and Firefox at the same time. Each browser is paired on
 
 ## Where to go next [#where-to-go-next]
 
-- [Getting started](https://oh-my-webbridge.github.io/en/getting-started/): install the daemon and the extension, pair a browser and run the first commands.
-- [Sessions and tabs](https://oh-my-webbridge.github.io/en/sessions/): one session per task, with its own tabs and tab group.
-- [Agent activity](https://oh-my-webbridge.github.io/en/activity/): the glow, focus frame and toolbar icon that mark a tab an agent controls.
-- [Actions](https://oh-my-webbridge.github.io/en/reference/actions/): every action, its arguments and the errors it returns.
+- [Getting started](https://oh-my-webbridge.github.io/md/en/getting-started/content.md): install the daemon and the extension, pair a browser and run the first commands.
+- [Sessions and tabs](https://oh-my-webbridge.github.io/md/en/sessions/content.md): one session per task, with its own tabs and tab group.
+- [Agent activity](https://oh-my-webbridge.github.io/md/en/activity/content.md): the glow, focus frame and toolbar icon that mark a tab an agent controls.
+- [Actions](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md): every action, its arguments and the errors it returns.
 
 
 # Page presets (https://oh-my-webbridge.github.io/en/presets/)
@@ -746,7 +746,7 @@ Any other `cmd` value returns `invalid_args`. A configuration call returns `conf
 
 ## Firefox [#firefox]
 
-The Firefox build uses the same modes, lists and session settings. Network filtering runs in blocking `webRequest` listeners, environment injection is unavailable, and a blocked top-level page keeps the tab on its current page. [Firefox](https://oh-my-webbridge.github.io/en/firefox/#presets) covers the differences.
+The Firefox build uses the same modes, lists and session settings. Network filtering runs in blocking `webRequest` listeners, environment injection is unavailable, and a blocked top-level page keeps the tab on its current page. [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md#presets) covers the differences.
 
 
 # Actions (https://oh-my-webbridge.github.io/en/reference/actions/)
@@ -755,7 +755,7 @@ The Firefox build uses the same modes, lists and session settings. Network filte
 >
 > omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
-Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/en/reference/cli/) and [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/)).
+Every browser action goes through `POST /command` on the daemon at `http://127.0.0.1:17373`. Requests carry the Bearer token printed by `omw connection`. The CLI wraps it in `omw call`, the SDK in `call` (see [CLI](https://oh-my-webbridge.github.io/md/en/reference/cli/content.md) and [SDK](https://oh-my-webbridge.github.io/md/en/reference/sdk/content.md)).
 
 ## Requests [#requests]
 
@@ -767,7 +767,7 @@ Every browser action goes through `POST /command` on the daemon at `http://127.0
 | `timeoutMs` | number | Deadline in milliseconds, 1 to 120000, default 30000. It covers queueing and execution.                            |
 | `browser`   | string | `chrome` or `firefox`. Omit to use the browser already bound to the session, or the only connected one, or Chrome. |
 
-The body is one JSON object of at most 2 MiB with no unknown fields. A session name that repeats a binding is routed by the rules on [Sessions and tabs](https://oh-my-webbridge.github.io/en/sessions/).
+The body is one JSON object of at most 2 MiB with no unknown fields. A session name that repeats a binding is routed by the rules on [Sessions and tabs](https://oh-my-webbridge.github.io/md/en/sessions/content.md).
 
 ```json
 {
@@ -913,7 +913,7 @@ Settings persist for the session and apply to new tabs before they navigate.
 | `zen`         | `images`, `fonts`, `css`, `javascript`. `true` blocks that resource type.  |
 | `cmd`         | `status` reads the tab's counters, interception and fallback reasons.      |
 
-The configuration is stored on the session and applied to task tabs. Borrowed tabs are excluded. `navigate` accepts the same fields and stores them once the navigation starts. See [Page presets](https://oh-my-webbridge.github.io/en/presets/).
+The configuration is stored on the session and applied to task tabs. Borrowed tabs are excluded. `navigate` accepts the same fields and stores them once the navigation starts. See [Page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md).
 
 ## CDP [#cdp]
 
@@ -942,7 +942,7 @@ Append ` >>nth=0` to take the first match or ` >>nth=-1` to take the last. Text,
 
 ## Reference lifetime [#reference-lifetime]
 
-`@e` references belong to one document generation. In Chrome, a new snapshot, a frame selection, a new main document (navigation or reload) or a change of the tab's URL invalidates them. A snapshot taken inside a selected frame also expires when that frame navigates, reloads, is removed, or the selection ends. Other iframes loading or navigating leave it valid. In Firefox, references live in the document that produced them; see [Firefox](https://oh-my-webbridge.github.io/en/firefox/).
+`@e` references belong to one document generation. In Chrome, a new snapshot, a frame selection, a new main document (navigation or reload) or a change of the tab's URL invalidates them. A snapshot taken inside a selected frame also expires when that frame navigates, reloads, is removed, or the selection ends. Other iframes loading or navigating leave it valid. In Firefox, references live in the document that produced them; see [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md).
 
 ## Errors [#errors]
 
@@ -1180,7 +1180,7 @@ omw serve [--cdp ws://127.0.0.1:9222/devtools/browser/...]
 
 Runs the daemon in the foreground until SIGINT or SIGTERM. The listener is fixed at `127.0.0.1:17373`. If `config.json` names another address, the daemon refuses to start.
 
-`--cdp` points the daemon at a Chrome browser endpoint already running with remote debugging. The URL must start with `ws://` or `wss://` and carry a host. With this flag, `/devtools/browser` proxies that endpoint; see [CDP](https://oh-my-webbridge.github.io/en/reference/cdp/#native-mode).
+`--cdp` points the daemon at a Chrome browser endpoint already running with remote debugging. The URL must start with `ws://` or `wss://` and carry a host. With this flag, `/devtools/browser` proxies that endpoint; see [CDP](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md#native-mode).
 
 The endpoint is not written to `config.json`. A `cdp` field already present in that file is read at startup, and the flag replaces it for that process.
 
@@ -1262,7 +1262,7 @@ The token is 32 random bytes in hex, the same value that `config.json` holds. It
 omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
 ```
 
-Sends one action to the daemon and prints its JSON reply. The session name is 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. `ACTION` is one of the actions in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/).
+Sends one action to the daemon and prints its JSON reply. The session name is 1 to 96 letters (including CJK), digits, `_`, `.` or `-`. `ACTION` is one of the actions in the [action reference](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md).
 
 The optional third argument is a JSON object with the action arguments. With `-`, the command reads that object from stdin, up to 2 MiB. Without it, the daemon receives `{}`.
 
@@ -1325,7 +1325,7 @@ The directory is resolved in this order:
 2. macOS: `~/Library/Application Support/oh-my-webbridge`.
 3. Linux: `$XDG_CONFIG_HOME/oh-my-webbridge`, or `~/.config/oh-my-webbridge` when `XDG_CONFIG_HOME` is unset.
 
-The CLI, the daemon, the user service and the [SDK](https://oh-my-webbridge.github.io/en/reference/sdk/) all read the same directory. Every command that reads the configuration creates it with mode 0700 when it is missing.
+The CLI, the daemon, the user service and the [SDK](https://oh-my-webbridge.github.io/md/en/reference/sdk/content.md) all read the same directory. Every command that reads the configuration creates it with mode 0700 when it is missing.
 
 | File            | Contents                                                                                                     |
 | --------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -1343,7 +1343,7 @@ The token in `config.json` is the only credential. Anyone who reads the file can
 >
 > omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
-The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/en/reference/cli/#configuration-directory) and sends actions to `POST /command`.
+The SDK is one module, `sdk/index.ts`, built to `dist/sdk.mjs` by `pnpm run build`. It is an ESM module for Node.js 24 and later. It reads `config.json` from the [configuration directory](https://oh-my-webbridge.github.io/md/en/reference/cli/content.md#configuration-directory) and sends actions to `POST /command`.
 
 `connect` returns a task object bound to one session name. The extension opens that session's tabs and tab group on demand, as it does for `omw call`.
 
@@ -1400,7 +1400,7 @@ const count = await task.evaluate("(async () => (await fetch('/api/count')).text
 const links = await task.evaluate("document.querySelectorAll('a').length");
 ```
 
-Selectors accept the forms listed in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/#selectors), including CSS, `@e` references from a snapshot, `role=`, `text=` and `xpath=`.
+Selectors accept the forms listed in the [action reference](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md#selectors), including CSS, `@e` references from a snapshot, `role=`, `text=` and `xpath=`.
 
 ## call(action, args, options) [#callaction-args-options]
 
@@ -1459,7 +1459,7 @@ The request never reached the command handler when the reply has no JSON content
 
 An aborted request rejects with an `AbortError` and no daemon fault code. A refused connection rejects with the `fetch` `TypeError`.
 
-The full list of codes and recovery steps is in the [action reference](https://oh-my-webbridge.github.io/en/reference/actions/#errors).
+The full list of codes and recovery steps is in the [action reference](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md#errors).
 
 ## Parallel tasks [#parallel-tasks]
 
