@@ -420,8 +420,8 @@ zh-CN 的转换先套用 OpenCC 的词汇表（`twp` 转 `cn`），再套用 `sc
 - 推送到 `main` 会维护一个草稿 `release/next` 版本 PR。它的工作流程运行 `scripts/release-pr.mjs`，以 `scripts/release.mjs version` 消耗变更片段，同步套件、锁文件、daemon 与 manifest 的版本，并写出 `CHANGELOG.md` 与 `docs/releases/<version>.md`。
 - 版本 PR 合并后，版本工作流程会为 `chore(release): prepare <version>` 这个 commit 创建标签。该标签触发发布工作流程：它重新构建、审核每个封存盘、上传资产、验证其 SHA-256 摘要，之后才发布 GitHub Release。
 - GitHub Release 发布后，商店工作流程（`.github/workflows/stores.yml`）把 `omw-<version>-chrome-mv3.zip` 提交到 Chrome Web Store，并把未签章的附加组件连同标签 commit 的 `git archive` 与给审查人员的构建说明提交到 addons.mozilla.org。两个套件都从已发布的 GitHub Release 下载，并以其摘要与 `SHA256SUMS` 验证。各商店审查通过后才发布该版本。商店已有的版本保持不变，因此发布可以重新运行。Chrome 若有另一个版本仍在审查或等待发布，Chrome 的提交会停止。
-- Chrome 的工作在 `chrome-web-store` 环境中运行。Google Workload Identity Federation 把工作的 GitHub OIDC token 换成发布者服务帐户的短期 access token。Workload Identity 提供者只接受本仓库在该环境中运行的 `stores.yml`，因此不保存任何 Google 密钥。AMO 的工作从 `addons-mozilla-org` 环境的 `AMO_JWT_ISSUER` 与 `AMO_JWT_SECRET` 这两个 secret 读取 AMO 的 JWT issuer 与 JWT secret。两个环境都只允许从 `main` 与 `v*` 标签部署。
-- 从 `main` 手动运行商店工作流程会列出各商店的状态，借此检查两组凭证。商店信息、屏幕截图与隐私权问答在各商店的开发人员控制台中编辑。
+- Chrome 的工作在 `chrome-web-store` 环境中运行。Google Workload Identity Federation 把工作的 GitHub OIDC token 换成发布者服务帐户的短期 access token。Workload Identity 提供者只接受本仓库在该环境中运行的 `stores.yml`，因此不保存任何 Google 密钥。AMO 的工作从 `addons-mozilla-org` 环境的 `AMO_JWT_ISSUER` 与 `AMO_JWT_SECRET` 这两个 secret 读取 AMO 的 JWT issuer 与 JWT secret。被调用的工作流程只会收到调用端传入的环境 secret，因此发布工作流程以名称把这两个 secret 传给商店工作流程。两个环境都只允许从 `main` 与 `v*` 标签部署。
+- 从 `main` 手动运行商店工作流程会列出各商店的状态，借此检查两组凭证。在 `tag` 输入填入发布标签时，这次运行会签出该标签，并像发布工作流程一样提交该标签已发布的 GitHub Release：`gh workflow run stores.yml --ref main -f tag=v0.2.1`。商店信息、屏幕截图与隐私权问答在各商店的开发人员控制台中编辑。
 - 封存盘使用 zstd 层级 3，以 `zstd -dc archive.tar.zst | tar -xf - -C DIR` 解开。
 
 ## 授权 [#license]
@@ -476,7 +476,7 @@ Firefox ESR、Developer Edition、Nightly 与未加品牌的构建版本，在 `
 3. **允许脚本**：授予选用的 `userScripts` 权限。
 4. **和 Agent 试试看**：运行 `omw install-skill ~/.agents/skills`，再请 Agent 做点事。
 
-- **访问所有网站**是 `<all_urls>` 主机权限，在安装时请求。你可以在 `about:addons` 的“权限”中关闭它。关闭后，页面动作、`screenshot`、`cookies`、带有 `cmd: "start"` 的 `network` 与带有 `data` 的 `emulate` 会返回 `restricted_tab`，预设也会停止过滤请求。此时 `navigate` 到响应 204 No Content 或 205 Reset Content 的 URL，会一直等到命令的期限。重新打开这项权限即可恢复过滤。
+- **访问所有网站**是 `<all_urls>` 主机权限，在安装时请求。你可以在 `about:addons` 的“权限”中关闭它。关闭后，页面动作、`screenshot`、`cookies`、带有 `cmd: "start"` 的 `network` 与带有 `data` 的 `emulate` 会返回 `restricted_tab`，预设也会停止过滤请求。此时 `navigate` 到响应 204 No Content 或 205 Reset Content 的 URL，会一直等到命令的期限。重新打开这项权限即可恢复过滤。Firefox 不让扩展程序访问的页面（例如 `about:` 页面与 addons.mozilla.org），即使打开这项权限也会返回 `restricted_tab`。页面动作遇到标签页正在导航时返回 `outcome_unknown`，`wait` 则在新页面上继续检查。
 - **用户脚本**是选用的 `userScripts` 权限。请在步骤 3 选择**允许脚本**，或到**设置**，再到**网页**，并确认 Firefox 的提示。Firefox 只接受来自用户操作的请求，所以这些按钮是授予权限的唯一入口。在授予之前，`evaluate` 与带有 `expression` 的 `wait` 会返回 `unsupported`。
 
 弹出式窗口中的**暂停**会让扩展程序与 daemon 中断连接，直到你选择**继续**。
@@ -497,31 +497,31 @@ daemon 同一时间各保持一个 Chrome 连接与一个 Firefox 连接。同�
 
 除非表格列出差异，动作的行为与 Chrome 相同。Firefox 无法运行的动作或参数会返回 `unsupported`（HTTP 501），消息中会指出动作、参数与原因。
 
-| 动作                                                     | Firefox 的行为                                                                                      |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `navigate`                                               | 预设拦截顶层页面时，标签页停留在目前的页面；`navigate` 返回该 URL，在新标签页中则返回 `about:blank` |
-| `window_new`                                             | 忽略 `focused: false`；新窗口会取得焦点                                                             |
-| `click`、`dblclick`、`mouse_click`、`hover`、`send_keys` | 不受信任事件；检查 `isTrusted` 的页面会忽略它们                                                     |
-| `keyboard`（`down`、`up`）、`mouse`、`drag`              | `unsupported`                                                                                       |
-| `key_type`、`keyboard`（`insertText`）                   | 没有可编辑元素取得焦点时，返回 `element_action_failed`                                              |
-| `scroll`                                                 | 不触发 `wheel` 事件；未知的 `direction` 返回 `invalid_args`                                         |
-| `snapshot`、`read_page`、`find`                          | 角色与名称取自 DOM；同一个页面得到的文字可能与 Chrome 不同                                          |
-| `wait`                                                   | `expression` 需要用户脚本权限                                                                       |
-| `evaluate`                                               | 需要用户脚本权限；`contextId` 返回 `unsupported`                                                    |
-| `frame`                                                  | 以字符串返回数值的 `frameId`，不返回 `contextId`                                                    |
-| `history`                                                | `back`、`forward` 与 `reload` 可用；`list` 返回 `unsupported`                                       |
-| `dialog`、`console`                                      | `unsupported`                                                                                       |
-| `dialog_status`                                          | 只返回 URL，不含对话框类型或消息                                                                    |
-| `emulate`                                                | 只有 `data`（额外的请求标头）可用                                                                   |
-| `cookies`                                                | 使用标签页的 cookie 存放区，可能是容器；涵盖所有 cookie 分区；`set` 写入未分区的 cookie             |
-| `download`                                               | 以标签页的 cookie 存放区发送 cookie，该存放区可能是容器                                             |
-| `upload`                                                 | 由 daemon 读取文件：每个命令 16 MiB，传输中共 64 MiB                                                |
-| `screenshot`                                             | 提取标签页但不激活它；`selector` 与 `fullPage` 需要主框架                                           |
-| `save_as_pdf`                                            | `unsupported`；`tabs.saveAsPDF` 会打开保存对话框，且不返回 PDF 字节                                 |
-| `network`                                                | 最多 500 个项目；本文超过 1 MiB 或本文已被丢弃时，返回错误                                          |
-| `preset`                                                 | 使用会阻挡的 `webRequest`；见[预设](#presets)                                                       |
-| `cdp`、`cdp_attach`、`cdp_detach`、`list_targets`        | `unsupported`；Firefox 没有 CDP                                                                     |
-| `artifact_read`、`artifact_close`                        | `unsupported`；Firefox 的动作不返回 artifact 串流                                                   |
+| 动作                                                     | Firefox 的行为                                                                                           |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `navigate`                                               | 预设拦截顶层页面时，标签页停留在目前的页面；`navigate` 返回该 URL，在新标签页中则返回 `about:blank`      |
+| `window_new`                                             | 忽略 `focused: false`；新窗口会取得焦点                                                                  |
+| `click`、`dblclick`、`mouse_click`、`hover`、`send_keys` | 不受信任事件；检查 `isTrusted` 的页面会忽略它们                                                          |
+| `keyboard`（`down`、`up`）、`mouse`、`drag`              | `unsupported`                                                                                            |
+| `key_type`、`keyboard`（`insertText`）                   | 没有可编辑元素取得焦点时，返回 `element_action_failed`                                                   |
+| `scroll`                                                 | 不触发 `wheel` 事件；未知的 `direction` 返回 `invalid_args`                                              |
+| `snapshot`、`read_page`、`find`                          | 角色与名称取自 DOM；同一个页面得到的文字可能与 Chrome 不同                                               |
+| `wait`                                                   | `expression` 需要用户脚本权限                                                                            |
+| `evaluate`                                               | 需要用户脚本权限；`contextId` 返回 `unsupported`                                                         |
+| `frame`                                                  | 以字符串返回数值的 `frameId`，不返回 `contextId`                                                         |
+| `history`                                                | `back`、`forward` 与 `reload` 可用；`list` 返回 `unsupported`                                            |
+| `dialog`、`console`                                      | `unsupported`                                                                                            |
+| `dialog_status`                                          | 只返回 URL，不含对话框类型或消息                                                                         |
+| `emulate`                                                | 只有 `data`（额外的请求标头）可用                                                                        |
+| `cookies`                                                | 使用标签页的 cookie 存放区，可能是容器；涵盖所有 cookie 分区；`set` 写入未分区的 cookie                  |
+| `download`                                               | 以标签页的 cookie 存放区发送 cookie，该存放区可能是容器                                                  |
+| `upload`                                                 | 由 daemon 读取文件：每个命令 16 MiB，传输中共 64 MiB                                                     |
+| `screenshot`                                             | 提取标签页但不激活它；`selector` 与 `fullPage` 需要主框架                                                |
+| `save_as_pdf`                                            | `unsupported`；`tabs.saveAsPDF` 会打开保存对话框，且不返回 PDF 字节                                      |
+| `network`                                                | 最多 500 个项目；本文超过 1 MiB 时返回 `result_too_large`，Firefox 没有保留的本文返回 `body_unavailable` |
+| `preset`                                                 | 使用会阻挡的 `webRequest`；见[预设](#presets)                                                            |
+| `cdp`、`cdp_attach`、`cdp_detach`、`list_targets`        | `unsupported`；Firefox 没有 CDP                                                                          |
+| `artifact_read`、`artifact_close`                        | `unsupported`；Firefox 的动作不返回 artifact 串流                                                        |
 
 Firefox 扩展程序无法产生受信任的输入。`click`、`dblclick`、`mouse_click`、`hover` 与 `send_keys` 会分派 `pointer*`、`mouse*` 与 `key*` 事件，其 `isTrusted` 为 `false`。页面不会取得用户激活状态。页面由这些事件发起的 `window.open` 弹出窗口、文件选择器、全屏幕与剪贴板读取都会失败。`click` 之后仍会调用 `element.click()`，运行链接、按钮与表单控制项的默认动作。`fill` 与 `key_type` 使用 `document.execCommand`，并产生受信任的 `beforeinput` 与 `input` 事件。`hover` 不会设置 `:hover`，所以由 CSS `:hover` 展开的菜单会保持关闭。`send_keys` 接受 `Backspace`、`Delete`、`Enter`、`Tab`、`Shift+Tab`、`Control+A` 与 `Meta+A`。其他按键会返回 `unsupported`。
 
@@ -1121,13 +1121,13 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 
 ## 请求 [#requests]
 
-| 字段        | 类型   | 意义                                                                                           |
-| ----------- | ------ | ---------------------------------------------------------------------------------------------- |
-| `session`   | string | 会话名称，由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。必填。           |
-| `action`    | string | 下列表格中的动作名称。必填。                                                                   |
-| `args`      | object | 动作参数。默认为 `{}`。                                                                        |
-| `timeoutMs` | number | 期限，单位为毫秒，范围 1 到 120000，默认 30000。它涵盖排队与运行。                             |
-| `browser`   | string | `chrome` 或 `firefox`。省略时，依序使用已绑定到该会话的浏览器、唯一已连接的浏览器，或 Chrome。 |
+| 字段        | 类型   | 意义                                                                                                            |
+| ----------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| `session`   | string | 会话名称，由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。必填。                            |
+| `action`    | string | 下列表格中的动作名称。必填。                                                                                    |
+| `args`      | object | 动作参数。默认为 `{}`。                                                                                         |
+| `timeoutMs` | number | 期限，单位为毫秒，范围 1 到 120000，默认 30000。它涵盖排队与运行。其他值（包括 0）会以 `invalid_request` 失败。 |
+| `browser`   | string | `chrome` 或 `firefox`。省略时，依序使用已绑定到该会话的浏览器、唯一已连接的浏览器，或 Chrome。                  |
 
 本文是一个 JSON 对象，上限 2 MiB，不可含有未知字段。名称与既有绑定重复的会话，依 [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md) 的规则路由。
 
@@ -1140,7 +1140,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 }
 ```
 
-成功的调用会返回 daemon 指派的 id（以小写 36 进制表示的 [Snowflake ID](https://en.wikipedia.org/wiki/Snowflake_ID)）与动作结果：
+请求本文也可以带 `id`，这是一个字符串，回复会原样带回。省略时，daemon 会指派一个以小写 36 进制表示的 [Snowflake ID](https://en.wikipedia.org/wiki/Snowflake_ID)。成功的调用会返回这个 id 与动作结果：
 
 ```json
 {
@@ -1207,7 +1207,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 
 ## 等待 [#waiting]
 
-条件成立时，`wait` 立即返回，否则每 75 ms 再检查一次。到请求期限前 500 ms 条件仍未成立时，`wait` 以 `wait_timeout` 失败。期限以 `timeoutMs` 设置，`omw call` 则用 `--timeout-ms`。设置以下其中一个字段：
+条件成立时，`wait` 立即返回，否则每 75 ms 再检查一次。到请求期限前 500 ms 条件仍未成立时，`wait` 以 `wait_timeout` 失败。即使期限在 500 ms 以内，它也至少检查一次。期限以 `timeoutMs` 设置，`omw call` 则用 `--timeout-ms`。设置以下其中一个字段：
 
 | 字段         | 意义                                                                                      |
 | ------------ | ----------------------------------------------------------------------------------------- |
@@ -1266,7 +1266,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 
 ## 批量 [#batch]
 
-`batch` 接受 `steps`，这是由 `{ action, args }` 对象组成的数组，含 1 到 64 项。步骤在同一个请求中依序运行，并在第一个错误时停止。已完成的步骤不会还原。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 与 `artifact_close` 不能出现在批量内。
+`batch` 接受 `steps`，这是由 `{ action, args }` 对象组成的数组，含 1 到 64 项。步骤在同一个请求中依序运行，并在第一个错误时停止。错误保留失败步骤的错误码，消息以 `batch step N of M (action):` 开头，表示第 1 到第 N-1 步已经完成。已完成的步骤不会还原。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 与 `artifact_close` 不能出现在批量内。
 
 ## 预设 [#presets]
 
@@ -1312,41 +1312,42 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 每个错误都带有 `code` 与 `message`。HTTP 状态码列于下方；这里未列出的错误码返回 502。
 
-| 错误码                  | HTTP | 意义                                                                                                                        | 处理方式                                                                      |
-| ----------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `invalid_request`       | 400  | 本文被拒绝：有未知字段、缺少 action 或 session、会话名称含有不允许的字符、`browser` 无效，或 `timeoutMs` 超出 1 到 120000。 | 修正 JSON。消息会指出字段。                                                   |
-| `invalid_args`          | 400  | 参数缺少、类型错误，或超出范围。                                                                                            | 阅读消息；它会指出动作与参数。                                                |
-| `unsupported`           | 501  | 目标浏览器没有这个动作，或没有它的某个参数。                                                                                | 不要重试。改用其他动作，或使用 Chrome 会话。                                  |
-| `busy`                  | 429  | 容量限制已满：命令名额、每个会话 32 个标签页、每个浏览器 128 个会话、Firefox 上传额度，或两个同时进行的成品工作。           | 降低并行数量，并在先前的命令完成后重试。                                      |
-| `browser_offline`       | 503  | 目标浏览器没有扩展程序连接，包括绑定到未连接浏览器的会话。                                                                  | 检查 `omw doctor` 与扩展程序，或在新的会话中继续。                            |
-| `session_browser`       | 409  | 会话绑定到另一个浏览器，而请求指定了这个浏览器。                                                                            | 移除 `browser`，或关闭该会话并开始新的会话。                                  |
-| `outcome_unknown`       | 504  | 命令可能已经运行：期限、传输写入或断线切断了回复。                                                                          | 重复之前，先观察页面或网络状态。切勿盲目重送提交、付款或发布操作。            |
-| `wait_timeout`          | 408  | `wait` 的条件在期限前没有成立。`wait` 不会变更页面。                                                                        | 以更长的期限再次发送 `wait`，或检查条件。                                     |
-| `tab_busy`              | 409  | 该标签页属于另一个会话。                                                                                                    | 使用这个会话持有的标签页，或使用另一个会话。                                  |
-| `stale_ref`             | 409  | `@e` 引用比它所属的文档存活得更久。                                                                                         | 重新取得 `snapshot`。                                                         |
-| `no_tab`                | 502  | 页面动作在会话还没有标签页时运行。                                                                                          | 先运行 `navigate` 或 `find_tab`。                                             |
-| `tab_missing`           | 502  | `find_tab` 没有符合的标签页。                                                                                               | 先在这个会话中打开该页面，或传入 `active: true` 借用浏览器的使用中标签页。    |
-| `restricted_tab`        | 502  | 该标签页不是一般的、非无痕的 HTTP(S) 页面。                                                                                 | 导航到 HTTP(S) 页面。浏览器内部页面无法用脚本操作。                           |
-| `borrowed_tab`          | 502  | 动作需要会话创建的标签页：关闭它，或对借用的标签页套用预设。                                                                | 用 `navigate` 打开任务标签页。                                                |
-| `element_missing`       | 502  | 选择器没有符合任何元素。                                                                                                    | 检查选择器，或重新取得快照。                                                  |
-| `element_hidden`        | 502  | 元素没有边界框，因此没有可点击的中心。                                                                                      | 把它滚动到可见范围，或等待它转译完成。                                        |
-| `element_action_failed` | 502  | 页面拒绝了这个操作，例如填写不可编辑的元素，或选取不存在的选项。                                                            | 用 `get` 或 `is` 检查，并调整动作。                                           |
-| `state_mismatch`        | 502  | `check` 或 `uncheck` 让控制项停在错误的状态。                                                                               | 用 `is` 重新读取，然后重试，或改为点击它。                                    |
-| `evaluation_failed`     | 502  | `evaluate` 掷出例外，或内部页面脚本掷出例外。                                                                               | 修正表达式。消息带有页面例外。                                                |
-| `frame_missing`         | 502  | `frame` 找不到符合所给选择器、id、名称或 URL 的框架。                                                                       | 用 `frame {"cmd":"list"}` 列出框架，并选取其中一个。                          |
-| `frame_unavailable`     | 502  | 所选的框架已被取代、移除或失去其运行环境，或标签页的调试会话已结束。                                                        | 之后的命令使用主框架；如果工作要在该框架继续，请重新选取它。                  |
-| `history_missing`       | 502  | `history back` 或 `forward` 在该方向上没有项目。                                                                            | 先读取 `history {"cmd":"list"}`。                                             |
-| `request_missing`       | 502  | 该请求没有网络纪录，或纪录已被逐出。                                                                                        | 开始记录，重现问题，然后读取 `list`。                                         |
-| `request_pending`       | 502  | 响应本文尚未完整。                                                                                                          | 等 `list` 中出现 `complete: true`，再重试 `detail`。                          |
-| `request_failed`        | 502  | 请求本身失败。                                                                                                              | 读取该项目上的错误文字。                                                      |
-| `download_missing`      | 502  | 浏览器没有列出该下载。                                                                                                      | 重试 `download`。                                                             |
-| `download_failed`       | 502  | 浏览器中断了下载。                                                                                                          | 阅读消息并重试。                                                              |
-| `file_access_required`  | 502  | Chrome 的 `upload` 需要扩展程序的“允许访问文件网址”开关，而它默认为关闭。                                                   | 在 `chrome://extensions` 找到 oh-my-webbridge，打开“允许访问文件网址”后重试。 |
-| `window_failed`         | 502  | 新窗口没有标签页。                                                                                                          | 重试 `window_new`。                                                           |
-| `result_too_large`      | 502  | 结果在传输时超过 32 MiB，或网络本文在 Chrome 中超过 2 Mi 个字符、在 Firefox 中超过 1 MiB。                                  | 缩小结果：屏幕截图使用 `selector` 或 `jpeg`，并读取较小的片段。               |
-| `debugger_unavailable`  | 502  | Chrome 拒绝附加调试工具，例如因为 DevTools 已打开，或原则拦截了它。                                                         | 关闭该标签页的 DevTools 并重试。                                              |
-| `browser_error`         | 502  | 扩展程序回报了没有错误码的错误。                                                                                            | 阅读消息，重试一次，然后回报。                                                |
-| `internal`              | 502  | daemon 端的失败，例如编码请求时出错。                                                                                       | 重试。如果持续发生，重新启动 daemon。                                         |
+| 错误码                  | HTTP | 意义                                                                                                                                                                         | 处理方式                                                                                                         |
+| ----------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `invalid_request`       | 400  | 本文被拒绝：有未知字段、缺少 action 或 session、会话名称含有不允许的字符、`browser` 无效，或 `timeoutMs` 超出 1 到 120000。                                                  | 修正 JSON。消息会指出字段。                                                                                      |
+| `invalid_args`          | 400  | 参数缺少、类型错误，或超出范围，包括无法解析的选择器。`screenshot` 或 `save_as_pdf` 的路径已经存在、它的目录无法创建或写入，或它所在的文件系统无法创建硬链接时，也会被拒绝。 | 阅读消息；它会指出动作与参数。                                                                                   |
+| `unsupported`           | 501  | 目标浏览器没有这个动作，或没有它的某个参数。                                                                                                                                 | 不要重试。改用其他动作，或使用 Chrome 会话。                                                                     |
+| `busy`                  | 429  | 容量限制已满：命令名额、每个会话 32 个标签页、每个浏览器 128 个会话、Firefox 上传额度，或两个同时进行的成品工作。也可能是会话在命令路由期间改到另一个浏览器。                | 降低并行数量，并在先前的命令完成后重试。                                                                         |
+| `browser_offline`       | 503  | 目标浏览器没有扩展程序连接，包括绑定到未连接浏览器的会话。                                                                                                                   | 检查 `omw doctor` 与扩展程序，或在新的会话中继续。                                                               |
+| `session_browser`       | 409  | 会话绑定到另一个浏览器，而请求指定了这个浏览器。                                                                                                                             | 移除 `browser`，或关闭该会话并开始新的会话。                                                                     |
+| `outcome_unknown`       | 504  | 命令可能已经运行：期限、取消、传输写入或断线切断了回复，或命令运行期间页面导航或调试器中断连接。消息会指出原因。                                                             | 重复之前，先观察页面或网络状态。切勿盲目重送提交、付款或发布操作。                                               |
+| `wait_timeout`          | 408  | `wait` 的条件在期限前没有成立。`wait` 不会变更页面。                                                                                                                         | 以更长的期限再次发送 `wait`，或检查条件。                                                                        |
+| `tab_busy`              | 409  | 该标签页属于另一个会话。                                                                                                                                                     | 使用这个会话持有的标签页，或使用另一个会话。                                                                     |
+| `stale_ref`             | 409  | `@e` 引用比它所属的文档存活得更久。                                                                                                                                          | 重新取得 `snapshot`。                                                                                            |
+| `no_tab`                | 502  | 页面动作在会话还没有标签页时运行，或在目前标签页以 `close_tab` 以外的方式关闭之后运行。                                                                                      | 运行 `navigate` 或 `find_tab`，或传入会话另一个标签页的 `tabId`。                                                |
+| `tab_missing`           | 502  | `find_tab` 没有符合的标签页，或命令指定的标签页已经关闭。                                                                                                                    | 先在这个会话中打开该页面，或传入 `active: true` 借用浏览器的使用中标签页。标签页已关闭时，改在另一个标签页继续。 |
+| `restricted_tab`        | 502  | 该标签页不是一般的、非无痕的 HTTP(S) 页面。                                                                                                                                  | 导航到 HTTP(S) 页面。浏览器内部页面无法用脚本操作。                                                              |
+| `borrowed_tab`          | 502  | 动作需要会话创建的标签页：关闭它，或对借用的标签页套用预设。                                                                                                                 | 用 `navigate` 打开任务标签页。                                                                                   |
+| `element_missing`       | 502  | 选择器没有符合任何元素。                                                                                                                                                     | 检查选择器，或重新取得快照。                                                                                     |
+| `element_hidden`        | 502  | 元素没有边界框，因此没有可点击的中心。                                                                                                                                       | 把它滚动到可见范围，或等待它转译完成。                                                                           |
+| `element_action_failed` | 502  | 页面拒绝了这个操作，例如填写不可编辑的元素，或选取不存在的选项。                                                                                                             | 用 `get` 或 `is` 检查，并调整动作。                                                                              |
+| `state_mismatch`        | 502  | `check` 或 `uncheck` 让控制项停在错误的状态。                                                                                                                                | 用 `is` 重新读取，然后重试，或改为点击它。                                                                       |
+| `evaluation_failed`     | 502  | `evaluate` 掷出例外，或内部页面脚本掷出例外。在 Firefox 中，也包括结果无法传回的 `evaluate`，例如 DOM 节点、`Window` 或 `BigInt`；代码已经运行。                             | 修正表达式，或传回一般数据。消息带有页面例外。                                                                   |
+| `frame_missing`         | 502  | `frame` 找不到符合所给选择器、id、名称或 URL 的框架。                                                                                                                        | 用 `frame {"cmd":"list"}` 列出框架，并选取其中一个。                                                             |
+| `frame_unavailable`     | 502  | 所选的框架已被取代、移除或失去其运行环境，或标签页的调试会话已结束。                                                                                                         | 之后的命令使用主框架；如果工作要在该框架继续，请重新选取它。                                                     |
+| `history_missing`       | 502  | `history back` 或 `forward` 在该方向上没有项目。                                                                                                                             | 先读取 `history {"cmd":"list"}`。                                                                                |
+| `request_missing`       | 502  | 该请求没有网络纪录，或纪录已被逐出。                                                                                                                                         | 开始记录，重现问题，然后读取 `list`。                                                                            |
+| `request_pending`       | 502  | 响应本文尚未完整。                                                                                                                                                           | 等 `list` 中出现 `complete: true`，再重试 `detail`。                                                             |
+| `request_failed`        | 502  | 请求本身失败。                                                                                                                                                               | 读取该项目上的错误文字。                                                                                         |
+| `body_unavailable`      | 502  | Firefox 没有保留响应本文：WebSocket、被较新的本文挤出，或响应中断。                                                                                                          | 开着 `network` 记录重新发送请求，或从页面读取数据。                                                              |
+| `download_missing`      | 502  | 浏览器没有列出该下载。                                                                                                                                                       | 重试 `download`。                                                                                                |
+| `download_failed`       | 502  | 浏览器中断了下载。                                                                                                                                                           | 阅读消息并重试。                                                                                                 |
+| `file_access_required`  | 502  | Chrome 的 `upload` 需要扩展程序的“允许访问文件网址”开关，而它默认为关闭。                                                                                                    | 在 `chrome://extensions` 找到 oh-my-webbridge，打开“允许访问文件网址”后重试。                                    |
+| `window_failed`         | 502  | 新窗口没有标签页。                                                                                                                                                           | 重试 `window_new`。                                                                                              |
+| `result_too_large`      | 502  | 结果在传输时超过 32 MiB、保存的屏幕截图或 PDF 超过 100 MiB，或网络本文在 Chrome 中超过 2 Mi 个字符、在 Firefox 中超过 1 MiB。                                                | 缩小结果：屏幕截图使用 `selector` 或 `jpeg`，并读取较小的片段。                                                  |
+| `debugger_unavailable`  | 502  | Chrome 拒绝附加调试工具，例如因为 DevTools 已打开，或原则拦截了它。                                                                                                          | 关闭该标签页的 DevTools 并重试。                                                                                 |
+| `browser_error`         | 502  | 扩展程序回报了没有错误码的错误。                                                                                                                                             | 阅读消息，重试一次，然后回报。                                                                                   |
+| `internal`              | 502  | daemon 端的失败，例如编码请求时出错。                                                                                                                                        | 重试。如果持续发生，重新启动 daemon。                                                                            |
 
 
 # CDP (https://oh-my-webbridge.github.io/zh-cn/reference/cdp/)
@@ -1372,7 +1373,7 @@ daemon 以两种模式在 `127.0.0.1:17373` 提供 Chrome DevTools Protocol，�
 | `/json/version`          | GET       | 不含浏览器 WebSocket URL 的版本对象。 |
 | `/devtools/page/{tabId}` | WebSocket | 一个标签页的一个 CDP 会话。           |
 
-只有 Firefox 扩展程序已连接时，这些端点以 HTTP 501 响应，错误码为 `unsupported`。没有任何浏览器连接时，`/json` 与 `/json/list` 以 HTTP 503 响应，而 `/json/version` 仍返回它的对象。
+只有 Firefox 扩展程序已连接时，这些端点以 HTTP 501 响应，错误码为 `unsupported`。没有任何浏览器连接时，`/json` 与 `/json/list` 以 HTTP 503 响应，错误码为 `browser_offline`，而 `/json/version` 仍返回它的对象。其他失败会带有错误码，以及 `/command` 对该错误码使用的 HTTP 状态码，列在[错误](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#errors)中。
 
 ### /json/list [#jsonlist]
 
@@ -1412,7 +1413,7 @@ curl -s -H "Authorization: Bearer $TOKEN" http://127.0.0.1:17373/json/list
 
 连接到 `ws://127.0.0.1:17373/devtools/page/{tabId}`，并在升级请求上带 Bearer 标头。在接受 WebSocket 之前，daemon 会要求扩展程序附加到该标签页。
 
-- 另一个会话正在使用的标签页，会以 HTTP 409 响应，而且不会被接管。
+- 另一个会话正在使用的标签页，会以 HTTP 409 与 `tab_busy` 响应，而且不会被接管。附加失败时，响应带有错误码，以及 `/command` 对该错误码使用的 HTTP 状态码：没有 Chrome 连接时为 503，附加在 5 秒内没有完成时为 504，受限的标签页或被拒绝的调试器为 502。
 - 客户端中断连接、标签页关闭、调试工具分离，以及 daemon 停止或扩展程序暂停或中断连接时，该标签页都会被释放。之后客户端可以重新连接。
 - 该标签页的事件在附加开始之前就已订阅，因此在附加回复之前抵达的事件仍会被转送。
 
@@ -1792,12 +1793,12 @@ const result = await task.call(
 );
 ```
 
-| 选项        | 类型          | 默认    | 意义                                                        |
-| ----------- | ------------- | ------- | ----------------------------------------------------------- |
-| `timeoutMs` | `number`      | `30000` | 命令的期限，包括它在队列中的时间。daemon 接受 1 到 120000。 |
-| `signal`    | `AbortSignal` | 无      | 取消请求。它会与 `timeoutMs + 5000` 的内部超时合并。        |
+| 选项        | 类型          | 默认    | 意义                                                                                                  |
+| ----------- | ------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `timeoutMs` | `number`      | `30000` | 命令的期限，包括它在队列中的时间，范围 1 到 120000。其他值会在发送请求之前以 `invalid_request` 拒绝。 |
+| `signal`    | `AbortSignal` | 无      | 取消请求。它会与 `timeoutMs + 5000` 的内部超时合并。                                                  |
 
-请求在 daemon 期限之后 5 秒于本机中止。这让 daemon 有时间在页面没有完成时，以 `outcome_unknown` 响应。
+请求在 daemon 期限之后 5 秒于本机中止。这让 daemon 有时间在页面没有完成时，以 `outcome_unknown` 响应。经由 `signal` 中止的请求以 `AbortError` 拒绝；由内部超时中止的请求以 `TimeoutError` 拒绝。
 
 ```js
 const controller = new AbortController();
@@ -1838,7 +1839,7 @@ try {
 
 回复没有 JSON 内容类型时，请求从未到达命令处理常式。可能的原因：token 被拒绝、`Host` 不是回环地址、网页 `Origin`，或连接端口 17373 上是其他服务。
 
-被中止的请求以 `AbortError` 拒绝，没有 daemon 的错误码。被拒绝的连接以 `fetch` 的 `TypeError` 拒绝。
+被中止的请求以 `AbortError` 拒绝，内部超时则以 `TimeoutError` 拒绝，两者都没有 daemon 的错误码。被拒绝的连接以 `fetch` 的 `TypeError` 拒绝。
 
 完整的错误码清单与复原步骤位于[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#errors)。
 
@@ -1966,7 +1967,7 @@ omw call research find_tab '{"url":"example.com","active":true}'
 
 ## 结束会话 [#ending-a-session]
 
-`close_session` 会取消会话仍在运行或等待的命令，关闭会话打开的标签页，并释放借用的标签页，这些标签页会保持打开。它会移除会话的浏览器绑定，并清除会话在借用标签页上记录的内容：框架选择、网络项目、控制台输出与 `@e` 引用。你自己关闭标签页时，该标签页会从会话中移除；会话只会由 `close_session` 结束。
+`close_session` 会取消会话仍在运行或等待的命令，关闭会话打开的标签页，并释放借用的标签页，这些标签页会保持打开。它会移除会话的浏览器绑定，并清除会话在借用标签页上记录的内容：框架选择、网络项目、控制台输出与 `@e` 引用。你自己关闭标签页时，该标签页会从会话中移除；会话只会由 `close_session` 结束。会话的目前标签页以 `close_tab` 以外的方式关闭时，会话就没有目前标签页：没有 `tabId` 的页面动作会以 `no_tab` 失败，指定已关闭标签页的命令会以 `tab_missing` 失败。`close_tab` 之后，会话改在它最后打开的标签页继续，没有的话则是它最后借用的标签页。
 
 ## 限制 [#limits]
 
@@ -1983,7 +1984,7 @@ omw call research find_tab '{"url":"example.com","active":true}'
 
 ## 超时与结果不确定 [#timeouts-and-uncertain-results]
 
-`timeoutMs` 涵盖整个请求，包括在会话队列中等待的时间。条件未成立的 `wait` 则会在期限前稍早以 `wait_timeout` 失败，它不会变更页面。时间用完，或命令运行到一半时浏览器中断连接，调用会返回 `outcome_unknown`。此时动作可能已经送达页面：点击可能已经发生，表单可能已经发送。
+`timeoutMs` 涵盖整个请求，包括在会话队列中等待的时间。时间用完、`close_session` 取消了命令，或命令运行到一半时浏览器中断连接，调用会返回 `outcome_unknown`，消息会指出原因。此时动作可能已经送达页面：点击可能已经发生，表单可能已经发送。条件未成立的 `wait` 则会在期限前稍早以 `wait_timeout` 失败，它不会变更页面。
 
 <Callout type="warn" title="收到 outcome_unknown 后重试">
   重新使用命令之前，请先观察页面。`snapshot`、`read_page`、标签页 URL、`get`
