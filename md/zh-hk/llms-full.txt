@@ -173,6 +173,117 @@ daemon 只能從它所在的機器連線，token 是唯一的憑證。
 | 成品檔案                                                                          | 先寫入暫存檔，再以 0600 權限寫成，絕不覆寫既有路徑              |
 
 
+# 與其他工具比較 (https://oh-my-webbridge.github.io/zh-hk/comparison/)
+
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
+{/* Generated from comparison.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+本頁比較 oh-my-webbridge 0.2.0 與其他讓 Agent 使用瀏覽器的工具。內容取自各專案的文件、發布頁面與原始碼，讀取日期為 2026 年 11 月 12 日，版本以第一張表為準。「文件未説明」表示該專案的文件沒有提到。發現錯誤或新版本時，請開一個 [GitHub issue](https://github.com/oh-my-webbridge/oh-my-webbridge/issues)。要搬移現有設定，請見[遷移到 oh-my-webbridge](https://oh-my-webbridge.github.io/md/zh-hk/migration/content.md)。
+
+## 工具與版本 [#tools-and-versions]
+
+| 工具                                                                         | 查核版本                                                                 | 組成                                                                                                  | 操作的瀏覽器                                                                                |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| oh-my-webbridge                                                              | 0.2.0                                                                    | 監聽 `127.0.0.1:17373` 的 Go daemon、Chrome 與 Firefox 擴充功能、CLI、Node SDK、Agent 技能            | 你使用的 Chrome 或 Firefox 設定檔                                                           |
+| [Kimi 瀏覽器擴充功能](https://www.kimi.com/products/kimi-webbridge)          | daemon 2.0.34、擴充功能 2.0.33                                           | 監聽 `127.0.0.1:10086` 的 daemon、Chrome 與 Edge 擴充功能、Agent 技能、供 Kimi 帳號使用的側邊欄 Agent | 你使用的 Chrome 或 Edge 設定檔                                                              |
+| [Browser MCP](https://github.com/BrowserMCP/mcp)                             | [2.4.0](https://www.npmjs.com/package/@browsermcp/mcp)                   | MCP 伺服器、每位使用者一個 Node.js daemon、Chrome 擴充功能                                            | 你在 Chromium 系瀏覽器中使用的設定檔                                                        |
+| [Playwright MCP](https://github.com/microsoft/playwright-mcp)                | [0.0.85](https://github.com/microsoft/playwright-mcp/releases)           | MCP 伺服器；加上 `--extension` 時，經中繼連到 Playwright Extension                                    | 自己的設定檔；加上 `--extension` 時為你使用的 Chrome 或 Edge 設定檔                         |
+| [Playwriter](https://github.com/remorses/playwriter)                         | [0.10.0](https://github.com/remorses/playwriter/releases)                | 執行 Playwright 程式碼的 CLI、MCP 伺服器與 Node 程式庫、Chrome 擴充功能、`localhost:19988` 上的中繼   | 你在 Chrome 中開啓擴充功能的分頁                                                            |
+| [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp) | [1.13.0](https://github.com/ChromeDevTools/chrome-devtools-mcp/releases) | 以 Puppeteer 建構的 MCP 伺服器與 CLI                                                                  | 自己的設定檔；加上 `--autoConnect` 時為你使用的 Chrome                                      |
+| [agent-browser](https://github.com/vercel-labs/agent-browser)                | [0.42.0](https://github.com/vercel-labs/agent-browser/releases)          | Rust CLI、每個工作階段一個 daemon、MCP 伺服器、Agent 技能                                             | 它安裝的 Chrome for Testing、現有 Chrome 設定檔的副本，或開啓遠端偵錯的 Chrome              |
+| [PinchTab](https://github.com/pinchtab/pinchtab)                             | [0.15.2](https://github.com/pinchtab/pinchtab/releases)                  | 監聽 `127.0.0.1:9867` 的 Go HTTP 伺服器、CLI、MCP 伺服器                                              | 它啓動的 Chrome 執行個體，各有自己的設定檔                                                  |
+| [OpenCLI](https://github.com/jackwener/OpenCLI)                              | [2.0.3](https://github.com/jackwener/OpenCLI/releases)                   | Node.js CLI、`localhost:19825` 上的 daemon、Chrome 擴充功能、100 多個網站的轉接器                     | 你使用的 Chrome 設定檔                                                                      |
+| [Claude in Chrome](https://code.claude.com/docs/en/chrome)                   | 未公開；Claude Code 需要 1.0.36 以上                                     | 以 Claude 為模型的 Chrome 擴充功能、側邊欄、與 Claude Code 及 Claude Desktop 的連線                   | 你使用的 Chrome                                                                             |
+| [browser-use](https://github.com/browser-use/browser-use)                    | [1.0.2](https://pypi.org/project/browser-use/1.0.2/)                     | Python Agent 程式庫、CLI、Browser Use Cloud                                                           | 預設為 Browser Use Cloud 瀏覽器，也可以是它啓動的本機 Chromium，或開啓遠端偵錯的本機 Chrome |
+| [Stagehand](https://github.com/browserbase/stagehand)                        | [4.4.0](https://www.npmjs.com/package/@browserbasehq/stagehand)          | 帶 AI 方法的 TypeScript、Python 與 Go SDK、`browse` CLI、託管的 MCP 伺服器                            | 它啓動的 Chrome，或 Browserbase 雲端瀏覽器                                                  |
+
+## 取用已登入的瀏覽器 [#access-to-a-signed-in-browser]
+
+工具以兩種方式之一取用你使用的瀏覽器。擴充功能透過瀏覽器 API 操作分頁，不需要瀏覽器旗標。遠端偵錯則把整個瀏覽器交給用户端。Chrome 144 以上可在執行中的瀏覽器裏從 `chrome://inspect/#remote-debugging` 開啓遠端偵錯，並請你允許連線。`--remote-debugging-port` 參數要求使用預設以外的設定檔目錄（[遠端偵錯的變更](https://developer.chrome.com/blog/remote-debugging-port)）。
+
+| 工具                            | 機制                                                                           | 設定                                                            | Agent 能取用的範圍                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| oh-my-webbridge                 | 擴充功能：Chrome 用 `chrome.debugger`，Firefox 用 WebExtension API             | 安裝擴充功能，並輸入一次 `omw pair` 的配對碼                    | 工作階段開啓的分頁，以及 `find_tab` 借用的作用中分頁                           |
+| Kimi 瀏覽器擴充功能             | 使用 `chrome.debugger` 的擴充功能                                              | 安裝 daemon 與擴充功能                                          | 工作階段開啓的分頁，以及 `find_tab` 借用的作用中分頁                           |
+| Browser MCP                     | 使用 `chrome.debugger` 的擴充功能，只附加到 Agent 使用的分頁                   | 安裝擴充功能與 MCP 伺服器，核對一次六位數配對碼並允許           | Agent 開啓的分頁、它用 `tab select` 選取的你的分頁，以及你拖進其分頁羣組的分頁 |
+| Playwright MCP 加 `--extension` | 擴充功能中繼                                                                   | 在連線頁面核准每次連線，或設定 `PLAYWRIGHT_MCP_EXTENSION_TOKEN` | MCP 用户端分頁羣組內的分頁                                                     |
+| Playwriter                      | 擴充功能中繼                                                                   | 在每個要控制的分頁上點一下擴充功能圖示                          | 每個開啓擴充功能的分頁，所有工作階段都可取用                                   |
+| OpenCLI                         | 具 `debugger` 權限的擴充功能                                                   | 安裝擴充功能                                                    | 它自己分頁羣組內的分頁，以及工作階段綁定的分頁                                 |
+| Claude in Chrome                | 具 `debugger` 權限的擴充功能                                                   | 安裝擴充功能，並以付費 Claude 方案登入                          | 對話分頁羣組內的分頁，以及你加入羣組的分頁                                     |
+| Chrome DevTools MCP             | 遠端偵錯：`--autoConnect`（Chrome 144 以上）、`--browserUrl` 或 `--wsEndpoint` | 開啓遠端偵錯並允許連線                                          | 該設定檔的所有視窗                                                             |
+| agent-browser                   | 遠端偵錯：`--auto-connect` 或 `--cdp`                                          | 開啓遠端偵錯並允許連線                                          | 整個瀏覽器；`--pin-tab` 把工作階段綁定到一個分頁                               |
+| PinchTab                        | 透過 `POST /instances/attach` 使用遠端偵錯，預設關閉                           | 在設定中開啓 attach，並以遠端偵錯啓動 Chrome                    | 整個瀏覽器                                                                     |
+| browser-use                     | 遠端偵錯                                                                       | 在 `chrome://inspect/#remote-debugging` 開啓遠端偵錯            | 整個瀏覽器                                                                     |
+
+## 任務、可見性與本機存取 [#tasks-visibility-and-local-access]
+
+| 工具                | 任務單位                                               | 可見的標示                                                         | 本機存取控制                                                                                           |
+| ------------------- | ------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| oh-my-webbridge     | 具名工作階段，有自己的分頁與分頁羣組，共用同一個設定檔 | 頁面上的工作階段標籤、Agent 指標與焦點框；工具列圖示上的琥珀色指標 | `omw connection` 印出的 Bearer token，擴充功能以配對取得。帶網頁 `Origin` 或其他 `Host` 的請求會被拒絕 |
+| Kimi 瀏覽器擴充功能 | 具名工作階段，有自己的分頁羣組，共用同一個設定檔       | 文件未説明                                                         | 其 Agent 指南中的請求不帶憑證                                                                          |
+| Browser MCP         | 每個 AI 應用程式一個分頁羣組                           | Chrome 的偵錯資訊列；工具列圖示上的分頁數                          | `~/.browsermcp/daemon.json` 中的 token；與擴充功能簽章配對                                             |
+| Playwright MCP      | 每個 MCP 用户端一個分頁羣組                            | 以用户端命名的分頁羣組；狀態頁列出已連線的用户端                   | 連線頁面的核准，或擴充功能 token                                                                       |
+| Playwriter          | 編號工作階段，各自保有變數；所有工作階段共用分頁       | Chrome 的自動化資訊列；綠色擴充功能圖示                            | 檢查擴充功能的來源；token 只用於遠端存取                                                               |
+| OpenCLI             | 持有分頁租約的 `--session` 名稱                        | 文件未説明                                                         | 文件寫明不使用 token                                                                                   |
+| Claude in Chrome    | 每個 Claude Code 工作階段一個分頁羣組                  | 在可見的視窗中操作，遇到登入與 CAPTCHA 時暫停                      | 擴充功能與 Claude Code 都要登入 claude.ai                                                              |
+| Chrome DevTools MCP | 每個對話一個伺服器；`isolatedContext` 分開 cookie      | 文件未説明                                                         | Chrome 的遠端偵錯核准                                                                                  |
+| agent-browser       | 工作階段有自己的 daemon、瀏覽器與 cookie               | 文件未説明                                                         | 每個工作階段一個 socket；其設定檔案必須只有擁有者可讀                                                  |
+| PinchTab            | 執行個體：一個 Chrome 程序搭配一個設定檔               | 文件未説明                                                         | Bearer token                                                                                           |
+
+## 最接近的工具的功能 [#capabilities-of-the-closest-tools]
+
+「是」與「否」以各專案文件列出的指令或工具為準。只能透過任意程式碼達成的功能算作「否」。
+
+| 功能                  | oh-my-webbridge               | Kimi       | Browser MCP                     | Playwright MCP                              | Chrome DevTools MCP                      | agent-browser                 |
+| --------------------- | ----------------------------- | ---------- | ------------------------------- | ------------------------------------------- | ---------------------------------------- | ----------------------------- |
+| 快照參照              | `@e<generation>.<index>`      | `@e123`    | `e12`；框架內為 `f1e3`          | 文件未説明                                  | `uid`                                    | `@e1`                         |
+| 螢幕截圖              | 是                            | 是         | 是                              | 是                                          | 是                                       | 是                            |
+| PDF                   | Chrome                        | 是         | 否                              | 加 `--caps pdf`                             | 否                                       | 是                            |
+| 網路請求              | 是                            | 是         | 是                              | 是                                          | 是                                       | 是                            |
+| 模擬網路回應          | 否                            | 否         | 否                              | 加 `--caps network`                         | 加 `--categoryNetworkMocks`              | 是                            |
+| 主控台訊息            | Chrome                        | 否         | 是                              | 是                                          | 是                                       | 是                            |
+| Cookie 與網頁儲存空間 | 是                            | 否         | 否                              | 加 `--caps storage`                         | 否                                       | 是                            |
+| 下載                  | 是                            | 否         | 否                              | 否                                          | 否                                       | 是                            |
+| 模擬                  | Chrome                        | 否         | 否                              | 媒體與視窗大小；加 `--caps network` 可離線  | 是                                       | 是                            |
+| 原始 CDP              | Chrome：`cdp`、頁面 WebSocket | `cdp`      | 加 `--caps cdp`                 | 否                                          | 否                                       | 印出 CDP URL                  |
+| 追蹤與效能分析        | 否                            | 否         | 否                              | 加 `--caps devtools`：Playwright 追蹤、影片 | 效能追蹤、Lighthouse、堆積快照           | `trace`、`profiler`、`record` |
+| 廣告與追蹤器封鎖      | 內建預設集                    | 文件未説明 | 文件未説明                      | 文件未説明                                  | 文件未説明                               | 文件未説明                    |
+| Firefox               | 是                            | 否         | 否                              | 不加 `--extension` 時                       | 否                                       | 文件未説明                    |
+| Windows               | 否                            | 是         | 文件未説明                      | 是                                          | 是                                       | 是                            |
+| MCP 伺服器            | 否                            | 文件未説明 | 是                              | 是                                          | 是                                       | 是                            |
+| 預設傳送的使用資料    | 無                            | 文件未説明 | Chrome 線上應用程式商店版有分析 | 文件未説明                                  | 使用統計；`--no-usage-statistics` 可關閉 | 文件未説明                    |
+
+## 更適合用其他工具的情況 [#when-another-tool-fits-better]
+
+- **Agent 只透過 MCP 呼叫工具。** Playwright MCP、Browser MCP、Chrome DevTools MCP、agent-browser、PinchTab 與 Playwriter 可作為 MCP 伺服器執行。oh-my-webbridge 沒有 MCP 伺服器；Agent 依技能説明執行 `omw call`。
+- **Windows。** Kimi 瀏覽器擴充功能、Playwright MCP、Chrome DevTools MCP、agent-browser、Claude in Chrome 與 OpenCLI 桌面應用程式支援 Windows。Playwriter 支援 WSL，PinchTab 發布有限支援的 Windows 執行檔。oh-my-webbridge 在 macOS 與 Linux 上執行。
+- **Microsoft Edge。** Kimi 瀏覽器擴充功能、Browser MCP 與加上 `--extension` 的 Playwright MCP 可在 Edge 中使用。oh-my-webbridge 支援 Chrome 與 Firefox。
+- **從擴充功能商店安裝。** Kimi、Browser MCP、Playwright MCP、OpenCLI 與 Claude in Chrome 的擴充功能從 Chrome 線上應用程式商店安裝並自動更新。oh-my-webbridge 的擴充功能在 Chrome 中以未封裝資料夾載入，在 Firefox 中要經過簽署才會在重新啓動後保留。
+- **同時連接多個瀏覽器設定檔。** 一個 Browser MCP daemon 最多連接 8 個瀏覽器或 Chrome 設定檔。oh-my-webbridge 的 daemon 接受一個 Chrome 連線與一個 Firefox 連線。
+- **每個任務使用獨立的 cookie。** agent-browser 的工作階段、PinchTab 的設定檔、Playwright MCP 的 `--isolated` 與 `isolatedContext`，以及 Chrome DevTools MCP 的 `isolatedContext` 會分開 cookie。oh-my-webbridge 的所有工作階段共用瀏覽器設定檔。
+- **沒有桌面瀏覽器**，例如在 CI 中。agent-browser、Playwright MCP、Chrome DevTools MCP 與 PinchTab 會啓動自己的瀏覽器，需要時以無頭模式執行。oh-my-webbridge 需要一個已安裝擴充功能且正在執行的 Chrome 或 Firefox。
+- **效能、記憶體與網路除錯。** Chrome DevTools MCP 記錄效能追蹤、執行 Lighthouse 並讀取堆積快照。Playwright MCP、Chrome DevTools MCP 與 agent-browser 可以模擬網路回應。
+- **在已登入的分頁上使用完整的 Playwright API。** Playwriter 在你開啓其擴充功能的分頁上執行 Playwright 程式碼。
+- **常用網站的現成指令。** OpenCLI 附帶轉接器，可從 100 多個網站取回結構化資料。
+- **工具內含模型。** Claude in Chrome 與 Kimi 側邊欄以自己的模型執行任務。browser-use 以你設定的模型執行任務，Stagehand 則在指令碼中加入 AI 步驟（`act`、`observe`、`extract`）。oh-my-webbridge 執行你所使用的 Agent 送來的指令，本身不含模型。
+
+## 來源 [#sources]
+
+- Kimi 瀏覽器擴充功能：[產品頁面](https://www.kimi.com/products/kimi-webbridge)、[安裝指令碼](https://cdn.kimi.com/webbridge/install.sh)、[版本清單](https://cdn.kimi.com/webbridge/latest/version.json)、`kimi-webbridge install-skill` 寫入的 Agent 指南，以及 Chrome 線上應用程式商店中擴充功能 2.0.33 的 manifest。
+- Browser MCP：[伺服器 README](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/README.md)、[工具定義](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/src/tools/browser.ts)、[指令](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/src/commands/commands.ts)、[貢獻指南](https://github.com/BrowserMCP/mcp/blob/main/CONTRIBUTING.md)、[使用方式](https://browsermcp.io/docs/usage)、[運作方式](https://browsermcp.io/docs/how-it-works)。
+- Playwright MCP：[README](https://github.com/microsoft/playwright-mcp/blob/main/README.md)、[擴充功能 README](https://github.com/microsoft/playwright/blob/main/packages/extension/README.md)。
+- Playwriter：[README](https://github.com/remorses/playwriter/blob/main/README.md)、[工作階段](https://playwriter.dev/docs/sessions)。
+- Chrome DevTools MCP：[README](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/README.md)、[設定](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/configuration.md)、[進階用法](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/advanced-usage.md)、[工具參考](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md)。
+- agent-browser：[README](https://github.com/vercel-labs/agent-browser/blob/main/README.md)、[指令](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/commands.mdx)、[CDP 模式](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/cdp-mode.mdx)、[工作階段](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/sessions.mdx)。
+- PinchTab：[README](https://github.com/pinchtab/pinchtab/blob/main/README.md)、[附加 Chrome](https://github.com/pinchtab/pinchtab/blob/main/docs/guides/attach-chrome.md)、[安全性](https://github.com/pinchtab/pinchtab/blob/main/docs/guides/security.md)。
+- OpenCLI：[README](https://github.com/jackwener/OpenCLI/blob/main/README.md)、[Browser Bridge](https://github.com/jackwener/OpenCLI/blob/main/docs/guide/browser-bridge.md)。
+- Claude in Chrome：[Claude Code 文件](https://code.claude.com/docs/en/chrome)、[入門](https://support.claude.com/en/articles/12012173-get-started-with-claude-in-chrome)。
+- browser-use：[README](https://github.com/browser-use/browser-use/blob/main/README.md)。Stagehand：[README](https://github.com/browserbase/stagehand/blob/main/README.md)。
+
+
 # 開發 (https://oh-my-webbridge.github.io/zh-hk/development/)
 
 > **技術預覽**
@@ -636,6 +747,198 @@ Agent 或指令碼送出的指令，會在你日常使用的 Chrome 或 Firefox 
 - [工作階段與分頁](https://oh-my-webbridge.github.io/md/zh-hk/sessions/content.md)：每項任務一個工作階段，各有自己的分頁與分頁羣組。
 - [Agent 活動](https://oh-my-webbridge.github.io/md/zh-hk/activity/content.md)：光暈、焦點框與工具列圖示，用來標示 Agent 正在控制的分頁。
 - [動作](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md)：所有動作、其引數，以及會回傳的錯誤。
+
+
+# 遷移到 oh-my-webbridge (https://oh-my-webbridge.github.io/zh-hk/migration/)
+
+> **技術預覽**
+>
+> omw 目前是技術預覽版，正在快速迭代。**之後的版本一定會有破壞相容性的變更。**
+
+{/* Generated from migration.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+oh-my-webbridge 的每個指令都指定一個工作階段、一個動作，以及一個參數 JSON 物件。本頁的表格把其他工具的常用指令對應到這些動作。搬移任務之前，請先在[與其他工具比較](https://oh-my-webbridge.github.io/md/zh-hk/comparison/content.md)中確認 oh-my-webbridge 沒有提供的功能。
+
+## 開始之前 [#before-you-start]
+
+1. 安裝 daemon 與擴充功能，並配對瀏覽器。請見[快速開始](https://oh-my-webbridge.github.io/md/zh-hk/getting-started/content.md)。
+2. 以 `omw install-skill ~/.agents/skills` 安裝 Agent 技能。關閉原本工具的技能或 MCP 伺服器，讓 Agent 在一項任務中只使用一個工具。
+3. 執行 `omw status`。它為每個瀏覽器印出一行，例如 `chrome: connected (156.0.8078.80)`。
+
+## 所有工具共通的變更 [#changes-for-every-tool]
+
+- **工作階段。** 每項任務使用一個工作階段名稱，例如 `checkout`。第一個指令會開啓工作階段，它的分頁在背景開啓，並放進同一個分頁羣組。任務結束時送出 `close_session`。所有工作階段都使用你的瀏覽器設定檔與其中的 cookie。
+- **參照。** 參照的格式為 `@e<generation>.<index>`，來自該分頁最新一次的 `snapshot`。以 `@e` 開頭、來自其他工具或較舊快照的參照會以 `stale_ref` 失敗。不帶 `@` 的參照（例如 `e12`）會被當成 CSS 選擇器。導覽之後請重新取得快照。
+- **定位器。** `selector` 參數接受 CSS 與文字定位器，Playwright 定位器可以對應到這些形式。`role=` 完全比對名稱，而 `getByRole` 在未設定 `exact: true` 時比對子字串。串接的定位器與 `.filter()` 沒有對應形式。請見[選擇器](https://oh-my-webbridge.github.io/md/zh-hk/reference/actions/content.md#selectors)。
+
+| Playwright 定位器                                      | oh-my-webbridge 選擇器       |
+| ------------------------------------------------------ | ---------------------------- |
+| `getByRole("button", { name: "Submit", exact: true })` | `role=button[name="Submit"]` |
+| `getByText("Sign in")`                                 | `text=Sign in`               |
+| `getByLabel("Email")`                                  | `label=Email`                |
+| `getByPlaceholder("Search")`                           | `placeholder=Search`         |
+| `getByTestId("search")`                                | `testid=search`              |
+| `.first()`、`.last()`                                  | ` >>nth=0`、` >>nth=-1`      |
+
+- **JavaScript。** `evaluate` 接受運算式，而不是函式。請送出 `document.title`，或把函式包成呼叫：`(() => document.title)()`。使用 `await` 的程式碼放進非同步函式呼叫：`(async () => (await fetch("/api")).status)()`。
+- **檔案。** `screenshot` 與 `save_as_pdf` 接受絕對路徑 `path` 並傳回它，不會覆寫已存在的檔案。
+- **期限。** 指令預設在 30 秒後失敗。HTTP 請求本文的 `timeoutMs` 欄位可設定 1 到 120000 毫秒。
+- **Firefox。** 部分動作在 Firefox 中回應 `unsupported`。請見 [Firefox](https://oh-my-webbridge.github.io/md/zh-hk/firefox/content.md)。
+
+## 從 Kimi 瀏覽器擴充功能遷移 [#from-the-kimi-browser-extension]
+
+請求格式與大多數動作名稱相同，位址、token 與部分參數不同。
+
+|            | Kimi 瀏覽器擴充功能               | oh-my-webbridge                                            |
+| ---------- | --------------------------------- | ---------------------------------------------------------- |
+| 位址       | `http://127.0.0.1:10086`          | `http://127.0.0.1:17373`                                   |
+| 指令       | `POST /command`                   | `POST /command`，帶 `Authorization: Bearer <token>`        |
+| 請求本文   | `action`、`args`、`session`       | `session`、`action`、`args`；可選 `browser` 與 `timeoutMs` |
+| 狀態       | `/status`                         | 帶 token 的 `GET /status`，或 `omw status`                 |
+| 啓動       | `kimi-webbridge start`            | `omw start`，或以 `omw service install` 安裝使用者服務     |
+| Agent 技能 | `kimi-webbridge install-skill -y` | `omw install-skill ~/.agents/skills`                       |
+| 命令列     | `curl`                            | `omw call SESSION ACTION JSON`，或 `curl`                  |
+
+同一個 `navigate` 請求送往兩個 daemon 的寫法：
+
+```sh
+# Kimi 瀏覽器擴充功能
+curl -s -X POST http://127.0.0.1:10086/command \
+  -H 'Content-Type: application/json' \
+  -d '{"action":"navigate","args":{"url":"https://example.com","group_title":"Research"},"session":"research"}'
+
+# oh-my-webbridge
+TOKEN=$(omw connection | sed -E 's/.*"token":"([^"]+)".*/\1/')
+curl -s -X POST http://127.0.0.1:17373/command \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"session":"research","action":"navigate","args":{"url":"https://example.com","group_title":"Research"}}'
+
+# oh-my-webbridge 命令列
+omw call research navigate '{"url":"https://example.com","group_title":"Research"}'
+```
+
+以下動作的名稱與參數不變：`navigate`、`find_tab`、`list_tabs`、`close_tab`、`close_session`、`mouse_click`、`fill`、`key_type`、`hover`、`drag`、`find`、`cdp`、`screenshot`、`save_as_pdf`、`upload` 與 `network`。以下動作有變更：
+
+| Kimi 瀏覽器擴充功能                            | oh-my-webbridge                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| `click`，呼叫 `el.click()`                     | `click`。在 Chrome 中透過 CDP 送出受信任的滑鼠輸入。                 |
+| `code` 中使用 `await` 的 `evaluate`            | `evaluate`，程式碼放進非同步函式呼叫                                 |
+| `snapshot` 帶 `ref`、`interactive`             | `snapshot` 帶 `interactive`、`maxDepth`。參照使用新的格式。          |
+| `read_page` 帶 `cursor`                        | `read_page` 傳回前 192000 個字元，不接受 cursor。                    |
+| `wait` 帶 `text_gone`                          | `wait` 帶 `text` 與 `"state": "hidden"`                              |
+| `wait` 帶 `timeout_ms`                         | 請求本文中的 `timeoutMs`                                             |
+| `dialog` 帶 `"action": "accept"`               | `dialog` 帶 `"accept": true`；`text` 改為 `promptText`               |
+| `dialog` 帶 `"action": "dismiss"`              | `dialog` 帶 `"accept": false`                                        |
+| `dialog` 帶 `"action": "status"`               | `dialog_status`                                                      |
+| `select_option` 帶 `values`                    | `select_option` 帶一個 `value`，依值或可見文字比對                   |
+| 不帶 `values` 的 `select_option`，用來列出選項 | 讀取元素 `options` 的 `evaluate`                                     |
+| `scroll` 帶 `text`                             | `scroll` 帶 `"selector": "text=..."`                                 |
+| `scroll` 帶 `to`                               | `scroll` 帶 `direction` 與 `amount`                                  |
+| `send_keys` 帶 `repeat`                        | 每按一次鍵送一次 `send_keys`，或在 `batch` 中放多個步驟              |
+| `set_checked`                                  | `check` 或 `uncheck`                                                 |
+| `go_back`、`go_forward`、`reload`              | `history`，`cmd` 設為 `back`、`forward` 或 `reload`                  |
+| `highlight_region`、`clear_highlight`          | 沒有對應動作。[活動層](https://oh-my-webbridge.github.io/md/zh-hk/activity/content.md)會標示每個輸入動作的目標元素。 |
+
+## 從 MCP 瀏覽器伺服器遷移 [#from-mcp-browser-servers]
+
+oh-my-webbridge 沒有 MCP 伺服器。Agent 依技能説明，在 shell 中執行 `omw call`。一次工具呼叫對應一個指令：
+
+```sh
+omw call checkout click '{"selector":"role=button[name=\"Pay\"]"}'
+```
+
+Chrome DevTools MCP 的頁面工具還需要 `pageId`，預設為必填。下表省略這個參數。
+
+| 任務            | Playwright MCP                                 | Browser MCP                         | Chrome DevTools MCP                | oh-my-webbridge                                                  |
+| --------------- | ---------------------------------------------- | ----------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| 開啓網址        | `browser_navigate {url}`                       | `goto <url>`                        | `navigate_page {type: "url", url}` | `navigate {"url"}`                                               |
+| 開新分頁        | `browser_tabs {action: "new", url}`            | `tab new <url>`                     | `new_page {url}`                   | `navigate {"url", "newTab": true}`                               |
+| 讀取頁面        | `browser_snapshot`                             | `snapshot -i`                       | `take_snapshot`                    | `snapshot`、`read_page`                                          |
+| 點擊            | `browser_click {target}`                       | `click e12`                         | `click {uid}`                      | `click {"selector"}`                                             |
+| 連按兩下        | `browser_click {target, doubleClick: true}`    | `click e12 --double`                | `click {uid, dblClick: true}`      | `dblclick {"selector"}`                                          |
+| 填寫欄位        | `browser_type {target, text}`                  | `fill e5 "text"`                    | `fill {uid, value}`                | `fill {"selector", "value"}`                                     |
+| 按鍵            | `browser_press_key {key}`                      | `press Enter`                       | `press_key {key}`                  | `send_keys {"keys"}`                                             |
+| 選取選項        | `browser_select_option {target, values}`       | `select e7 "value"`                 | `fill {uid, value}`                | `select_option {"selector", "value"}`                            |
+| 上傳檔案        | `browser_file_upload {paths}`                  | `upload <target> <path>`            | `upload_file`                      | `upload {"selector", "files"}`                                   |
+| 等待文字        | `browser_wait_for {text}`                      | `wait --text "<text>"`              | `wait_for`                         | `wait {"text"}`                                                  |
+| 回應對話框      | `browser_handle_dialog {accept, promptText}`   | `dialog`                            | `handle_dialog`                    | `dialog {"accept", "promptText"}`                                |
+| 螢幕截圖        | `browser_take_screenshot {fullPage, filename}` | `screenshot --full --path <file>`   | `take_screenshot {filePath}`       | `screenshot {"fullPage", "path"}`                                |
+| 執行 JavaScript | `browser_evaluate {function}`                  | `eval "<function>"`                 | `evaluate_script {function}`       | `evaluate {"code"}`，參數為運算式                                |
+| 主控台訊息      | `browser_console_messages`                     | `console`                           | `list_console_messages`            | `console {"cmd": "start"}`，再送 `{"cmd": "list"}`               |
+| 網路請求        | `browser_network_requests`                     | `requests`                          | `list_network_requests`            | `network {"cmd": "start"}`，再送 `{"cmd": "list"}`               |
+| 列出分頁        | `browser_tabs {action: "list"}`                | `tab list`                          | `list_pages`                       | `list_tabs`                                                      |
+| 使用你的分頁    | 在連線頁面上選取                               | `tab select <id>`                   | `select_page {pageId}`             | `find_tab {"url": "example.com", "active": true}` 借用作用中分頁 |
+| 關閉分頁        | `browser_tabs {action: "close", index}`        | `tab close <id>`                    | `close_page {pageId}`              | `close_tab {"tabId"}`                                            |
+| 結束任務        | `browser_close`                                | AI 應用程式關閉或閒置 10 分鐘後釋放 | CLI 中的 `chrome-devtools stop`    | `close_session`                                                  |
+
+- Browser MCP 的一次呼叫可以包含多行指令。`batch` 在一個請求中依序執行最多 64 個步驟，遇到第一個錯誤即停止：`omw call checkout batch '{"steps":[{"action":"fill","args":{"selector":"label=Email","value":"a@example.com"}},{"action":"send_keys","args":{"keys":"Enter"}}]}'`。`screenshot`、`save_as_pdf` 與 `close_session` 要分開送出。
+- 帶 `submit: true` 的 `browser_type` 對應為 `fill`，接着送出 `keys` 為 `Enter` 的 `send_keys`。
+- `console` 在 Chrome 中使用，傳回 `start` 之後記錄的訊息。請在會記錄訊息的步驟之前送出 `start`。
+- Chrome DevTools MCP 的效能追蹤、Lighthouse 與堆積快照，以及 Playwright MCP 的回應模擬、追蹤與程式碼產生，沒有內建動作。這類任務請保留原本的伺服器。[頁面連線](https://oh-my-webbridge.github.io/md/zh-hk/reference/cdp/content.md#page-connections)接受 `chrome.debugger` 允許的協定網域，例如以 `Fetch` 攔截請求。
+
+## 從 agent-browser 與 PinchTab 遷移 [#from-agent-browser-and-pinchtab]
+
+oh-my-webbridge 不啓動瀏覽器，因此沒有對應 `--headed`、`--profile`、`--state`、設定檔管理或執行個體的功能。指令在你使用的瀏覽器的背景分頁中執行，沿用其中的登入狀態。`omw call` 的第一個參數是工作階段名稱。PinchTab 的 Agent 工作階段設定身分與權限；最接近 oh-my-webbridge 工作階段的是 PinchTab 的執行個體或分頁。
+
+| 任務       | agent-browser            | PinchTab                    | `omw call SESSION ...`                                       |
+| ---------- | ------------------------ | --------------------------- | ------------------------------------------------------------ |
+| 選擇任務   | `--session agent1`       | 執行個體，或 `--tab <id>`   | `omw call agent1 ...`                                        |
+| 開啓網址   | `open <url>`             | `nav <url>`                 | `navigate '{"url":"<url>"}'`                                 |
+| 快照       | `snapshot -i`            | `snap -i -c`                | `snapshot '{"interactive":true}'`                            |
+| 點擊       | `click @e1`              | `click e5`                  | `click '{"selector":"<參照>"}'`                              |
+| 填寫       | `fill @e4 "text"`        | `fill "#search" "q"`        | `fill '{"selector":"#search","value":"q"}'`                  |
+| 輸入文字   | `type <selector> <text>` | `type <selector> <text>`    | `key_type '{"selector":"...","text":"..."}'`                 |
+| 按鍵       | `press Enter`            | `press Enter`               | `send_keys '{"keys":"Enter"}'`                               |
+| 頁面文字   | `get text <selector>`    | `text`                      | `read_page`，或 `get '{"selector":"...","property":"text"}'` |
+| 螢幕截圖   | `screenshot <path>`      | `screenshot -o <path>`      | `screenshot '{"path":"/absolute/shot.png"}'`                 |
+| PDF        | `pdf <path>`             | `pdf -o <path>`             | `save_as_pdf '{"path":"/absolute/page.pdf"}'`                |
+| JavaScript | `eval "document.title"`  | `eval "document.title"`     | `evaluate '{"code":"document.title"}'`                       |
+| 列出分頁   | `tab list`               | `tab`                       | `list_tabs`                                                  |
+| 切換分頁   | `tab t2`                 | `tab <tab-id>`              | `switch_tab '{"tabId":412}'`                                 |
+| 關閉分頁   | `tab close`              | `tab close <tab-id>`        | `close_tab`                                                  |
+| 多個步驟   | `batch`                  | `POST /actions`             | `batch '{"steps":[...]}'`                                    |
+| 結束任務   | `close`                  | `POST /instances/{id}/stop` | `close_session`                                              |
+
+## 從 Playwright 或 Puppeteer 指令碼遷移 [#from-playwright-or-puppeteer-scripts]
+
+在擴充功能模式下，daemon 在 `/json/list` 列出頁面目標，並在 `/devtools/page/{tabId}` 提供單一分頁。它的 `/json/version` 沒有 `webSocketDebuggerUrl`。Playwright 的 `chromium.connectOverCDP` 與 Puppeteer 帶 `browserURL` 的 `puppeteer.connect` 會讀取這個欄位來找到瀏覽器端點（[Playwright 原始碼](https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/chromium/chromium.ts)、[Puppeteer 原始碼](https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/common/BrowserConnector.ts)）。這類指令碼有兩種搬移方式。
+
+### 讓指令碼使用原生模式 [#keep-the-script-on-native-mode]
+
+原生模式透過 daemon 轉送瀏覽器端點。以 `--remote-debugging-port=9222` 與另一個 `--user-data-dir` 啓動 Chrome，再以 `http://127.0.0.1:9222/json/version` 中的瀏覽器 URL 啓動 daemon：
+
+```sh
+omw serve --cdp ws://127.0.0.1:9222/devtools/browser/8b0d3f7c-...
+```
+
+Playwright 在 `headers` 中帶上 token 連線，寫法請見 [CDP](https://oh-my-webbridge.github.io/md/zh-hk/reference/cdp/content.md#native-mode)。Puppeteer 則傳入 `browserURL: "http://127.0.0.1:17373"`，並在 `wsOptions.headers` 中帶上同一個標頭。這樣指令碼操作的是那個另外啓動的 Chrome，而不是你平常使用的設定檔。
+
+### 把指令碼改用 SDK [#move-the-script-to-the-sdk]
+
+SDK 透過擴充功能操作你使用的瀏覽器中的分頁。
+
+| Playwright                                                             | oh-my-webbridge SDK                                             |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `await page.goto(url)`                                                 | `await task.navigate(url)`                                      |
+| `await page.getByRole("button", { name: "Pay", exact: true }).click()` | `await task.click('role=button[name="Pay"]')`                   |
+| `await page.getByLabel("Email").fill("a@example.com")`                 | `await task.fill("label=Email", "a@example.com")`               |
+| `await page.keyboard.press("Enter")`                                   | `await task.call("send_keys", { keys: "Enter" })`               |
+| `await page.waitForSelector("#done")`                                  | `await task.call("wait", { selector: "#done" })`                |
+| `await page.evaluate(() => document.title)`                            | `await task.evaluate("document.title")`                         |
+| `await page.screenshot({ path: "shot.png" })`                          | `await task.call("screenshot", { path: "/absolute/shot.png" })` |
+| `await browser.close()`                                                | `await task.close()`                                            |
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("checkout");
+await task.navigate("https://example.com/cart");
+await task.click('role=button[name="Pay"]');
+await task.close();
+```
+
+在擴充功能模式下需要原始協定時，請用 `cdp` 動作送出指令，或以帶 Bearer 標頭的 WebSocket 用户端開啓 `/devtools/page/{tabId}`。請見 [CDP](https://oh-my-webbridge.github.io/md/zh-hk/reference/cdp/content.md)。
 
 
 # 頁面預設集 (https://oh-my-webbridge.github.io/zh-hk/presets/)

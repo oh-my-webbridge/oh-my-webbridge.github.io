@@ -173,6 +173,117 @@ daemon 只能从它所在的机器连接，token 是唯一的凭证。
 | 成品文件                                                                          | 先写入暂存盘，再以 0600 权限写成，绝不覆写既有路径            |
 
 
+# 与其他工具比较 (https://oh-my-webbridge.github.io/zh-cn/comparison/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
+{/* Generated from comparison.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+本页比较 oh-my-webbridge 0.2.0 与其他让 Agent 使用浏览器的工具。内容取自各项目的文档、发布页面与源代码，读取日期为 2026 年 11 月 12 日，版本以第一张表为准。“文档未说明”表示该项目的文档没有提到。发现错误或新版本时，请开一个 [GitHub issue](https://github.com/oh-my-webbridge/oh-my-webbridge/issues)。要搬移现有设置，请见[迁移到 oh-my-webbridge](https://oh-my-webbridge.github.io/md/zh-cn/migration/content.md)。
+
+## 工具与版本 [#tools-and-versions]
+
+| 工具                                                                         | 查核版本                                                                 | 组成                                                                                                  | 操作的浏览器                                                                                |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| oh-my-webbridge                                                              | 0.2.0                                                                    | 监听 `127.0.0.1:17373` 的 Go daemon、Chrome 与 Firefox 扩展程序、CLI、Node SDK、Agent 技能            | 你使用的 Chrome 或 Firefox 个人资料                                                         |
+| [Kimi 浏览器扩展程序](https://www.kimi.com/products/kimi-webbridge)          | daemon 2.0.34、扩展程序 2.0.33                                           | 监听 `127.0.0.1:10086` 的 daemon、Chrome 与 Edge 扩展程序、Agent 技能、供 Kimi 账号使用的侧边栏 Agent | 你使用的 Chrome 或 Edge 个人资料                                                            |
+| [Browser MCP](https://github.com/BrowserMCP/mcp)                             | [2.4.0](https://www.npmjs.com/package/@browsermcp/mcp)                   | MCP 服务器、每位用户一个 Node.js daemon、Chrome 扩展程序                                              | 你在 Chromium 系浏览器中使用的个人资料                                                      |
+| [Playwright MCP](https://github.com/microsoft/playwright-mcp)                | [0.0.85](https://github.com/microsoft/playwright-mcp/releases)           | MCP 服务器；加上 `--extension` 时，经中继连到 Playwright Extension                                    | 自己的个人资料；加上 `--extension` 时为你使用的 Chrome 或 Edge 个人资料                     |
+| [Playwriter](https://github.com/remorses/playwriter)                         | [0.10.0](https://github.com/remorses/playwriter/releases)                | 运行 Playwright 代码的 CLI、MCP 服务器与 Node 程序库、Chrome 扩展程序、`localhost:19988` 上的中继     | 你在 Chrome 中打开扩展程序的标签页                                                          |
+| [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp) | [1.13.0](https://github.com/ChromeDevTools/chrome-devtools-mcp/releases) | 以 Puppeteer 建构的 MCP 服务器与 CLI                                                                  | 自己的个人资料；加上 `--autoConnect` 时为你使用的 Chrome                                    |
+| [agent-browser](https://github.com/vercel-labs/agent-browser)                | [0.42.0](https://github.com/vercel-labs/agent-browser/releases)          | Rust CLI、每个会话一个 daemon、MCP 服务器、Agent 技能                                                 | 它安装的 Chrome for Testing、现有 Chrome 个人资料的副本，或打开远程调试的 Chrome            |
+| [PinchTab](https://github.com/pinchtab/pinchtab)                             | [0.15.2](https://github.com/pinchtab/pinchtab/releases)                  | 监听 `127.0.0.1:9867` 的 Go HTTP 服务器、CLI、MCP 服务器                                              | 它启动的 Chrome 运行个体，各有自己的个人资料                                                |
+| [OpenCLI](https://github.com/jackwener/OpenCLI)                              | [2.0.3](https://github.com/jackwener/OpenCLI/releases)                   | Node.js CLI、`localhost:19825` 上的 daemon、Chrome 扩展程序、100 多个网站的转接器                     | 你使用的 Chrome 个人资料                                                                    |
+| [Claude in Chrome](https://code.claude.com/docs/en/chrome)                   | 未公开；Claude Code 需要 1.0.36 以上                                     | 以 Claude 为模型的 Chrome 扩展程序、侧边栏、与 Claude Code 及 Claude Desktop 的连接                   | 你使用的 Chrome                                                                             |
+| [browser-use](https://github.com/browser-use/browser-use)                    | [1.0.2](https://pypi.org/project/browser-use/1.0.2/)                     | Python Agent 程序库、CLI、Browser Use Cloud                                                           | 默认为 Browser Use Cloud 浏览器，也可以是它启动的本机 Chromium，或打开远程调试的本机 Chrome |
+| [Stagehand](https://github.com/browserbase/stagehand)                        | [4.4.0](https://www.npmjs.com/package/@browserbasehq/stagehand)          | 带 AI 方法的 TypeScript、Python 与 Go SDK、`browse` CLI、托管的 MCP 服务器                            | 它启动的 Chrome，或 Browserbase 云端浏览器                                                  |
+
+## 取用已登录的浏览器 [#access-to-a-signed-in-browser]
+
+工具以两种方式之一取用你使用的浏览器。扩展程序通过浏览器 API 操作标签页，不需要浏览器旗标。远程调试则把整个浏览器交给客户端。Chrome 144 以上可在运行中的浏览器里从 `chrome://inspect/#remote-debugging` 打开远程调试，并请你允许连接。`--remote-debugging-port` 参数要求使用默认以外的个人资料目录（[远程调试的变更](https://developer.chrome.com/blog/remote-debugging-port)）。
+
+| 工具                            | 机制                                                                           | 设置                                                            | Agent 能取用的范围                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| oh-my-webbridge                 | 扩展程序：Chrome 用 `chrome.debugger`，Firefox 用 WebExtension API             | 安装扩展程序，并输入一次 `omw pair` 的配对码                    | 会话打开的标签页，以及 `find_tab` 借用的当前标签页                                     |
+| Kimi 浏览器扩展程序             | 使用 `chrome.debugger` 的扩展程序                                              | 安装 daemon 与扩展程序                                          | 会话打开的标签页，以及 `find_tab` 借用的当前标签页                                     |
+| Browser MCP                     | 使用 `chrome.debugger` 的扩展程序，只附加到 Agent 使用的标签页                 | 安装扩展程序与 MCP 服务器，核对一次六位数配对码并允许           | Agent 打开的标签页、它用 `tab select` 选取的你的标签页，以及你拖进其标签页分组的标签页 |
+| Playwright MCP 加 `--extension` | 扩展程序中继                                                                   | 在连接页面核准每次连接，或设置 `PLAYWRIGHT_MCP_EXTENSION_TOKEN` | MCP 客户端标签页分组内的标签页                                                         |
+| Playwriter                      | 扩展程序中继                                                                   | 在每个要控制的标签页上点一下扩展程序图标                        | 每个打开扩展程序的标签页，所有会话都可取用                                             |
+| OpenCLI                         | 具 `debugger` 权限的扩展程序                                                   | 安装扩展程序                                                    | 它自己标签页分组内的标签页，以及会话绑定的标签页                                       |
+| Claude in Chrome                | 具 `debugger` 权限的扩展程序                                                   | 安装扩展程序，并以付费 Claude 方案登录                          | 对话标签页分组内的标签页，以及你加入分组的标签页                                       |
+| Chrome DevTools MCP             | 远程调试：`--autoConnect`（Chrome 144 以上）、`--browserUrl` 或 `--wsEndpoint` | 打开远程调试并允许连接                                          | 该个人资料的所有窗口                                                                   |
+| agent-browser                   | 远程调试：`--auto-connect` 或 `--cdp`                                          | 打开远程调试并允许连接                                          | 整个浏览器；`--pin-tab` 把会话绑定到一个标签页                                         |
+| PinchTab                        | 通过 `POST /instances/attach` 使用远程调试，默认关闭                           | 在设置中打开 attach，并以远程调试启动 Chrome                    | 整个浏览器                                                                             |
+| browser-use                     | 远程调试                                                                       | 在 `chrome://inspect/#remote-debugging` 打开远程调试            | 整个浏览器                                                                             |
+
+## 任务、可见性与本机访问 [#tasks-visibility-and-local-access]
+
+| 工具                | 任务单位                                                 | 可见的标示                                                     | 本机访问控制                                                                                           |
+| ------------------- | -------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| oh-my-webbridge     | 具名会话，有自己的标签页与标签页分组，共用同一个个人资料 | 页面上的会话标签、Agent 指针与焦点框；工具栏图标上的琥珀色指针 | `omw connection` 输出的 Bearer token，扩展程序以配对取得。带网页 `Origin` 或其他 `Host` 的请求会被拒绝 |
+| Kimi 浏览器扩展程序 | 具名会话，有自己的标签页分组，共用同一个个人资料         | 文档未说明                                                     | 其 Agent 指南中的请求不带凭证                                                                          |
+| Browser MCP         | 每个 AI 应用程序一个标签页分组                           | Chrome 的调试信息列；工具栏图标上的标签页数                    | `~/.browsermcp/daemon.json` 中的 token；与扩展程序签章配对                                             |
+| Playwright MCP      | 每个 MCP 客户端一个标签页分组                            | 以客户端命名的标签页分组；状态页列出已连接的客户端             | 连接页面的核准，或扩展程序 token                                                                       |
+| Playwriter          | 编号会话，各自保有变量；所有会话共用标签页               | Chrome 的自动化信息列；绿色扩展程序图标                        | 检查扩展程序的来源；token 只用于远程访问                                                               |
+| OpenCLI             | 持有标签页租约的 `--session` 名称                        | 文档未说明                                                     | 文档写明不使用 token                                                                                   |
+| Claude in Chrome    | 每个 Claude Code 会话一个标签页分组                      | 在可见的窗口中操作，遇到登录与 CAPTCHA 时暂停                  | 扩展程序与 Claude Code 都要登录 claude.ai                                                              |
+| Chrome DevTools MCP | 每个对话一个服务器；`isolatedContext` 分开 cookie        | 文档未说明                                                     | Chrome 的远程调试核准                                                                                  |
+| agent-browser       | 会话有自己的 daemon、浏览器与 cookie                     | 文档未说明                                                     | 每个会话一个 socket；其设置文件必须只有拥有者可读                                                      |
+| PinchTab            | 运行个体：一个 Chrome 进程搭配一个个人资料               | 文档未说明                                                     | Bearer token                                                                                           |
+
+## 最接近的工具的功能 [#capabilities-of-the-closest-tools]
+
+“是”与“否”以各项目文档列出的命令或工具为准。只能通过任意代码达成的功能算作“否”。
+
+| 功能                  | oh-my-webbridge               | Kimi       | Browser MCP                     | Playwright MCP                              | Chrome DevTools MCP                      | agent-browser                 |
+| --------------------- | ----------------------------- | ---------- | ------------------------------- | ------------------------------------------- | ---------------------------------------- | ----------------------------- |
+| 快照引用              | `@e<generation>.<index>`      | `@e123`    | `e12`；框架内为 `f1e3`          | 文档未说明                                  | `uid`                                    | `@e1`                         |
+| 屏幕截图              | 是                            | 是         | 是                              | 是                                          | 是                                       | 是                            |
+| PDF                   | Chrome                        | 是         | 否                              | 加 `--caps pdf`                             | 否                                       | 是                            |
+| 网络请求              | 是                            | 是         | 是                              | 是                                          | 是                                       | 是                            |
+| 模拟网络响应          | 否                            | 否         | 否                              | 加 `--caps network`                         | 加 `--categoryNetworkMocks`              | 是                            |
+| 控制台消息            | Chrome                        | 否         | 是                              | 是                                          | 是                                       | 是                            |
+| Cookie 与网页保存空间 | 是                            | 否         | 否                              | 加 `--caps storage`                         | 否                                       | 是                            |
+| 下载                  | 是                            | 否         | 否                              | 否                                          | 否                                       | 是                            |
+| 模拟                  | Chrome                        | 否         | 否                              | 媒体与窗口大小；加 `--caps network` 可脱机  | 是                                       | 是                            |
+| 原始 CDP              | Chrome：`cdp`、页面 WebSocket | `cdp`      | 加 `--caps cdp`                 | 否                                          | 否                                       | 输出 CDP URL                  |
+| 追踪与性能分析        | 否                            | 否         | 否                              | 加 `--caps devtools`：Playwright 追踪、视频 | 性能追踪、Lighthouse、堆积快照           | `trace`、`profiler`、`record` |
+| 广告与追踪器拦截      | 内置预设                      | 文档未说明 | 文档未说明                      | 文档未说明                                  | 文档未说明                               | 文档未说明                    |
+| Firefox               | 是                            | 否         | 否                              | 不加 `--extension` 时                       | 否                                       | 文档未说明                    |
+| Windows               | 否                            | 是         | 文档未说明                      | 是                                          | 是                                       | 是                            |
+| MCP 服务器            | 否                            | 文档未说明 | 是                              | 是                                          | 是                                       | 是                            |
+| 默认发送的使用数据    | 无                            | 文档未说明 | Chrome 在线应用程序商店版有分析 | 文档未说明                                  | 使用统计；`--no-usage-statistics` 可关闭 | 文档未说明                    |
+
+## 更适合用其他工具的情况 [#when-another-tool-fits-better]
+
+- **Agent 只通过 MCP 调用工具。** Playwright MCP、Browser MCP、Chrome DevTools MCP、agent-browser、PinchTab 与 Playwriter 可作为 MCP 服务器运行。oh-my-webbridge 没有 MCP 服务器；Agent 依技能说明运行 `omw call`。
+- **Windows。** Kimi 浏览器扩展程序、Playwright MCP、Chrome DevTools MCP、agent-browser、Claude in Chrome 与 OpenCLI 桌面应用程序支持 Windows。Playwriter 支持 WSL，PinchTab 发布有限支持的 Windows 可执行文件。oh-my-webbridge 在 macOS 与 Linux 上运行。
+- **Microsoft Edge。** Kimi 浏览器扩展程序、Browser MCP 与加上 `--extension` 的 Playwright MCP 可在 Edge 中使用。oh-my-webbridge 支持 Chrome 与 Firefox。
+- **从扩展程序商店安装。** Kimi、Browser MCP、Playwright MCP、OpenCLI 与 Claude in Chrome 的扩展程序从 Chrome 在线应用程序商店安装并自动更新。oh-my-webbridge 的扩展程序在 Chrome 中以未封装文件夹加载，在 Firefox 中要经过签署才会在重新启动后保留。
+- **同时连接多个浏览器个人资料。** 一个 Browser MCP daemon 最多连接 8 个浏览器或 Chrome 个人资料。oh-my-webbridge 的 daemon 接受一个 Chrome 连接与一个 Firefox 连接。
+- **每个任务使用独立的 cookie。** agent-browser 的会话、PinchTab 的个人资料、Playwright MCP 的 `--isolated` 与 `isolatedContext`，以及 Chrome DevTools MCP 的 `isolatedContext` 会分开 cookie。oh-my-webbridge 的所有会话共用浏览器个人资料。
+- **没有桌面浏览器**，例如在 CI 中。agent-browser、Playwright MCP、Chrome DevTools MCP 与 PinchTab 会启动自己的浏览器，需要时以无头模式运行。oh-my-webbridge 需要一个已安装扩展程序且正在运行的 Chrome 或 Firefox。
+- **性能、内存与网络调试。** Chrome DevTools MCP 记录性能追踪、运行 Lighthouse 并读取堆积快照。Playwright MCP、Chrome DevTools MCP 与 agent-browser 可以模拟网络响应。
+- **在已登录的标签页上使用完整的 Playwright API。** Playwriter 在你打开其扩展程序的标签页上运行 Playwright 代码。
+- **常用网站的现成命令。** OpenCLI 附带转接器，可从 100 多个网站取回结构化数据。
+- **工具内含模型。** Claude in Chrome 与 Kimi 侧边栏以自己的模型运行任务。browser-use 以你设置的模型运行任务，Stagehand 则在脚本中加入 AI 步骤（`act`、`observe`、`extract`）。oh-my-webbridge 运行你所使用的 Agent 送来的命令，本身不含模型。
+
+## 来源 [#sources]
+
+- Kimi 浏览器扩展程序：[产品页面](https://www.kimi.com/products/kimi-webbridge)、[安装脚本](https://cdn.kimi.com/webbridge/install.sh)、[版本清单](https://cdn.kimi.com/webbridge/latest/version.json)、`kimi-webbridge install-skill` 写入的 Agent 指南，以及 Chrome 在线应用程序商店中扩展程序 2.0.33 的 manifest。
+- Browser MCP：[服务器 README](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/README.md)、[工具定义](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/src/tools/browser.ts)、[命令](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/src/commands/commands.ts)、[贡献指南](https://github.com/BrowserMCP/mcp/blob/main/CONTRIBUTING.md)、[使用方式](https://browsermcp.io/docs/usage)、[运行方式](https://browsermcp.io/docs/how-it-works)。
+- Playwright MCP：[README](https://github.com/microsoft/playwright-mcp/blob/main/README.md)、[扩展程序 README](https://github.com/microsoft/playwright/blob/main/packages/extension/README.md)。
+- Playwriter：[README](https://github.com/remorses/playwriter/blob/main/README.md)、[会话](https://playwriter.dev/docs/sessions)。
+- Chrome DevTools MCP：[README](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/README.md)、[设置](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/configuration.md)、[高级用法](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/advanced-usage.md)、[工具参考](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md)。
+- agent-browser：[README](https://github.com/vercel-labs/agent-browser/blob/main/README.md)、[命令](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/commands.mdx)、[CDP 模式](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/cdp-mode.mdx)、[会话](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/sessions.mdx)。
+- PinchTab：[README](https://github.com/pinchtab/pinchtab/blob/main/README.md)、[附加 Chrome](https://github.com/pinchtab/pinchtab/blob/main/docs/guides/attach-chrome.md)、[安全性](https://github.com/pinchtab/pinchtab/blob/main/docs/guides/security.md)。
+- OpenCLI：[README](https://github.com/jackwener/OpenCLI/blob/main/README.md)、[Browser Bridge](https://github.com/jackwener/OpenCLI/blob/main/docs/guide/browser-bridge.md)。
+- Claude in Chrome：[Claude Code 文档](https://code.claude.com/docs/en/chrome)、[入门](https://support.claude.com/en/articles/12012173-get-started-with-claude-in-chrome)。
+- browser-use：[README](https://github.com/browser-use/browser-use/blob/main/README.md)。Stagehand：[README](https://github.com/browserbase/stagehand/blob/main/README.md)。
+
+
 # 开发 (https://oh-my-webbridge.github.io/zh-cn/development/)
 
 > **技术预览**
@@ -636,6 +747,198 @@ Agent 或脚本发送的命令，会在你日常使用的 Chrome 或 Firefox 个
 - [会话与标签页](https://oh-my-webbridge.github.io/md/zh-cn/sessions/content.md)：每项任务一个会话，各有自己的标签页与标签页分组。
 - [Agent 活动](https://oh-my-webbridge.github.io/md/zh-cn/activity/content.md)：光晕、焦点框与工具栏图标，用来标示 Agent 正在控制的标签页。
 - [动作](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md)：所有动作、其参数，以及会返回的错误。
+
+
+# 迁移到 oh-my-webbridge (https://oh-my-webbridge.github.io/zh-cn/migration/)
+
+> **技术预览**
+>
+> omw 目前是技术预览版，正在快速迭代。**之后的版本一定会有破坏兼容性的变更。**
+
+{/* Generated from migration.zh-tw.mdx by scripts/i18n.mjs. Edit the zh-TW page instead. */}
+
+oh-my-webbridge 的每个命令都指定一个会话、一个动作，以及一个参数 JSON 对象。本页的表格把其他工具的常用命令对应到这些动作。搬移任务之前，请先在[与其他工具比较](https://oh-my-webbridge.github.io/md/zh-cn/comparison/content.md)中确认 oh-my-webbridge 没有提供的功能。
+
+## 开始之前 [#before-you-start]
+
+1. 安装 daemon 与扩展程序，并配对浏览器。请见[快速开始](https://oh-my-webbridge.github.io/md/zh-cn/getting-started/content.md)。
+2. 以 `omw install-skill ~/.agents/skills` 安装 Agent 技能。关闭原本工具的技能或 MCP 服务器，让 Agent 在一项任务中只使用一个工具。
+3. 运行 `omw status`。它为每个浏览器输出一行，例如 `chrome: connected (156.0.8078.80)`。
+
+## 所有工具共通的变更 [#changes-for-every-tool]
+
+- **会话。** 每项任务使用一个会话名称，例如 `checkout`。第一个命令会打开会话，它的标签页在背景打开，并放进同一个标签页分组。任务结束时发送 `close_session`。所有会话都使用你的浏览器个人资料与其中的 cookie。
+- **引用。** 引用的格式为 `@e<generation>.<index>`，来自该标签页最新一次的 `snapshot`。以 `@e` 开头、来自其他工具或较旧快照的引用会以 `stale_ref` 失败。不带 `@` 的引用（例如 `e12`）会被当成 CSS 选择器。导航之后请重新取得快照。
+- **定位器。** `selector` 参数接受 CSS 与文字定位器，Playwright 定位器可以对应到这些形式。`role=` 完全比对名称，而 `getByRole` 在未设置 `exact: true` 时比对子字符串。串接的定位器与 `.filter()` 没有对应形式。请见[选择器](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md#selectors)。
+
+| Playwright 定位器                                      | oh-my-webbridge 选择器       |
+| ------------------------------------------------------ | ---------------------------- |
+| `getByRole("button", { name: "Submit", exact: true })` | `role=button[name="Submit"]` |
+| `getByText("Sign in")`                                 | `text=Sign in`               |
+| `getByLabel("Email")`                                  | `label=Email`                |
+| `getByPlaceholder("Search")`                           | `placeholder=Search`         |
+| `getByTestId("search")`                                | `testid=search`              |
+| `.first()`、`.last()`                                  | ` >>nth=0`、` >>nth=-1`      |
+
+- **JavaScript。** `evaluate` 接受表达式，而不是函数。请发送 `document.title`，或把函数包成调用：`(() => document.title)()`。使用 `await` 的代码放进异步函数调用：`(async () => (await fetch("/api")).status)()`。
+- **文件。** `screenshot` 与 `save_as_pdf` 接受绝对路径 `path` 并传回它，不会覆写已存在的文件。
+- **期限。** 命令默认在 30 秒后失败。HTTP 请求本文的 `timeoutMs` 字段可设置 1 到 120000 毫秒。
+- **Firefox。** 部分动作在 Firefox 中响应 `unsupported`。请见 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md)。
+
+## 从 Kimi 浏览器扩展程序迁移 [#from-the-kimi-browser-extension]
+
+请求格式与大多数动作名称相同，地址、token 与部分参数不同。
+
+|            | Kimi 浏览器扩展程序               | oh-my-webbridge                                            |
+| ---------- | --------------------------------- | ---------------------------------------------------------- |
+| 地址       | `http://127.0.0.1:10086`          | `http://127.0.0.1:17373`                                   |
+| 命令       | `POST /command`                   | `POST /command`，带 `Authorization: Bearer <token>`        |
+| 请求本文   | `action`、`args`、`session`       | `session`、`action`、`args`；可选 `browser` 与 `timeoutMs` |
+| 状态       | `/status`                         | 带 token 的 `GET /status`，或 `omw status`                 |
+| 启动       | `kimi-webbridge start`            | `omw start`，或以 `omw service install` 安装用户服务       |
+| Agent 技能 | `kimi-webbridge install-skill -y` | `omw install-skill ~/.agents/skills`                       |
+| 命令行     | `curl`                            | `omw call SESSION ACTION JSON`，或 `curl`                  |
+
+同一个 `navigate` 请求送往两个 daemon 的写法：
+
+```sh
+# Kimi 浏览器扩展程序
+curl -s -X POST http://127.0.0.1:10086/command \
+  -H 'Content-Type: application/json' \
+  -d '{"action":"navigate","args":{"url":"https://example.com","group_title":"Research"},"session":"research"}'
+
+# oh-my-webbridge
+TOKEN=$(omw connection | sed -E 's/.*"token":"([^"]+)".*/\1/')
+curl -s -X POST http://127.0.0.1:17373/command \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"session":"research","action":"navigate","args":{"url":"https://example.com","group_title":"Research"}}'
+
+# oh-my-webbridge 命令行
+omw call research navigate '{"url":"https://example.com","group_title":"Research"}'
+```
+
+以下动作的名称与参数不变：`navigate`、`find_tab`、`list_tabs`、`close_tab`、`close_session`、`mouse_click`、`fill`、`key_type`、`hover`、`drag`、`find`、`cdp`、`screenshot`、`save_as_pdf`、`upload` 与 `network`。以下动作有变更：
+
+| Kimi 浏览器扩展程序                            | oh-my-webbridge                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| `click`，调用 `el.click()`                     | `click`。在 Chrome 中通过 CDP 发送受信任的鼠标输入。                 |
+| `code` 中使用 `await` 的 `evaluate`            | `evaluate`，代码放进异步函数调用                                     |
+| `snapshot` 带 `ref`、`interactive`             | `snapshot` 带 `interactive`、`maxDepth`。引用使用新的格式。          |
+| `read_page` 带 `cursor`                        | `read_page` 传回前 192000 个字符，不接受 cursor。                    |
+| `wait` 带 `text_gone`                          | `wait` 带 `text` 与 `"state": "hidden"`                              |
+| `wait` 带 `timeout_ms`                         | 请求本文中的 `timeoutMs`                                             |
+| `dialog` 带 `"action": "accept"`               | `dialog` 带 `"accept": true`；`text` 改为 `promptText`               |
+| `dialog` 带 `"action": "dismiss"`              | `dialog` 带 `"accept": false`                                        |
+| `dialog` 带 `"action": "status"`               | `dialog_status`                                                      |
+| `select_option` 带 `values`                    | `select_option` 带一个 `value`，依值或可见文字比对                   |
+| 不带 `values` 的 `select_option`，用来列出选项 | 读取元素 `options` 的 `evaluate`                                     |
+| `scroll` 带 `text`                             | `scroll` 带 `"selector": "text=..."`                                 |
+| `scroll` 带 `to`                               | `scroll` 带 `direction` 与 `amount`                                  |
+| `send_keys` 带 `repeat`                        | 每按一次键送一次 `send_keys`，或在 `batch` 中放多个步骤              |
+| `set_checked`                                  | `check` 或 `uncheck`                                                 |
+| `go_back`、`go_forward`、`reload`              | `history`，`cmd` 设为 `back`、`forward` 或 `reload`                  |
+| `highlight_region`、`clear_highlight`          | 没有对应动作。[活动层](https://oh-my-webbridge.github.io/md/zh-cn/activity/content.md)会标示每个输入动作的目标元素。 |
+
+## 从 MCP 浏览器服务器迁移 [#from-mcp-browser-servers]
+
+oh-my-webbridge 没有 MCP 服务器。Agent 依技能说明，在 shell 中运行 `omw call`。一次工具调用对应一个命令：
+
+```sh
+omw call checkout click '{"selector":"role=button[name=\"Pay\"]"}'
+```
+
+Chrome DevTools MCP 的页面工具还需要 `pageId`，默认为必填。下表省略这个参数。
+
+| 任务            | Playwright MCP                                 | Browser MCP                         | Chrome DevTools MCP                | oh-my-webbridge                                                  |
+| --------------- | ---------------------------------------------- | ----------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| 打开网址        | `browser_navigate {url}`                       | `goto <url>`                        | `navigate_page {type: "url", url}` | `navigate {"url"}`                                               |
+| 开新标签页      | `browser_tabs {action: "new", url}`            | `tab new <url>`                     | `new_page {url}`                   | `navigate {"url", "newTab": true}`                               |
+| 读取页面        | `browser_snapshot`                             | `snapshot -i`                       | `take_snapshot`                    | `snapshot`、`read_page`                                          |
+| 点击            | `browser_click {target}`                       | `click e12`                         | `click {uid}`                      | `click {"selector"}`                                             |
+| 连按两下        | `browser_click {target, doubleClick: true}`    | `click e12 --double`                | `click {uid, dblClick: true}`      | `dblclick {"selector"}`                                          |
+| 填写字段        | `browser_type {target, text}`                  | `fill e5 "text"`                    | `fill {uid, value}`                | `fill {"selector", "value"}`                                     |
+| 按键            | `browser_press_key {key}`                      | `press Enter`                       | `press_key {key}`                  | `send_keys {"keys"}`                                             |
+| 选取选项        | `browser_select_option {target, values}`       | `select e7 "value"`                 | `fill {uid, value}`                | `select_option {"selector", "value"}`                            |
+| 上传文件        | `browser_file_upload {paths}`                  | `upload <target> <path>`            | `upload_file`                      | `upload {"selector", "files"}`                                   |
+| 等待文字        | `browser_wait_for {text}`                      | `wait --text "<text>"`              | `wait_for`                         | `wait {"text"}`                                                  |
+| 响应对话框      | `browser_handle_dialog {accept, promptText}`   | `dialog`                            | `handle_dialog`                    | `dialog {"accept", "promptText"}`                                |
+| 屏幕截图        | `browser_take_screenshot {fullPage, filename}` | `screenshot --full --path <file>`   | `take_screenshot {filePath}`       | `screenshot {"fullPage", "path"}`                                |
+| 运行 JavaScript | `browser_evaluate {function}`                  | `eval "<function>"`                 | `evaluate_script {function}`       | `evaluate {"code"}`，参数为表达式                                |
+| 控制台消息      | `browser_console_messages`                     | `console`                           | `list_console_messages`            | `console {"cmd": "start"}`，再送 `{"cmd": "list"}`               |
+| 网络请求        | `browser_network_requests`                     | `requests`                          | `list_network_requests`            | `network {"cmd": "start"}`，再送 `{"cmd": "list"}`               |
+| 列出标签页      | `browser_tabs {action: "list"}`                | `tab list`                          | `list_pages`                       | `list_tabs`                                                      |
+| 使用你的标签页  | 在连接页面上选取                               | `tab select <id>`                   | `select_page {pageId}`             | `find_tab {"url": "example.com", "active": true}` 借用当前标签页 |
+| 关闭标签页      | `browser_tabs {action: "close", index}`        | `tab close <id>`                    | `close_page {pageId}`              | `close_tab {"tabId"}`                                            |
+| 结束任务        | `browser_close`                                | AI 应用程序关闭或闲置 10 分钟后释放 | CLI 中的 `chrome-devtools stop`    | `close_session`                                                  |
+
+- Browser MCP 的一次调用可以包含多行命令。`batch` 在一个请求中依序运行最多 64 个步骤，遇到第一个错误即停止：`omw call checkout batch '{"steps":[{"action":"fill","args":{"selector":"label=Email","value":"a@example.com"}},{"action":"send_keys","args":{"keys":"Enter"}}]}'`。`screenshot`、`save_as_pdf` 与 `close_session` 要分开发送。
+- 带 `submit: true` 的 `browser_type` 对应为 `fill`，接着发送 `keys` 为 `Enter` 的 `send_keys`。
+- `console` 在 Chrome 中使用，传回 `start` 之后记录的消息。请在会记录消息的步骤之前发送 `start`。
+- Chrome DevTools MCP 的性能追踪、Lighthouse 与堆积快照，以及 Playwright MCP 的响应模拟、追踪与代码产生，没有内置动作。这类任务请保留原本的服务器。[页面连接](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md#page-connections)接受 `chrome.debugger` 允许的协议域名，例如以 `Fetch` 拦截请求。
+
+## 从 agent-browser 与 PinchTab 迁移 [#from-agent-browser-and-pinchtab]
+
+oh-my-webbridge 不启动浏览器，因此没有对应 `--headed`、`--profile`、`--state`、个人资料管理或运行个体的功能。命令在你使用的浏览器的背景标签页中运行，沿用其中的登录状态。`omw call` 的第一个参数是会话名称。PinchTab 的 Agent 会话设置身分与权限；最接近 oh-my-webbridge 会话的是 PinchTab 的运行个体或标签页。
+
+| 任务       | agent-browser            | PinchTab                    | `omw call SESSION ...`                                       |
+| ---------- | ------------------------ | --------------------------- | ------------------------------------------------------------ |
+| 选择任务   | `--session agent1`       | 运行个体，或 `--tab <id>`   | `omw call agent1 ...`                                        |
+| 打开网址   | `open <url>`             | `nav <url>`                 | `navigate '{"url":"<url>"}'`                                 |
+| 快照       | `snapshot -i`            | `snap -i -c`                | `snapshot '{"interactive":true}'`                            |
+| 点击       | `click @e1`              | `click e5`                  | `click '{"selector":"<引用>"}'`                              |
+| 填写       | `fill @e4 "text"`        | `fill "#search" "q"`        | `fill '{"selector":"#search","value":"q"}'`                  |
+| 输入文字   | `type <selector> <text>` | `type <selector> <text>`    | `key_type '{"selector":"...","text":"..."}'`                 |
+| 按键       | `press Enter`            | `press Enter`               | `send_keys '{"keys":"Enter"}'`                               |
+| 页面文字   | `get text <selector>`    | `text`                      | `read_page`，或 `get '{"selector":"...","property":"text"}'` |
+| 屏幕截图   | `screenshot <path>`      | `screenshot -o <path>`      | `screenshot '{"path":"/absolute/shot.png"}'`                 |
+| PDF        | `pdf <path>`             | `pdf -o <path>`             | `save_as_pdf '{"path":"/absolute/page.pdf"}'`                |
+| JavaScript | `eval "document.title"`  | `eval "document.title"`     | `evaluate '{"code":"document.title"}'`                       |
+| 列出标签页 | `tab list`               | `tab`                       | `list_tabs`                                                  |
+| 切换标签页 | `tab t2`                 | `tab <tab-id>`              | `switch_tab '{"tabId":412}'`                                 |
+| 关闭标签页 | `tab close`              | `tab close <tab-id>`        | `close_tab`                                                  |
+| 多个步骤   | `batch`                  | `POST /actions`             | `batch '{"steps":[...]}'`                                    |
+| 结束任务   | `close`                  | `POST /instances/{id}/stop` | `close_session`                                              |
+
+## 从 Playwright 或 Puppeteer 脚本迁移 [#from-playwright-or-puppeteer-scripts]
+
+在扩展程序模式下，daemon 在 `/json/list` 列出页面目标，并在 `/devtools/page/{tabId}` 提供单一标签页。它的 `/json/version` 没有 `webSocketDebuggerUrl`。Playwright 的 `chromium.connectOverCDP` 与 Puppeteer 带 `browserURL` 的 `puppeteer.connect` 会读取这个字段来找到浏览器端点（[Playwright 源代码](https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/chromium/chromium.ts)、[Puppeteer 源代码](https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/common/BrowserConnector.ts)）。这类脚本有两种搬移方式。
+
+### 让脚本使用原生模式 [#keep-the-script-on-native-mode]
+
+原生模式通过 daemon 转送浏览器端点。以 `--remote-debugging-port=9222` 与另一个 `--user-data-dir` 启动 Chrome，再以 `http://127.0.0.1:9222/json/version` 中的浏览器 URL 启动 daemon：
+
+```sh
+omw serve --cdp ws://127.0.0.1:9222/devtools/browser/8b0d3f7c-...
+```
+
+Playwright 在 `headers` 中带上 token 连接，写法请见 [CDP](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md#native-mode)。Puppeteer 则传入 `browserURL: "http://127.0.0.1:17373"`，并在 `wsOptions.headers` 中带上同一个标头。这样脚本操作的是那个另外启动的 Chrome，而不是你平常使用的个人资料。
+
+### 把脚本改用 SDK [#move-the-script-to-the-sdk]
+
+SDK 通过扩展程序操作你使用的浏览器中的标签页。
+
+| Playwright                                                             | oh-my-webbridge SDK                                             |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `await page.goto(url)`                                                 | `await task.navigate(url)`                                      |
+| `await page.getByRole("button", { name: "Pay", exact: true }).click()` | `await task.click('role=button[name="Pay"]')`                   |
+| `await page.getByLabel("Email").fill("a@example.com")`                 | `await task.fill("label=Email", "a@example.com")`               |
+| `await page.keyboard.press("Enter")`                                   | `await task.call("send_keys", { keys: "Enter" })`               |
+| `await page.waitForSelector("#done")`                                  | `await task.call("wait", { selector: "#done" })`                |
+| `await page.evaluate(() => document.title)`                            | `await task.evaluate("document.title")`                         |
+| `await page.screenshot({ path: "shot.png" })`                          | `await task.call("screenshot", { path: "/absolute/shot.png" })` |
+| `await browser.close()`                                                | `await task.close()`                                            |
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("checkout");
+await task.navigate("https://example.com/cart");
+await task.click('role=button[name="Pay"]');
+await task.close();
+```
+
+在扩展程序模式下需要原始协议时，请用 `cdp` 动作发送命令，或以带 Bearer 标头的 WebSocket 客户端打开 `/devtools/page/{tabId}`。请见 [CDP](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md)。
 
 
 # 页面预设 (https://oh-my-webbridge.github.io/zh-cn/presets/)

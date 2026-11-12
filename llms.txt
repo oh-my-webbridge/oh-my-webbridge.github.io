@@ -22,6 +22,7 @@ A page has the same path in every language: change the language code in its link
 - [Agent activity](https://oh-my-webbridge.github.io/md/en/activity/content.md): What the toolbar icon, the popup and the activity layer show while an agent controls a tab, and how to turn the layer off.
 - [Page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md): Control which network requests the tabs a session owns may make with the anti-ad, zen and none presets.
 - [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md): Install the Firefox extension, pair it with the daemon, and see how its actions differ from Chrome.
+- [Migrate to oh-my-webbridge](https://oh-my-webbridge.github.io/md/en/migration/content.md): Map the commands of the Kimi browser extension, MCP browser servers, browser CLIs and Playwright or Puppeteer scripts to oh-my-webbridge actions.
 
 - **Reference**
 - [CLI](https://oh-my-webbridge.github.io/md/en/reference/cli/content.md): Commands of the omw daemon and command line client.
@@ -30,6 +31,7 @@ A page has the same path in every language: change the language code in its link
 - [CDP](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md): Chrome DevTools Protocol access through the daemon, in extension and native mode.
 
 - **Project**
+- [Comparison with other tools](https://oh-my-webbridge.github.io/md/en/comparison/content.md): How oh-my-webbridge differs from other tools that give an agent a browser, and which tasks another tool covers better.
 - [Architecture](https://oh-my-webbridge.github.io/md/en/architecture/content.md): How the omw daemon and the browser extension split work, and how a command reaches a tab.
 - [Development](https://oh-my-webbridge.github.io/md/en/development/content.md): Repository layout, toolchain, build output, test commands, and the release path.
 - [Privacy](https://oh-my-webbridge.github.io/md/en/privacy/content.md): What the extension and the daemon read, where the data goes and what they keep on disk.

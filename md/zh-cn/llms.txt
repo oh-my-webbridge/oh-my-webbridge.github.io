@@ -22,6 +22,7 @@ A page has the same path in every language: change the language code in its link
 - [Agent 活动](https://oh-my-webbridge.github.io/md/zh-cn/activity/content.md): Agent 控制标签页时，工具栏图标、弹出式窗口与活动层会显示什么，以及如何关闭活动层。
 - [页面预设](https://oh-my-webbridge.github.io/md/zh-cn/presets/content.md): 以 anti-ad、zen 与 none 预设，控制会话所拥有的标签页可以发出哪些网络请求。
 - [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md): 安装 Firefox 扩展程序，与 daemon 配对，并了解它的动作与 Chrome 有何不同。
+- [迁移到 oh-my-webbridge](https://oh-my-webbridge.github.io/md/zh-cn/migration/content.md): 把 Kimi 浏览器扩展程序、MCP 浏览器服务器、浏览器 CLI 与 Playwright 或 Puppeteer 脚本的命令对应到 oh-my-webbridge 的动作。
 
 - **参考**
 - [CLI](https://oh-my-webbridge.github.io/md/zh-cn/reference/cli/content.md): omw daemon 与命令行客户端的命令。
@@ -30,6 +31,7 @@ A page has the same path in every language: change the language code in its link
 - [CDP](https://oh-my-webbridge.github.io/md/zh-cn/reference/cdp/content.md): 通过 daemon 访问 Chrome DevTools Protocol，分为扩展程序模式与原生模式。
 
 - **项目**
+- [与其他工具比较](https://oh-my-webbridge.github.io/md/zh-cn/comparison/content.md): oh-my-webbridge 与其他让 Agent 使用浏览器的工具有哪些差异，以及哪些任务更适合用其他工具。
 - [架构](https://oh-my-webbridge.github.io/md/zh-cn/architecture/content.md): omw daemon 与浏览器扩展程序如何分工，以及一个命令如何抵达标签页。
 - [开发](https://oh-my-webbridge.github.io/md/zh-cn/development/content.md): 仓库结构、工具链、构建输出、测试命令与发布流程。
 - [隐私权](https://oh-my-webbridge.github.io/md/zh-cn/privacy/content.md): 扩展程序与 daemon 读取哪些数据、数据送往何处，以及在磁盘上保存哪些内容。

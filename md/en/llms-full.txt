@@ -169,6 +169,115 @@ These are capacity guards, not a bound on RSS: concurrent screenshots and Chrome
 | Artifact files                                                                           | written with mode 0600 through a temporary file, never over an existing path      |
 
 
+# Comparison with other tools (https://oh-my-webbridge.github.io/en/comparison/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
+This page compares oh-my-webbridge 0.2.0 with other tools that give an agent a browser. The facts come from the documentation, release pages and source code of each project, read on 12 November 2026 for the versions in the first table. "Not documented" means that the documentation of the project does not say. To report an error or a newer release, open a [GitHub issue](https://github.com/oh-my-webbridge/oh-my-webbridge/issues). To move an existing setup, see [Migrate to oh-my-webbridge](https://oh-my-webbridge.github.io/md/en/migration/content.md).
+
+## Tools and versions [#tools-and-versions]
+
+| Tool                                                                         | Version checked                                                          | Parts                                                                                                   | Browser it drives                                                                                                |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| oh-my-webbridge                                                              | 0.2.0                                                                    | Go daemon on `127.0.0.1:17373`, Chrome and Firefox extensions, CLI, Node SDK, agent skill               | The Chrome or Firefox profile you use                                                                            |
+| [Kimi browser extension](https://www.kimi.com/products/kimi-webbridge)       | Daemon 2.0.34, extension 2.0.33                                          | Daemon on `127.0.0.1:10086`, Chrome and Edge extension, agent skill, side panel agent for Kimi accounts | The Chrome or Edge profile you use                                                                               |
+| [Browser MCP](https://github.com/BrowserMCP/mcp)                             | [2.4.0](https://www.npmjs.com/package/@browsermcp/mcp)                   | MCP server, Node.js daemon for each user, Chrome extension                                              | The profile you use in a Chromium-based browser                                                                  |
+| [Playwright MCP](https://github.com/microsoft/playwright-mcp)                | [0.0.85](https://github.com/microsoft/playwright-mcp/releases)           | MCP server; with `--extension`, a relay to the Playwright Extension                                     | A profile of its own; with `--extension`, the Chrome or Edge profile you use                                     |
+| [Playwriter](https://github.com/remorses/playwriter)                         | [0.10.0](https://github.com/remorses/playwriter/releases)                | CLI, MCP server and Node library that run Playwright code, Chrome extension, relay on `localhost:19988` | The tabs of your Chrome on which you turn the extension on                                                       |
+| [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp) | [1.13.0](https://github.com/ChromeDevTools/chrome-devtools-mcp/releases) | MCP server and CLI built on Puppeteer                                                                   | A profile of its own; with `--autoConnect`, the Chrome you use                                                   |
+| [agent-browser](https://github.com/vercel-labs/agent-browser)                | [0.42.0](https://github.com/vercel-labs/agent-browser/releases)          | Rust CLI with a daemon for each session, MCP server, agent skill                                        | Chrome for Testing that it installs, a copy of an existing Chrome profile, or a Chrome with remote debugging     |
+| [PinchTab](https://github.com/pinchtab/pinchtab)                             | [0.15.2](https://github.com/pinchtab/pinchtab/releases)                  | Go HTTP server on `127.0.0.1:9867`, CLI, MCP server                                                     | Chrome instances that it starts, each with its own profile                                                       |
+| [OpenCLI](https://github.com/jackwener/OpenCLI)                              | [2.0.3](https://github.com/jackwener/OpenCLI/releases)                   | Node.js CLI, daemon on `localhost:19825`, Chrome extension, adapters for more than 100 sites            | The Chrome profile you use                                                                                       |
+| [Claude in Chrome](https://code.claude.com/docs/en/chrome)                   | Not published; Claude Code needs 1.0.36 or later                         | Chrome extension with Claude as the model, side panel, connection to Claude Code and Claude Desktop     | The Chrome you use                                                                                               |
+| [browser-use](https://github.com/browser-use/browser-use)                    | [1.0.2](https://pypi.org/project/browser-use/1.0.2/)                     | Python agent library, CLI, Browser Use Cloud                                                            | A Browser Use Cloud browser by default, a local Chromium that it starts, or a local Chrome with remote debugging |
+| [Stagehand](https://github.com/browserbase/stagehand)                        | [4.4.0](https://www.npmjs.com/package/@browserbasehq/stagehand)          | TypeScript, Python and Go SDK with AI methods, `browse` CLI, hosted MCP server                          | A Chrome that it starts, or a Browserbase cloud browser                                                          |
+
+## Access to a signed-in browser [#access-to-a-signed-in-browser]
+
+A tool reaches the browser you use in one of two ways. An extension drives tabs through browser APIs and needs no browser flag. Remote debugging gives the client the whole browser. Chrome 144 and later turn it on for the running browser from `chrome://inspect/#remote-debugging` and ask you to allow the connection. The `--remote-debugging-port` switch requires a profile directory other than the default one ([remote debugging changes](https://developer.chrome.com/blog/remote-debugging-port)).
+
+| Tool                              | Mechanism                                                                         | Setup                                                                                | What the agent can reach                                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| oh-my-webbridge                   | Extension: `chrome.debugger` in Chrome, WebExtension APIs in Firefox              | Install the extension and enter the code from `omw pair` once                        | Tabs that its sessions open, and the active tab that `find_tab` borrows                                           |
+| Kimi browser extension            | Extension with `chrome.debugger`                                                  | Install the daemon and the extension                                                 | Tabs that its sessions open, and the active tab that `find_tab` borrows                                           |
+| Browser MCP                       | Extension with `chrome.debugger`, attached only to tabs that an agent uses        | Install the extension and the MCP server, compare a six-digit code once and allow it | Tabs that the agent opens, your tabs that it selects with `tab select`, and tabs that you drag into its tab group |
+| Playwright MCP with `--extension` | Extension relay                                                                   | Approve each connection on the connect page, or set `PLAYWRIGHT_MCP_EXTENSION_TOKEN` | Tabs in the tab group of the MCP client                                                                           |
+| Playwriter                        | Extension relay                                                                   | Click the extension icon on each tab to control                                      | Every tab with the extension turned on, from every session                                                        |
+| OpenCLI                           | Extension with the `debugger` permission                                          | Install the extension                                                                | Tabs in its own tab groups, and tabs that a session binds                                                         |
+| Claude in Chrome                  | Extension with the `debugger` permission                                          | Install the extension and sign in with a paid Claude plan                            | Tabs in the tab group of the conversation, and tabs that you add to it                                            |
+| Chrome DevTools MCP               | Remote debugging: `--autoConnect` (Chrome 144+), `--browserUrl` or `--wsEndpoint` | Turn on remote debugging and allow the connection                                    | Every window of the profile                                                                                       |
+| agent-browser                     | Remote debugging: `--auto-connect` or `--cdp`                                     | Turn on remote debugging and allow the connection                                    | The whole browser; `--pin-tab` binds a session to one tab                                                         |
+| PinchTab                          | Remote debugging through `POST /instances/attach`, off by default                 | Turn on attach in the configuration and start Chrome with remote debugging           | The whole browser                                                                                                 |
+| browser-use                       | Remote debugging                                                                  | Turn on remote debugging at `chrome://inspect/#remote-debugging`                     | The whole browser                                                                                                 |
+
+## Tasks, visibility and local access [#tasks-visibility-and-local-access]
+
+| Tool                   | Unit of a task                                                             | Visible marks                                                                              | Local access control                                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| oh-my-webbridge        | Named session with its own tabs and tab group, in the shared profile       | Session chip, agent pointer and focus frame on the page; amber pointer on the toolbar icon | Bearer token that `omw connection` prints; the extension gets it by pairing. Requests with a web `Origin` or another `Host` are rejected |
+| Kimi browser extension | Named session with its own tab group, in the shared profile                | Not documented                                                                             | The requests in its agent guide carry no credentials                                                                                     |
+| Browser MCP            | One tab group for each AI application                                      | Chrome's debugging bar; tab count on the toolbar icon                                      | Token in `~/.browsermcp/daemon.json`; signed pairing with the extension                                                                  |
+| Playwright MCP         | One tab group for each MCP client                                          | Tab group named after the client; a status page lists the connected clients                | Approval on the connect page, or the extension token                                                                                     |
+| Playwriter             | Numbered session that keeps its own variables; all sessions share the tabs | Chrome's automation bar; green extension icon                                              | Origin check for the extension; a token for remote access only                                                                           |
+| OpenCLI                | `--session` name that holds a tab lease                                    | Not documented                                                                             | Its documentation states that it uses no tokens                                                                                          |
+| Claude in Chrome       | Tab group for each Claude Code session                                     | Works in the visible window and pauses for logins and CAPTCHAs                             | claude.ai sign-in in the extension and in Claude Code                                                                                    |
+| Chrome DevTools MCP    | One server for each conversation; `isolatedContext` separates cookies      | Not documented                                                                             | Chrome's remote debugging approval                                                                                                       |
+| agent-browser          | Session with its own daemon, browser and cookies                           | Not documented                                                                             | A socket for each session; its settings file must be readable by the owner only                                                          |
+| PinchTab               | Instance: one Chrome process with one profile                              | Not documented                                                                             | Bearer token                                                                                                                             |
+
+## Capabilities of the closest tools [#capabilities-of-the-closest-tools]
+
+"Yes" and "No" refer to the commands or tools that each project documents. A capability that a tool reaches only through arbitrary code counts as "No".
+
+| Capability                 | oh-my-webbridge               | Kimi           | Browser MCP                             | Playwright MCP                                       | Chrome DevTools MCP                                      | agent-browser                 |
+| -------------------------- | ----------------------------- | -------------- | --------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------- | ----------------------------- |
+| Snapshot reference         | `@e<generation>.<index>`      | `@e123`        | `e12`; `f1e3` in a frame                | Not documented                                       | `uid`                                                    | `@e1`                         |
+| Screenshot                 | Yes                           | Yes            | Yes                                     | Yes                                                  | Yes                                                      | Yes                           |
+| PDF                        | Chrome                        | Yes            | No                                      | With `--caps pdf`                                    | No                                                       | Yes                           |
+| Network requests           | Yes                           | Yes            | Yes                                     | Yes                                                  | Yes                                                      | Yes                           |
+| Network mocking            | No                            | No             | No                                      | With `--caps network`                                | With `--categoryNetworkMocks`                            | Yes                           |
+| Console messages           | Chrome                        | No             | Yes                                     | Yes                                                  | Yes                                                      | Yes                           |
+| Cookies and web storage    | Yes                           | No             | No                                      | With `--caps storage`                                | No                                                       | Yes                           |
+| Downloads                  | Yes                           | No             | No                                      | No                                                   | No                                                       | Yes                           |
+| Emulation                  | Chrome                        | No             | No                                      | Media and window size; offline with `--caps network` | Yes                                                      | Yes                           |
+| Raw CDP                    | Chrome: `cdp`, page WebSocket | `cdp`          | With `--caps cdp`                       | No                                                   | No                                                       | Prints the CDP URL            |
+| Traces and profiling       | No                            | No             | No                                      | With `--caps devtools`: Playwright traces, video     | Performance traces, Lighthouse, heap snapshots           | `trace`, `profiler`, `record` |
+| Ad and tracker blocking    | Built-in presets              | Not documented | Not documented                          | Not documented                                       | Not documented                                           | Not documented                |
+| Firefox                    | Yes                           | No             | No                                      | Without `--extension`                                | No                                                       | Not documented                |
+| Windows                    | No                            | Yes            | Not documented                          | Yes                                                  | Yes                                                      | Yes                           |
+| MCP server                 | No                            | Not documented | Yes                                     | Yes                                                  | Yes                                                      | Yes                           |
+| Usage data sent by default | None                          | Not documented | Analytics in the Chrome Web Store build | Not documented                                       | Usage statistics; `--no-usage-statistics` turns them off | Not documented                |
+
+## When another tool fits better [#when-another-tool-fits-better]
+
+- **The agent calls tools only through MCP.** Playwright MCP, Browser MCP, Chrome DevTools MCP, agent-browser, PinchTab and Playwriter run as MCP servers. oh-my-webbridge has no MCP server; an agent runs `omw call` as its skill describes.
+- **Windows.** The Kimi browser extension, Playwright MCP, Chrome DevTools MCP, agent-browser, Claude in Chrome and the OpenCLI desktop app support Windows. Playwriter supports WSL, and PinchTab publishes Windows binaries with limited support. oh-my-webbridge runs on macOS and Linux.
+- **Microsoft Edge.** The Kimi browser extension, Browser MCP and Playwright MCP with `--extension` work in Edge. oh-my-webbridge supports Chrome and Firefox.
+- **Installation from an extension store.** The extensions of Kimi, Browser MCP, Playwright MCP, OpenCLI and Claude in Chrome install from the Chrome Web Store and update automatically. The oh-my-webbridge extension loads as an unpacked folder in Chrome, and Firefox keeps it after a restart only when it is signed.
+- **Several browser profiles at once.** One Browser MCP daemon connects up to 8 browsers or Chrome profiles. The oh-my-webbridge daemon accepts one Chrome connection and one Firefox connection.
+- **A separate cookie store for each task.** agent-browser sessions, PinchTab profiles, `--isolated` and `isolatedContext` in Playwright MCP, and `isolatedContext` in Chrome DevTools MCP keep cookies apart. All sessions of oh-my-webbridge share the browser profile.
+- **No desktop browser**, for example in CI. agent-browser, Playwright MCP, Chrome DevTools MCP and PinchTab start their own browser, headless when needed. oh-my-webbridge needs a running Chrome or Firefox with its extension.
+- **Performance, memory and network debugging.** Chrome DevTools MCP records performance traces, runs Lighthouse and reads heap snapshots. Playwright MCP, Chrome DevTools MCP and agent-browser mock network responses.
+- **The full Playwright API on your signed-in tabs.** Playwriter runs Playwright code on the tabs on which you turn its extension on.
+- **Ready-made commands for popular sites.** OpenCLI ships adapters that return structured data from more than 100 sites.
+- **A model in the tool.** Claude in Chrome and the Kimi side panel run a task with their own model. browser-use runs a task with a model that you configure, and Stagehand adds AI steps (`act`, `observe`, `extract`) to a script. oh-my-webbridge carries out the commands of the agent you use and contains no model.
+
+## Sources [#sources]
+
+- Kimi browser extension: [product page](https://www.kimi.com/products/kimi-webbridge), [install script](https://cdn.kimi.com/webbridge/install.sh), [release list](https://cdn.kimi.com/webbridge/latest/version.json), the agent guide that `kimi-webbridge install-skill` writes, and the manifest of extension 2.0.33 from the Chrome Web Store.
+- Browser MCP: [server README](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/README.md), [tool definition](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/src/tools/browser.ts), [commands](https://github.com/BrowserMCP/mcp/blob/main/packages/mcp/src/commands/commands.ts), [contributing guide](https://github.com/BrowserMCP/mcp/blob/main/CONTRIBUTING.md), [usage](https://browsermcp.io/docs/usage), [how it works](https://browsermcp.io/docs/how-it-works).
+- Playwright MCP: [README](https://github.com/microsoft/playwright-mcp/blob/main/README.md), [extension README](https://github.com/microsoft/playwright/blob/main/packages/extension/README.md).
+- Playwriter: [README](https://github.com/remorses/playwriter/blob/main/README.md), [sessions](https://playwriter.dev/docs/sessions).
+- Chrome DevTools MCP: [README](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/README.md), [configuration](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/configuration.md), [advanced usage](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/advanced-usage.md), [tool reference](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md).
+- agent-browser: [README](https://github.com/vercel-labs/agent-browser/blob/main/README.md), [commands](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/commands.mdx), [CDP mode](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/cdp-mode.mdx), [sessions](https://github.com/vercel-labs/agent-browser/blob/main/docs/content/docs/sessions.mdx).
+- PinchTab: [README](https://github.com/pinchtab/pinchtab/blob/main/README.md), [attach Chrome](https://github.com/pinchtab/pinchtab/blob/main/docs/guides/attach-chrome.md), [security](https://github.com/pinchtab/pinchtab/blob/main/docs/guides/security.md).
+- OpenCLI: [README](https://github.com/jackwener/OpenCLI/blob/main/README.md), [Browser Bridge](https://github.com/jackwener/OpenCLI/blob/main/docs/guide/browser-bridge.md).
+- Claude in Chrome: [Claude Code documentation](https://code.claude.com/docs/en/chrome), [getting started](https://support.claude.com/en/articles/12012173-get-started-with-claude-in-chrome).
+- browser-use: [README](https://github.com/browser-use/browser-use/blob/main/README.md). Stagehand: [README](https://github.com/browserbase/stagehand/blob/main/README.md).
+
+
 # Development (https://oh-my-webbridge.github.io/en/development/)
 
 > **Developer preview**
@@ -627,6 +736,196 @@ One daemon serves Chrome and Firefox at the same time. Each browser is paired on
 - [Sessions and tabs](https://oh-my-webbridge.github.io/md/en/sessions/content.md): one session per task, with its own tabs and tab group.
 - [Agent activity](https://oh-my-webbridge.github.io/md/en/activity/content.md): the glow, focus frame and toolbar icon that mark a tab an agent controls.
 - [Actions](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md): every action, its arguments and the errors it returns.
+
+
+# Migrate to oh-my-webbridge (https://oh-my-webbridge.github.io/en/migration/)
+
+> **Developer preview**
+>
+> omw is in developer preview and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+
+Every oh-my-webbridge command names a session, an action and a JSON object of arguments. The tables on this page map common commands of other tools to these actions. Before you move a task, check [Comparison with other tools](https://oh-my-webbridge.github.io/md/en/comparison/content.md) for capabilities that oh-my-webbridge does not have.
+
+## Before you start [#before-you-start]
+
+1. Install the daemon and the extension, and pair your browser. See [Getting started](https://oh-my-webbridge.github.io/md/en/getting-started/content.md).
+2. Install the agent skill with `omw install-skill ~/.agents/skills`. Turn off the skill or MCP server of the previous tool, so that the agent uses one tool for a task.
+3. Run `omw status`. It prints one line for each browser, for example `chrome: connected (156.0.8078.80)`.
+
+## Changes for every tool [#changes-for-every-tool]
+
+- **Sessions.** Use one session name for each task, for example `checkout`. The first command opens the session. Its tabs open in the background, in one tab group. End the task with `close_session`. All sessions use your browser profile and its cookies.
+- **References.** A reference has the form `@e<generation>.<index>` and comes from the latest `snapshot` of the tab. A reference that starts with `@e` and comes from another tool or an older snapshot fails with `stale_ref`. A reference without `@`, such as `e12`, is read as a CSS selector. Take a new snapshot after a navigation.
+- **Locators.** The `selector` argument accepts CSS and text locators. Playwright locators map to these forms. `role=` matches the name exactly, while `getByRole` matches a substring unless `exact: true` is set. Chained locators and `.filter()` have no counterpart. See [Selectors](https://oh-my-webbridge.github.io/md/en/reference/actions/content.md#selectors).
+
+| Playwright locator                                     | oh-my-webbridge selector     |
+| ------------------------------------------------------ | ---------------------------- |
+| `getByRole("button", { name: "Submit", exact: true })` | `role=button[name="Submit"]` |
+| `getByText("Sign in")`                                 | `text=Sign in`               |
+| `getByLabel("Email")`                                  | `label=Email`                |
+| `getByPlaceholder("Search")`                           | `placeholder=Search`         |
+| `getByTestId("search")`                                | `testid=search`              |
+| `.first()`, `.last()`                                  | ` >>nth=0`, ` >>nth=-1`      |
+
+- **JavaScript.** `evaluate` takes an expression, not a function. Send `document.title`, or wrap the function in a call: `(() => document.title)()`. Code that uses `await` goes in an async function call: `(async () => (await fetch("/api")).status)()`.
+- **Files.** `screenshot` and `save_as_pdf` take an absolute `path` and return it. They do not overwrite an existing file.
+- **Deadlines.** A command fails after 30 seconds by default. The HTTP body field `timeoutMs` sets 1 to 120000 milliseconds.
+- **Firefox.** Some actions answer `unsupported` in Firefox. See [Firefox](https://oh-my-webbridge.github.io/md/en/firefox/content.md).
+
+## From the Kimi browser extension [#from-the-kimi-browser-extension]
+
+The request format and most action names are the same. The address, the token and some arguments change.
+
+|              | Kimi browser extension            | oh-my-webbridge                                                 |
+| ------------ | --------------------------------- | --------------------------------------------------------------- |
+| Address      | `http://127.0.0.1:10086`          | `http://127.0.0.1:17373`                                        |
+| Command      | `POST /command`                   | `POST /command` with `Authorization: Bearer <token>`            |
+| Body         | `action`, `args`, `session`       | `session`, `action`, `args`; optional `browser` and `timeoutMs` |
+| Status       | `/status`                         | `GET /status` with the token, or `omw status`                   |
+| Start        | `kimi-webbridge start`            | `omw start`, or `omw service install` for a user service        |
+| Agent skill  | `kimi-webbridge install-skill -y` | `omw install-skill ~/.agents/skills`                            |
+| Command line | `curl`                            | `omw call SESSION ACTION JSON`, or `curl`                       |
+
+The same `navigate` request to each daemon:
+
+```sh
+# Kimi browser extension
+curl -s -X POST http://127.0.0.1:10086/command \
+  -H 'Content-Type: application/json' \
+  -d '{"action":"navigate","args":{"url":"https://example.com","group_title":"Research"},"session":"research"}'
+
+# oh-my-webbridge
+TOKEN=$(omw connection | sed -E 's/.*"token":"([^"]+)".*/\1/')
+curl -s -X POST http://127.0.0.1:17373/command \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"session":"research","action":"navigate","args":{"url":"https://example.com","group_title":"Research"}}'
+
+# oh-my-webbridge command line
+omw call research navigate '{"url":"https://example.com","group_title":"Research"}'
+```
+
+These actions keep their names and arguments: `navigate`, `find_tab`, `list_tabs`, `close_tab`, `close_session`, `mouse_click`, `fill`, `key_type`, `hover`, `drag`, `find`, `cdp`, `screenshot`, `save_as_pdf`, `upload` and `network`. These change:
+
+| Kimi browser extension                                | oh-my-webbridge                                                                                   |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `click`, which calls `el.click()`                     | `click`. In Chrome it sends trusted mouse input through CDP.                                      |
+| `evaluate` with `await` in `code`                     | `evaluate` with the code in an async function call                                                |
+| `snapshot` with `ref`, `interactive`                  | `snapshot` with `interactive`, `maxDepth`. References use a new format.                           |
+| `read_page` with `cursor`                             | `read_page` returns the first 192000 characters and takes no cursor.                              |
+| `wait` with `text_gone`                               | `wait` with `text` and `"state": "hidden"`                                                        |
+| `wait` with `timeout_ms`                              | `timeoutMs` in the request body                                                                   |
+| `dialog` with `"action": "accept"`                    | `dialog` with `"accept": true`; `text` becomes `promptText`                                       |
+| `dialog` with `"action": "dismiss"`                   | `dialog` with `"accept": false`                                                                   |
+| `dialog` with `"action": "status"`                    | `dialog_status`                                                                                   |
+| `select_option` with `values`                         | `select_option` with one `value`, matched by value or visible text                                |
+| `select_option` without `values`, to list the options | `evaluate` that reads the `options` of the element                                                |
+| `scroll` with `text`                                  | `scroll` with `"selector": "text=..."`                                                            |
+| `scroll` with `to`                                    | `scroll` with `direction` and `amount`                                                            |
+| `send_keys` with `repeat`                             | `send_keys` once for each key press, or several steps in `batch`                                  |
+| `set_checked`                                         | `check` or `uncheck`                                                                              |
+| `go_back`, `go_forward`, `reload`                     | `history` with `cmd` set to `back`, `forward` or `reload`                                         |
+| `highlight_region`, `clear_highlight`                 | No action. The [activity layer](https://oh-my-webbridge.github.io/md/en/activity/content.md) marks the element that each input action targets. |
+
+## From MCP browser servers [#from-mcp-browser-servers]
+
+oh-my-webbridge has no MCP server. The agent runs `omw call` in a shell, as the skill describes. One tool call becomes one command:
+
+```sh
+omw call checkout click '{"selector":"role=button[name=\"Pay\"]"}'
+```
+
+In Chrome DevTools MCP, the page tools also take `pageId`, which is required by default. The table leaves it out.
+
+| Task                 | Playwright MCP                                 | Browser MCP                                                      | Chrome DevTools MCP                | oh-my-webbridge                                                          |
+| -------------------- | ---------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------ |
+| Open a URL           | `browser_navigate {url}`                       | `goto <url>`                                                     | `navigate_page {type: "url", url}` | `navigate {"url"}`                                                       |
+| Open a new tab       | `browser_tabs {action: "new", url}`            | `tab new <url>`                                                  | `new_page {url}`                   | `navigate {"url", "newTab": true}`                                       |
+| Read the page        | `browser_snapshot`                             | `snapshot -i`                                                    | `take_snapshot`                    | `snapshot`, `read_page`                                                  |
+| Click                | `browser_click {target}`                       | `click e12`                                                      | `click {uid}`                      | `click {"selector"}`                                                     |
+| Double-click         | `browser_click {target, doubleClick: true}`    | `click e12 --double`                                             | `click {uid, dblClick: true}`      | `dblclick {"selector"}`                                                  |
+| Fill a field         | `browser_type {target, text}`                  | `fill e5 "text"`                                                 | `fill {uid, value}`                | `fill {"selector", "value"}`                                             |
+| Press a key          | `browser_press_key {key}`                      | `press Enter`                                                    | `press_key {key}`                  | `send_keys {"keys"}`                                                     |
+| Select an option     | `browser_select_option {target, values}`       | `select e7 "value"`                                              | `fill {uid, value}`                | `select_option {"selector", "value"}`                                    |
+| Upload files         | `browser_file_upload {paths}`                  | `upload <target> <path>`                                         | `upload_file`                      | `upload {"selector", "files"}`                                           |
+| Wait for text        | `browser_wait_for {text}`                      | `wait --text "<text>"`                                           | `wait_for`                         | `wait {"text"}`                                                          |
+| Answer a dialog      | `browser_handle_dialog {accept, promptText}`   | `dialog`                                                         | `handle_dialog`                    | `dialog {"accept", "promptText"}`                                        |
+| Screenshot           | `browser_take_screenshot {fullPage, filename}` | `screenshot --full --path <file>`                                | `take_screenshot {filePath}`       | `screenshot {"fullPage", "path"}`                                        |
+| Run JavaScript       | `browser_evaluate {function}`                  | `eval "<function>"`                                              | `evaluate_script {function}`       | `evaluate {"code"}` with an expression                                   |
+| Console messages     | `browser_console_messages`                     | `console`                                                        | `list_console_messages`            | `console {"cmd": "start"}`, then `{"cmd": "list"}`                       |
+| Network requests     | `browser_network_requests`                     | `requests`                                                       | `list_network_requests`            | `network {"cmd": "start"}`, then `{"cmd": "list"}`                       |
+| List tabs            | `browser_tabs {action: "list"}`                | `tab list`                                                       | `list_pages`                       | `list_tabs`                                                              |
+| Use one of your tabs | Pick it on the connect page                    | `tab select <id>`                                                | `select_page {pageId}`             | `find_tab {"url": "example.com", "active": true}` borrows the active tab |
+| Close a tab          | `browser_tabs {action: "close", index}`        | `tab close <id>`                                                 | `close_page {pageId}`              | `close_tab {"tabId"}`                                                    |
+| End the task         | `browser_close`                                | Released when the AI application closes or after 10 idle minutes | `chrome-devtools stop` in the CLI  | `close_session`                                                          |
+
+- A Browser MCP call can hold several command lines. `batch` runs up to 64 steps in one request and stops at the first error: `omw call checkout batch '{"steps":[{"action":"fill","args":{"selector":"label=Email","value":"a@example.com"}},{"action":"send_keys","args":{"keys":"Enter"}}]}'`. `screenshot`, `save_as_pdf` and `close_session` run as separate commands.
+- `browser_type` with `submit: true` becomes `fill` followed by `send_keys` with `Enter`.
+- `console` works in Chrome and returns the messages logged after `start`. Send `start` before the step that logs.
+- Performance traces, Lighthouse and heap snapshots in Chrome DevTools MCP, and response mocking, tracing and code generation in Playwright MCP, have no built-in action. Keep that server for those tasks. A [page connection](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md#page-connections) accepts the protocol domains that `chrome.debugger` allows, for example `Fetch` to intercept requests.
+
+## From agent-browser and PinchTab [#from-agent-browser-and-pinchtab]
+
+oh-my-webbridge does not start a browser, so it has no counterpart to `--headed`, `--profile`, `--state`, profile management or instances. Commands run in background tabs of the browser you use, with its logins. The first argument of `omw call` names the session. A PinchTab agent session sets identity and permissions; the closest match to an oh-my-webbridge session is a PinchTab instance or tab.
+
+| Task          | agent-browser            | PinchTab                     | `omw call SESSION ...`                                       |
+| ------------- | ------------------------ | ---------------------------- | ------------------------------------------------------------ |
+| Choose a task | `--session agent1`       | An instance, or `--tab <id>` | `omw call agent1 ...`                                        |
+| Open a URL    | `open <url>`             | `nav <url>`                  | `navigate '{"url":"<url>"}'`                                 |
+| Snapshot      | `snapshot -i`            | `snap -i -c`                 | `snapshot '{"interactive":true}'`                            |
+| Click         | `click @e1`              | `click e5`                   | `click '{"selector":"<reference>"}'`                         |
+| Fill          | `fill @e4 "text"`        | `fill "#search" "q"`         | `fill '{"selector":"#search","value":"q"}'`                  |
+| Type          | `type <selector> <text>` | `type <selector> <text>`     | `key_type '{"selector":"...","text":"..."}'`                 |
+| Press a key   | `press Enter`            | `press Enter`                | `send_keys '{"keys":"Enter"}'`                               |
+| Page text     | `get text <selector>`    | `text`                       | `read_page`, or `get '{"selector":"...","property":"text"}'` |
+| Screenshot    | `screenshot <path>`      | `screenshot -o <path>`       | `screenshot '{"path":"/absolute/shot.png"}'`                 |
+| PDF           | `pdf <path>`             | `pdf -o <path>`              | `save_as_pdf '{"path":"/absolute/page.pdf"}'`                |
+| JavaScript    | `eval "document.title"`  | `eval "document.title"`      | `evaluate '{"code":"document.title"}'`                       |
+| List tabs     | `tab list`               | `tab`                        | `list_tabs`                                                  |
+| Switch tabs   | `tab t2`                 | `tab <tab-id>`               | `switch_tab '{"tabId":412}'`                                 |
+| Close a tab   | `tab close`              | `tab close <tab-id>`         | `close_tab`                                                  |
+| Several steps | `batch`                  | `POST /actions`              | `batch '{"steps":[...]}'`                                    |
+| End the task  | `close`                  | `POST /instances/{id}/stop`  | `close_session`                                              |
+
+## From Playwright or Puppeteer scripts [#from-playwright-or-puppeteer-scripts]
+
+In extension mode, the daemon lists page targets at `/json/list` and serves one tab at `/devtools/page/{tabId}`. Its `/json/version` has no `webSocketDebuggerUrl`. Playwright's `chromium.connectOverCDP` and Puppeteer's `puppeteer.connect` with `browserURL` read that field to find the browser endpoint ([Playwright source](https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/chromium/chromium.ts), [Puppeteer source](https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/common/BrowserConnector.ts)). There are two ways to move such a script.
+
+### Keep the script on native mode [#keep-the-script-on-native-mode]
+
+Native mode passes a browser endpoint through the daemon. Start Chrome with `--remote-debugging-port=9222` and a separate `--user-data-dir`, then start the daemon with the browser URL from `http://127.0.0.1:9222/json/version`:
+
+```sh
+omw serve --cdp ws://127.0.0.1:9222/devtools/browser/8b0d3f7c-...
+```
+
+Connect Playwright with the token in `headers`, as shown in [CDP](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md#native-mode). In Puppeteer, pass `browserURL: "http://127.0.0.1:17373"` and the same header in `wsOptions.headers`. The script then drives that separate Chrome, not the profile you use every day.
+
+### Move the script to the SDK [#move-the-script-to-the-sdk]
+
+The SDK drives tabs in the browser you use, through the extension.
+
+| Playwright                                                             | oh-my-webbridge SDK                                             |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `await page.goto(url)`                                                 | `await task.navigate(url)`                                      |
+| `await page.getByRole("button", { name: "Pay", exact: true }).click()` | `await task.click('role=button[name="Pay"]')`                   |
+| `await page.getByLabel("Email").fill("a@example.com")`                 | `await task.fill("label=Email", "a@example.com")`               |
+| `await page.keyboard.press("Enter")`                                   | `await task.call("send_keys", { keys: "Enter" })`               |
+| `await page.waitForSelector("#done")`                                  | `await task.call("wait", { selector: "#done" })`                |
+| `await page.evaluate(() => document.title)`                            | `await task.evaluate("document.title")`                         |
+| `await page.screenshot({ path: "shot.png" })`                          | `await task.call("screenshot", { path: "/absolute/shot.png" })` |
+| `await browser.close()`                                                | `await task.close()`                                            |
+
+```js
+import { connect } from "./dist/sdk.mjs";
+
+const task = await connect("checkout");
+await task.navigate("https://example.com/cart");
+await task.click('role=button[name="Pay"]');
+await task.close();
+```
+
+For raw protocol access in extension mode, send commands with the `cdp` action, or open `/devtools/page/{tabId}` with a WebSocket client that sends the Bearer header. See [CDP](https://oh-my-webbridge.github.io/md/en/reference/cdp/content.md).
 
 
 # Page presets (https://oh-my-webbridge.github.io/en/presets/)
