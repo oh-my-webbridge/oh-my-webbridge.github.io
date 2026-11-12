@@ -782,7 +782,7 @@ oh-my-webbridge 的每个命令都指定一个会话、一个动作，以及一�
 
 - **JavaScript。** `evaluate` 接受表达式，而不是函数。请发送 `document.title`，或把函数包成调用：`(() => document.title)()`。使用 `await` 的代码放进异步函数调用：`(async () => (await fetch("/api")).status)()`。
 - **文件。** `screenshot` 与 `save_as_pdf` 接受绝对路径 `path` 并传回它，不会覆写已存在的文件。
-- **期限。** 命令默认在 30 秒后失败。HTTP 请求本文的 `timeoutMs` 字段可设置 1 到 120000 毫秒。
+- **期限。** 命令默认在 30 秒后失败。HTTP 请求本文的 `timeoutMs` 字段，或 `omw call` 的 `--timeout-ms`，可设置 1 到 120000 毫秒。时间用尽的 `wait` 会以 `wait_timeout` 失败。
 - **Firefox。** 部分动作在 Firefox 中响应 `unsupported`。请见 [Firefox](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md)。
 
 ## 从 Kimi 浏览器扩展程序迁移 [#from-the-kimi-browser-extension]
@@ -827,7 +827,7 @@ omw call research navigate '{"url":"https://example.com","group_title":"Research
 | `snapshot` 带 `ref`、`interactive`             | `snapshot` 带 `interactive`、`maxDepth`。引用使用新的格式。          |
 | `read_page` 带 `cursor`                        | `read_page` 传回前 192000 个字符，不接受 cursor。                    |
 | `wait` 带 `text_gone`                          | `wait` 带 `text` 与 `"state": "hidden"`                              |
-| `wait` 带 `timeout_ms`                         | 请求本文中的 `timeoutMs`                                             |
+| `wait` 带 `timeout_ms`                         | 请求本文中的 `timeoutMs`，或 `omw call` 的 `--timeout-ms`            |
 | `dialog` 带 `"action": "accept"`               | `dialog` 带 `"accept": true`；`text` 改为 `promptText`               |
 | `dialog` 带 `"action": "dismiss"`              | `dialog` 带 `"accept": false`                                        |
 | `dialog` 带 `"action": "status"`               | `dialog_status`                                                      |
@@ -1207,7 +1207,7 @@ Firefox 版本使用相同的模式、清单与会话设置。网络过滤在会
 
 ## 等待 [#waiting]
 
-条件成立时，`wait` 立即返回；在请求期限之前，它每 75 ms 轮询一次。设置它的其中一个字段。
+条件成立时，`wait` 立即返回，否则每 75 ms 再检查一次。到请求期限前 500 ms 条件仍未成立时，`wait` 以 `wait_timeout` 失败。期限以 `timeoutMs` 设置，`omw call` 则用 `--timeout-ms`。设置以下其中一个字段：
 
 | 字段         | 意义                                                                                      |
 | ------------ | ----------------------------------------------------------------------------------------- |
@@ -1321,6 +1321,7 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 | `browser_offline`       | 503  | 目标浏览器没有扩展程序连接，包括绑定到未连接浏览器的会话。                                                                  | 检查 `omw doctor` 与扩展程序，或在新的会话中继续。                            |
 | `session_browser`       | 409  | 会话绑定到另一个浏览器，而请求指定了这个浏览器。                                                                            | 移除 `browser`，或关闭该会话并开始新的会话。                                  |
 | `outcome_unknown`       | 504  | 命令可能已经运行：期限、传输写入或断线切断了回复。                                                                          | 重复之前，先观察页面或网络状态。切勿盲目重送提交、付款或发布操作。            |
+| `wait_timeout`          | 408  | `wait` 的条件在期限前没有成立。`wait` 不会变更页面。                                                                        | 以更长的期限再次发送 `wait`，或检查条件。                                     |
 | `tab_busy`              | 409  | 该标签页属于另一个会话。                                                                                                    | 使用这个会话持有的标签页，或使用另一个会话。                                  |
 | `stale_ref`             | 409  | `@e` 引用比它所属的文档存活得更久。                                                                                         | 重新取得 `snapshot`。                                                         |
 | `no_tab`                | 502  | 页面动作在会话还没有标签页时运行。                                                                                          | 先运行 `navigate` 或 `find_tab`。                                             |
@@ -1628,7 +1629,7 @@ token 是以十六进制表示的 32 个随机字节，与 `config.json` 保存�
 ## call [#call]
 
 ```sh
-omw call [--browser chrome|firefox] SESSION ACTION [JSON|-]
+omw call [--browser chrome|firefox] [--timeout-ms N] SESSION ACTION [JSON|-]
 ```
 
 对 daemon 发送一个动作，并输出它的 JSON 回复。会话名称由 1 到 96 个字符组成，可用字母（包括 CJK）、数字、`_`、`.` 或 `-`。`ACTION` 是[动作参考](https://oh-my-webbridge.github.io/md/zh-cn/reference/actions/content.md)中的其中一个动作。
@@ -1642,7 +1643,15 @@ echo '{"selector":"#submit"}' | omw call --browser firefox form click -
 
 `--browser` 把动作送往指定的浏览器。省略时，daemon 依序依据会话绑定、唯一已连接的浏览器、Chrome 来路由。
 
-客户端最多等待 125 秒。daemon 套用命令自己的期限，默认为 30 秒。回复照 daemon 发送的内容输出。HTTP 状态码为 400 或以上时，命令在输出回复后以状态码 1 结束。
+`--timeout-ms` 设置命令的期限，范围 1 到 120000 毫秒，与请求本文中的 `timeoutMs` 相同。省略时期限为 30 秒。
+
+```sh
+omw call --timeout-ms 5000 research wait '{"selector":"#done"}'
+```
+
+旗标放在会话名称之前。会话名称以 `-` 开头时，在它前面加上 `--`。
+
+客户端最多等待 125 秒。回复照 daemon 发送的内容输出。HTTP 状态码为 400 或以上时，命令在输出回复后以状态码 1 结束。
 
 ## service install [#service-install]
 
@@ -1823,6 +1832,7 @@ try {
 | `unsupported`                              | 该浏览器没有这个动作或参数。HTTP 501。                                                     |
 | `busy`                                     | 命令容量已满。HTTP 429。等运行中的命令完成后重试。                                         |
 | `outcome_unknown`                          | 命令可能已经生效。重试之前，先读取页面。HTTP 504。                                         |
+| `wait_timeout`                             | `wait` 的条件在 `timeoutMs` 用完前没有成立，页面未变更。HTTP 408。                         |
 | `invalid_args`、`invalid_request`          | 参数在分派之前就被拒绝。HTTP 400。                                                         |
 | `http_error`                               | 回复不是 JSON，因此缺少 daemon 的错误对象。消息为 `HTTP <status>: <本文的前 200 个字符>`。 |
 
@@ -1973,7 +1983,7 @@ omw call research find_tab '{"url":"example.com","active":true}'
 
 ## 超时与结果不确定 [#timeouts-and-uncertain-results]
 
-`timeoutMs` 涵盖整个请求，包括在会话队列中等待的时间。时间用完，或命令运行到一半时浏览器中断连接，调用会返回 `outcome_unknown`。此时动作可能已经送达页面：点击可能已经发生，表单可能已经发送。
+`timeoutMs` 涵盖整个请求，包括在会话队列中等待的时间。条件未成立的 `wait` 则会在期限前稍早以 `wait_timeout` 失败，它不会变更页面。时间用完，或命令运行到一半时浏览器中断连接，调用会返回 `outcome_unknown`。此时动作可能已经送达页面：点击可能已经发生，表单可能已经发送。
 
 <Callout type="warn" title="收到 outcome_unknown 后重试">
   重新使用命令之前，请先观察页面。`snapshot`、`read_page`、标签页 URL、`get`
