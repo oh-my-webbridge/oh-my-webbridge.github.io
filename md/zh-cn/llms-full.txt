@@ -261,7 +261,7 @@ daemon 只能从它所在的机器连接，token 是唯一的凭证。
 - **Agent 只通过 MCP 调用工具。** Playwright MCP、Browser MCP、Chrome DevTools MCP、agent-browser、PinchTab 与 Playwriter 可作为 MCP 服务器运行。oh-my-webbridge 没有 MCP 服务器；Agent 依技能说明运行 `omw call`。
 - **Windows。** Kimi 浏览器扩展程序、Playwright MCP、Chrome DevTools MCP、agent-browser、Claude in Chrome 与 OpenCLI 桌面应用程序支持 Windows。Playwriter 支持 WSL，PinchTab 发布有限支持的 Windows 可执行文件。oh-my-webbridge 在 macOS 与 Linux 上运行。
 - **Microsoft Edge。** Kimi 浏览器扩展程序、Browser MCP 与加上 `--extension` 的 Playwright MCP 可在 Edge 中使用。oh-my-webbridge 支持 Chrome 与 Firefox。
-- **从扩展程序商店安装。** Kimi、Browser MCP、Playwright MCP、OpenCLI 与 Claude in Chrome 的扩展程序从 Chrome 在线应用程序商店安装并自动更新。oh-my-webbridge 的扩展程序在 Chrome 中以未封装文件夹加载，在 Firefox 中要经过签署才会在重新启动后保留。
+- **从扩展程序商店安装。** oh-my-webbridge 已在 Chrome 在线应用程序商店和 Firefox 附加组件商店上架。两个商店都会更新浏览器扩展程序。daemon 需另外安装与更新。请参阅[开始使用](https://oh-my-webbridge.github.io/md/zh-cn/getting-started/content.md#install-the-extension)。
 - **同时连接多个浏览器个人资料。** 一个 Browser MCP daemon 最多连接 8 个浏览器或 Chrome 个人资料。oh-my-webbridge 的 daemon 接受一个 Chrome 连接与一个 Firefox 连接。
 - **每个任务使用独立的 cookie。** agent-browser 的会话、PinchTab 的个人资料、Playwright MCP 的 `--isolated` 与 `isolatedContext`，以及 Chrome DevTools MCP 的 `isolatedContext` 会分开 cookie。oh-my-webbridge 的所有会话共用浏览器个人资料。
 - **没有桌面浏览器**，例如在 CI 中。agent-browser、Playwright MCP、Chrome DevTools MCP 与 PinchTab 会启动自己的浏览器，需要时以无头模式运行。oh-my-webbridge 需要一个已安装扩展程序且正在运行的 Chrome 或 Firefox。
@@ -441,6 +441,18 @@ Firefox 版本是适用于 Firefox 153 以上的 MV3 扩展程序。它与同一
 
 ## 安装 [#install]
 
+<Card
+  title="从 Firefox 附加组件商店安装"
+  description="将已签章的扩展程序加到 Firefox。"
+  href="https://addons.mozilla.org/en-US/firefox/addon/oh-my-webbridge/"
+  external
+/>
+
+Firefox 打开初始设置页面后，请[与本机 daemon 配对](#pairing-and-permissions)。
+
+<Accordions>
+<Accordion title="开发或自行发布时手动安装" id="manual-installation">
+
 每个发布版本有两个 Firefox 文件。请都以 `SHA256SUMS` 核对。
 
 - `omw-<version>-firefox-mv3.tar.zst` 内含扩展程序目录。以 `zstd -dc archive.tar.zst | tar -xf - -C <directory>` 解开。
@@ -466,6 +478,9 @@ Firefox 正式版与 Beta 版只安装由 Mozilla 签章的扩展程序。已签
 AMO 会在签章前验证每次提交。签章最多可能需要 24 小时，而且每个版本都需要各自的签章。
 
 Firefox ESR、Developer Edition、Nightly 与未加品牌的构建版本，在 `about:config` 中 `xpinstall.signatures.required` 为 `false` 时，可安装未签章的 `.xpi`。
+
+</Accordion>
+</Accordions>
 
 ## 配对与权限 [#pairing-and-permissions]
 
@@ -597,18 +612,50 @@ go build -trimpath -ldflags='-s -w' -o dist/omw ./cmd/omw
 
 ## 安装扩展程序 [#install-the-extension]
 
-<Tabs items={["Chrome", "Firefox"]}>
-<Tab value="Chrome">
+<Cards>
+  <Card
+    title="Chrome 在线应用程序商店"
+    description="将 oh-my-webbridge 加到 Chrome。"
+    href="https://chromewebstore.google.com/detail/gfhmonnkmdapbocacedanaplhgkofebi"
+    external
+  />
+  <Card
+    title="Firefox 附加组件"
+    description="将 oh-my-webbridge 加到 Firefox。"
+    href="https://addons.mozilla.org/en-US/firefox/addon/oh-my-webbridge/"
+    external
+  />
+</Cards>
 
-把 `omw-<version>-chrome-mv3.tar.zst` 解开到一个文件夹。打开 `chrome://extensions`，打开“开发人员模式”，选择**加载未封装项目**，再选取该文件夹；manifest 位于封存盘根目录。从源代码构建时，以同样方式加载 `dist/extension`。
+从商店安装的扩展程序由浏览器更新。本机的 `omw` daemon 请另外从 [GitHub 发布版本](https://github.com/oh-my-webbridge/oh-my-webbridge/releases)更新。
 
-</Tab>
-<Tab value="Firefox">
+<Accordions>
+<Accordion title="手动加载 Chrome 版本">
 
-解开 `omw-<version>-firefox-mv3.tar.zst`。打开 `about:debugging`，选择**这个 Firefox**，再选择**加载暂时性附加组件…**，然后选取解开后文件夹中的 `manifest.json`。Firefox 重新启动时会移除暂时性扩展程序。要永久安装，需要来自 addons.mozilla.org 的自行发布模式签章；请把 `omw-<version>-firefox-mv3-unsigned.xpi` 提交到该网站。从源代码构建时，加载 `dist/extension-firefox`。
+<Steps>
+<Step>
 
-</Tab>
-</Tabs>
+#### 准备扩展程序文件夹 [#准备扩展程序文件夹]
+
+用 `SHA256SUMS` 核对并解开 `omw-<version>-chrome-mv3.tar.zst`，或使用从源代码构建的 `dist/extension`。文件夹根目录包含 `manifest.json`。
+
+</Step>
+<Step>
+
+#### 在 Chrome 加载文件夹 [#在-chrome-加载文件夹]
+
+打开 `chrome://extensions`，打开**开发人员模式**，选择**加载未封装项目**，再选取扩展程序文件夹。
+
+</Step>
+</Steps>
+
+</Accordion>
+<Accordion title="手动加载 Firefox 版本">
+
+请依照[暂时加载或自行发布的安装步骤](https://oh-my-webbridge.github.io/md/zh-cn/firefox/content.md#manual-installation)操作。Firefox 结束时会移除暂时性附加组件。
+
+</Accordion>
+</Accordions>
 
 ## 设置浏览器 [#set-up-the-browser]
 
