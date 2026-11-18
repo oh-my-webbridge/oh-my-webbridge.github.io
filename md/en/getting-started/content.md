@@ -8,6 +8,10 @@ Chrome and Firefox can run side by side, and each browser is paired on its own.
 
 ## Requirements [#requirements]
 
+The wire protocol determines whether the extension and daemon can connect. Matching protocols allow different releases to work together; newer actions can still require an upgrade. `omw doctor` reports the extension release and compatibility for each browser separately. Connection settings show the extension and daemon releases; older peers may report an unknown release. Browser engine requirements are listed below.
+
+To upgrade, install the matching native binary and browser store update. Restart the user service through its service manager (or run `omw stop` and `omw start` for a manually started daemon). Keep the existing configuration and pairing. Refresh the installed Skill from the same release's agent kit. Run `omw doctor` after reconnecting both browsers.
+
 - Chrome 156 or later, or Firefox 153 or later.
 - macOS or Linux, on the same computer as the browser.
 - `zstd` to unpack a release archive.
@@ -145,7 +149,7 @@ systemctl --user disable --now oh-my-webbridge.service
 
 ## Install the agent skill [#install-the-agent-skill]
 
-`omw install-skill DIR` writes `DIR/oh-my-webbridge/SKILL.md` and copies the guide built into the binary. It refuses to overwrite an existing file, so delete the old one before installing again. `omw skill` prints the same guide. The guide tells an agent which commands to run, how sessions and tab ownership work, and which errors to expect.
+`omw install-skill DIR` installs the guide and its version-matched references under `DIR/oh-my-webbridge/`. After updating the CLI, run `omw install-skill --refresh DIR` to update those files and preserve unrelated files. `omw skill` prints the entry guide.
 
 ## First commands [#first-commands]
 

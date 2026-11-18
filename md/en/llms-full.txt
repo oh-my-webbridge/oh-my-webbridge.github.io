@@ -484,6 +484,8 @@ Installing the extension opens the setup page (`app.html`), which lists the setu
 - **Access to all websites** is the `<all_urls>` host permission, requested at installation. You can turn it off under Permissions in `about:addons`. Without it, page actions, `screenshot`, `cookies`, `network` with `cmd: "start"` and `emulate` with `data` return `restricted_tab` and presets stop filtering requests. A `navigate` to a URL that answers 204 No Content or 205 Reset Content then waits until the command deadline. Turning the permission back on restores filtering. Pages that Firefox protects from extensions, such as `about:` pages and addons.mozilla.org, return `restricted_tab` with the permission on. A page action that meets a navigation of the tab returns `outcome_unknown`, and `wait` keeps checking on the new page.
 - **User scripts** is the optional `userScripts` permission. Choose **Allow scripts** in step 3, or under **Settings**, then **Pages**, and confirm the Firefox prompt. Firefox accepts the request only from a user action, so these buttons are the only place to grant it. Until it is granted, `evaluate` and `wait` with `expression` return `unsupported`.
 
+`borrow_tab` assigns a tab to the session. Firefox still checks site permissions and browser policy when you run a page action. If those checks block access, the page action returns `restricted_tab` even for a borrowed tab.
+
 **Pause** in the popup disconnects the extension from the daemon until you select **Resume**.
 
 ## Chrome and Firefox together [#chrome-and-firefox-together]
@@ -563,6 +565,10 @@ Firefox presets use the same modes, filter lists, engine and session settings as
 Chrome and Firefox can run side by side, and each browser is paired on its own.
 
 ## Requirements [#requirements]
+
+The wire protocol determines whether the extension and daemon can connect. Matching protocols allow different releases to work together; newer actions can still require an upgrade. `omw doctor` reports the extension release and compatibility for each browser separately. Connection settings show the extension and daemon releases; older peers may report an unknown release. Browser engine requirements are listed below.
+
+To upgrade, install the matching native binary and browser store update. Restart the user service through its service manager (or run `omw stop` and `omw start` for a manually started daemon). Keep the existing configuration and pairing. Refresh the installed Skill from the same release's agent kit. Run `omw doctor` after reconnecting both browsers.
 
 - Chrome 156 or later, or Firefox 153 or later.
 - macOS or Linux, on the same computer as the browser.
@@ -701,7 +707,7 @@ systemctl --user disable --now oh-my-webbridge.service
 
 ## Install the agent skill [#install-the-agent-skill]
 
-`omw install-skill DIR` writes `DIR/oh-my-webbridge/SKILL.md` and copies the guide built into the binary. It refuses to overwrite an existing file, so delete the old one before installing again. `omw skill` prints the same guide. The guide tells an agent which commands to run, how sessions and tab ownership work, and which errors to expect.
+`omw install-skill DIR` installs the guide and its version-matched references under `DIR/oh-my-webbridge/`. After updating the CLI, run `omw install-skill --refresh DIR` to update those files and preserve unrelated files. `omw skill` prints the entry guide.
 
 ## First commands [#first-commands]
 
@@ -1122,17 +1128,19 @@ When you open the popup, it reads the address and title of the active tab. On a 
 
 ## Where the data goes [#where-the-data-goes]
 
-After pairing, the extension connects to one address: the daemon at `127.0.0.1:17373` on the same computer. It sends each result there and to no other address. The daemon accepts connections from the same computer only and returns the result to the program that sent the command, such as an agent or a script. That program decides what happens to the data next; an agent can pass page content to its model provider.
+After pairing, the extension sends command results to the daemon at `127.0.0.1:17373` on the same computer. The daemon accepts connections from the same computer only and returns the result to the program that sent the command, such as an agent or a script. That program decides what happens to the data next; an agent can pass page content to its model provider.
+
+The extension requests public release metadata from `api.github.com` about once a day. GitHub receives ordinary connection information, such as your IP address. The request omits cookies, credentials, installed versions, daemon tokens and browser activity. You can turn off **Automatically check for releases** in the extension settings.
 
 ## Data on disk [#data-on-disk]
 
-- The extension keeps the daemon token and its settings in the browser's extension storage. Session state lives in session storage, which the browser clears when it restarts.
+- The extension keeps the daemon token, settings and release check cache in the browser's extension storage. Session state lives in session storage, which the browser clears when it restarts.
 - The daemon keeps its configuration, including the token, and the session bindings in its configuration directory: `~/Library/Application Support/oh-my-webbridge` on macOS, `~/.config/oh-my-webbridge` on Linux, or the directory in `OMW_HOME`. Screenshots and PDFs go to the path given in the command, or to `artifacts` in that directory.
 - Files that the `download` action saves go to the browser's download folder.
 
 ## Analytics [#analytics]
 
-The extension and the daemon contain no analytics, telemetry, crash reporting or advertising. The filter lists for [page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md) ship inside the extension; nothing is downloaded at run time.
+The extension and the daemon contain no analytics, telemetry, crash reporting or advertising. The filter lists for [page presets](https://oh-my-webbridge.github.io/md/en/presets/content.md) ship inside the extension.
 
 ## Questions [#questions]
 
@@ -1190,20 +1198,27 @@ Page actions run in the session's current tab. Pass `tabId` (or `tab`) to addres
 
 ## Navigation and tabs [#navigation-and-tabs]
 
-| Action          | Arguments                                     | Notes                                                                                                                               |
-| --------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `navigate`      | `url`, `newTab`, `group_title`, preset fields | Opens a background task tab unless the session already has a current tab or `newTab` is set. URLs must be HTTP(S) or `about:blank`. |
-| `find_tab`      | `url` (exact URL or hostname), `active`       | Claims an existing tab for the session. `active: true` borrows the browser's active tab. Returns `tabId`, `url`, `borrowed`.        |
-| `list_tabs`     | none                                          | Lists the tabs this session owns or borrowed, with `tabId`, `url`, `title`, `active`, `borrowed`, `groupTitle`.                     |
-| `switch_tab`    | `tabId`                                       | Makes the tab current. A discarded tab is reloaded first; the result reports `revived`.                                             |
-| `window_new`    | `url`, preset fields                          | Opens a separate window, claims its tab, and returns `tabId` and `windowId`.                                                        |
-| `close_tab`     | `tabId`                                       | Closes a tab the session created. Borrowed tabs are not closed.                                                                     |
-| `close_session` | none                                          | Closes task tabs, releases borrowed ones and drops the browser binding. Returns the number of closed tabs.                          |
-| `history`       | `cmd`: `list`, `back`, `forward`, `reload`    | `list` returns the navigation entries. Every `history` call drops the tab's references and frame selection.                         |
+| Action          | Arguments                                     | Notes                                                                                                                                   |
+| --------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `navigate`      | `url`, `newTab`, `group_title`, preset fields | Opens a background task tab unless the session already has a current tab or `newTab` is set. URLs must be HTTP(S) or `about:blank`.     |
+| `find_tab`      | `url` (exact URL or hostname), `active`       | Claims an existing tab for the session. `active: true` borrows the browser's active tab. Returns `tabId`, `url`, `borrowed`.            |
+| `borrow_tab`    | Exactly one of `url` (full URL) or `tabId`    | Borrows a designated page without focusing it. Duplicate URLs return `ambiguous_tab`. A borrowed page stays open after `close_session`. |
+| `list_tabs`     | none                                          | Lists the tabs this session owns or borrowed, with `tabId`, `url`, `title`, `active`, `borrowed`, `groupTitle`.                         |
+| `switch_tab`    | `tabId`                                       | Makes the tab current. A discarded tab is reloaded first; the result reports `revived`.                                                 |
+| `window_new`    | `url`, preset fields                          | Opens a separate window, claims its tab, and returns `tabId` and `windowId`.                                                            |
+| `close_tab`     | `tabId`                                       | Closes a tab the session created. Borrowed tabs are not closed.                                                                         |
+| `close_session` | none                                          | Closes task tabs, releases borrowed ones and drops the browser binding. Returns the number of closed tabs.                              |
+| `history`       | `cmd`: `list`, `back`, `forward`, `reload`    | `list` returns the navigation entries. Every `history` call drops the tab's references and frame selection.                             |
 
 A session holds at most 32 tabs across task and borrowed ones.
 
+`release_tabs` takes explicit `keep` and `close` arrays of tab IDs. Kept pages are released and stay open. Only owned pages may be closed. The result lists `kept`, `closed`, `released`, `skipped` (no longer held) and `failed` (tab ID, code and message). Retry the failed IDs. Unlisted pages remain in the session. Use `close_session` to end it when the remaining owned tabs may be closed.
+
 ## Reading [#reading]
+
+`read_page` accepts a UTF-16 `offset` and a `pageSize` from 2 to 192000 code units (default 192000). Continue with the returned `nextOffset` until `complete` is true and `nextOffset` is null. Returned boundaries preserve surrogate pairs. Each call reads the current document in the selected frame. Edits can shift offsets; after navigation or frame replacement, restart at zero for the new page. An offset inside a surrogate pair starts at the beginning of that pair.
+
+Pass a `selector` to `snapshot` for the accessibility subtree rooted at a matching element. You can pass a reference from the previous snapshot. The scoped snapshot issues fresh references and has the same limits and lifetime as a full snapshot.
 
 | Action          | Arguments                                               | Notes                                                                                                                                                                    |
 | --------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1294,7 +1309,9 @@ Settings persist for the session and apply to new tabs before they navigate. Chr
 
 ## Batch [#batch]
 
-`batch` takes `steps`, an array of `{ action, args }` objects, 1 to 64 entries. Steps run in order in one request and stop at the first error. The error keeps the code of the failed step, and its message starts with `batch step N of M (action):`, so steps 1 to N-1 completed. Completed steps are not rolled back. `batch`, `close_session`, `screenshot`, `save_as_pdf`, `artifact_read` and `artifact_close` cannot appear inside a batch.
+`batch` takes `steps`, an array of 1 to 64 objects. Each step requires an `action` string and accepts an optional `args` object. Invalid step fields return `invalid_args` with the step number before any browser action starts. On Firefox, the daemon also prepares uploads before the browser starts executing the batch.
+
+Once execution starts, steps run in order and stop at the first failure. The response keeps the failed action's code and prefixes the message with `batch step N of M (action):`. Earlier actions keep their effects. `batch`, `close_session`, `screenshot`, `save_as_pdf`, `artifact_read` and `artifact_close` must run as separate calls.
 
 ## Presets [#presets]
 
@@ -1338,6 +1355,8 @@ Append ` >>nth=0` to take the first match or ` >>nth=-1` to take the last. Text,
 
 ## Errors [#errors]
 
+`command_not_sent` (HTTP 408) means the request ended before its transport write started. A request that ends while waiting for a browser reply after a completed write still returns `outcome_unknown`. The CLI writes the fault code to stderr and preserves the JSON reply on stdout.
+
 Every fault carries `code` and `message`. The HTTP status is shown below; a code not listed here returns 502.
 
 | Code                    | HTTP | Meaning                                                                                                                                                                                                                                                                          | What to do                                                                                                                                 |
@@ -1350,7 +1369,9 @@ Every fault carries `code` and `message`. The HTTP status is shown below; a code
 | `session_browser`       | 409  | The session is bound to the other browser and the request named this one.                                                                                                                                                                                                        | Drop `browser`, or close the session and start a new one.                                                                                  |
 | `outcome_unknown`       | 504  | The command may have run: the deadline, a cancellation, a transport write or a disconnect cut off the reply, or the page navigated or the debugger detached during the command. The message names the cause.                                                                     | Observe the page or network state before repeating. Never replay a submit, payment or publish blindly.                                     |
 | `wait_timeout`          | 408  | The `wait` condition did not hold before the deadline. `wait` does not change the page.                                                                                                                                                                                          | Send `wait` again with a longer deadline, or check the condition.                                                                          |
+| `command_not_sent`      | 408  | The request ended before the transport write began.                                                                                                                                                                                                                              | Send a new command if the action is still needed.                                                                                          |
 | `tab_busy`              | 409  | The tab belongs to another session.                                                                                                                                                                                                                                              | Use a tab this session holds, or another session.                                                                                          |
+| `ambiguous_tab`         | 409  | Several eligible tabs have the exact URL requested by `borrow_tab`.                                                                                                                                                                                                              | Supply the user-designated `tabId`.                                                                                                        |
 | `stale_ref`             | 409  | An `@e` reference outlived its document.                                                                                                                                                                                                                                         | Take a new `snapshot`.                                                                                                                     |
 | `no_tab`                | 502  | A page action ran before the session had a tab, or after its current tab closed other than by `close_tab`.                                                                                                                                                                       | Run `navigate` or `find_tab`, or pass the `tabId` of another session tab.                                                                  |
 | `tab_missing`           | 502  | `find_tab` matched no tab, or the tab the command addresses was closed.                                                                                                                                                                                                          | Open the page in this session first, or pass `active: true` to borrow the browser's active tab. For a closed tab, continue in another tab. |
@@ -1371,7 +1392,7 @@ Every fault carries `code` and `message`. The HTTP status is shown below; a code
 | `download_missing`      | 502  | The browser does not list the download.                                                                                                                                                                                                                                          | Retry the `download`.                                                                                                                      |
 | `download_failed`       | 502  | The browser interrupted the download.                                                                                                                                                                                                                                            | Read the message and retry.                                                                                                                |
 | `file_access_required`  | 502  | `upload` in Chrome needs the extension's "Allow access to file URLs" switch, which is off by default.                                                                                                                                                                            | In `chrome://extensions`, open the details of oh-my-webbridge, turn on "Allow access to file URLs" and retry.                              |
-| `window_failed`         | 502  | The new window had no tab.                                                                                                                                                                                                                                                       | Retry `window_new`.                                                                                                                        |
+| `window_failed`         | 502  | A task window has no tab, or Chrome could not find a normal window, create a tab or window, or group the tab.                                                                                                                                                                    | Check the operation in the message. Open a normal Chrome window if none is available.                                                      |
 | `result_too_large`      | 502  | A result exceeded 32 MiB on the wire, a saved screenshot or PDF exceeded 100 MiB, or a network body exceeded 2 Mi characters in Chrome or 1 MiB in Firefox.                                                                                                                      | Narrow the result: use `selector` or `jpeg` for screenshots, and read smaller pieces.                                                      |
 | `debugger_unavailable`  | 502  | Chrome refused the debugger attach, for example because DevTools is open or policy blocks it.                                                                                                                                                                                    | Close DevTools for that tab and retry.                                                                                                     |
 | `browser_error`         | 502  | The extension reported an error without a code.                                                                                                                                                                                                                                  | Read the message, retry once, then report it.                                                                                              |
@@ -1700,7 +1721,7 @@ omw install-skill DIRECTORY
 omw skill
 ```
 
-`install-skill` writes the bundled agent guide to `DIRECTORY/oh-my-webbridge/SKILL.md` with mode 0600, and creates the directory with mode 0700. It refuses to overwrite an existing file.
+`install-skill` installs the guide and its offline references under `DIRECTORY/oh-my-webbridge/`. Use `omw install-skill --refresh DIRECTORY` after updating the binary to replace the bundled paths while preserving other files.
 
 `skill` prints the same guide to stdout.
 
@@ -1820,7 +1841,7 @@ const result = await task.call(
 | `timeoutMs` | `number`      | `30000` | Deadline for the command, including its time in the queue, 1 to 120000. Another value rejects with `invalid_request` before the request is sent. |
 | `signal`    | `AbortSignal` | none    | Cancels the request. It is combined with an internal timeout of `timeoutMs + 5000`.                                                              |
 
-The request is aborted locally 5 seconds after the daemon deadline. That gives the daemon time to answer with `outcome_unknown` when the page did not finish. A request aborted through `signal` rejects with an `AbortError`; a request aborted by the internal timeout rejects with a `TimeoutError`.
+The request is aborted locally 5 seconds after the daemon deadline. This gives the daemon time to report `command_not_sent` (HTTP 408) if it stopped before writing, or `outcome_unknown` (HTTP 504) if the command may have run. A request aborted through `signal` rejects with an `AbortError`; a request aborted by the internal timeout rejects with a `TimeoutError`.
 
 ```js
 const controller = new AbortController();
@@ -1856,6 +1877,7 @@ try {
 | `busy`                                     | Command capacity is full. HTTP 429. Retry after a running command finishes.                                                          |
 | `outcome_unknown`                          | The command may have taken effect. Read the page before retrying. HTTP 504.                                                          |
 | `wait_timeout`                             | The `wait` condition did not hold before `timeoutMs` ran out. The page is unchanged. HTTP 408.                                       |
+| `command_not_sent`                         | The daemon stopped before writing the request to the browser. HTTP 408.                                                              |
 | `invalid_args`, `invalid_request`          | The arguments were rejected before dispatch. HTTP 400.                                                                               |
 | `http_error`                               | The reply was not JSON, so the daemon's error object is missing. The message is `HTTP <status>: <first 200 characters of the body>`. |
 

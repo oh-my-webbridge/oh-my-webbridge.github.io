@@ -51,20 +51,27 @@
 
 ## 导航与标签页 [#navigation-and-tabs]
 
-| 动作            | 参数                                       | 备注                                                                                                         |
-| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `navigate`      | `url`、`newTab`、`group_title`、预设字段   | 除非会话已有目前标签页，或设置了 `newTab`，否则打开一个背景任务标签页。URL 必须是 HTTP(S) 或 `about:blank`。 |
-| `find_tab`      | `url`（完整 URL 或主机名称）、`active`     | 为会话认领既有标签页。`active: true` 借用浏览器的使用中标签页。返回 `tabId`、`url`、`borrowed`。             |
-| `list_tabs`     | 无                                         | 列出这个会话拥有或借用的标签页，含 `tabId`、`url`、`title`、`active`、`borrowed`、`groupTitle`。             |
-| `switch_tab`    | `tabId`                                    | 让该标签页成为目前标签页。已被丢弃的标签页会先重新加载；结果会回报 `revived`。                               |
-| `window_new`    | `url`、预设字段                            | 打开独立的窗口，认领其标签页，并返回 `tabId` 与 `windowId`。                                                 |
-| `close_tab`     | `tabId`                                    | 关闭会话创建的标签页。借用的标签页不会被关闭。                                                               |
-| `close_session` | 无                                         | 关闭任务标签页、释放借用的标签页，并移除浏览器绑定。返回已关闭的标签页数量。                                 |
-| `history`       | `cmd`：`list`、`back`、`forward`、`reload` | `list` 返回导航项目。每次 `history` 调用都会丢弃该标签页的引用与框架选择。                                   |
+| 动作            | 参数                                       | 备注                                                                                                                    |
+| --------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `navigate`      | `url`、`newTab`、`group_title`、预设字段   | 除非会话已有目前标签页，或设置了 `newTab`，否则打开一个背景任务标签页。URL 必须是 HTTP(S) 或 `about:blank`。            |
+| `find_tab`      | `url`（完整 URL 或主机名称）、`active`     | 为会话认领既有标签页。`active: true` 借用浏览器的使用中标签页。返回 `tabId`、`url`、`borrowed`。                        |
+| `borrow_tab`    | 指定完整的 `url` 或 `tabId`，两者择一      | 借用指定标签页并保留窗口焦点。网址符合多个标签页时返回 `ambiguous_tab`。运行 `close_session` 后，借用的标签页仍会打开。 |
+| `list_tabs`     | 无                                         | 列出这个会话拥有或借用的标签页，含 `tabId`、`url`、`title`、`active`、`borrowed`、`groupTitle`。                        |
+| `switch_tab`    | `tabId`                                    | 让该标签页成为目前标签页。已被丢弃的标签页会先重新加载；结果会回报 `revived`。                                          |
+| `window_new`    | `url`、预设字段                            | 打开独立的窗口，认领其标签页，并返回 `tabId` 与 `windowId`。                                                            |
+| `close_tab`     | `tabId`                                    | 关闭会话创建的标签页。借用的标签页不会被关闭。                                                                          |
+| `close_session` | 无                                         | 关闭任务标签页、释放借用的标签页，并移除浏览器绑定。返回已关闭的标签页数量。                                            |
+| `history`       | `cmd`：`list`、`back`、`forward`、`reload` | `list` 返回导航项目。每次 `history` 调用都会丢弃该标签页的引用与框架选择。                                              |
 
 一个会话最多持有 32 个标签页，任务标签页与借用的标签页合计。
 
+`release_tabs` 接受 `keep` 和 `close` 标签页 ID 数组。保留的页面会解除认领，只有会话自己打开的标签页可以关闭。返回的 `kept`、`closed`、`released`、`skipped`（已不属于此会话）和 `failed`（标签页 ID、代码、消息）列出各标签页的处理结果。请只重试失败项目。未列出的标签页仍在会话中。可以关闭剩余的自有标签页时，再运行 `close_session`。
+
 ## 读取 [#reading]
+
+`read_page` 接受 UTF-16 的 `offset` 与 `pageSize`（2 至 192000，默认 192000）。用返回的 `nextOffset` 继续读取，直到 `complete` 为 true、`nextOffset` 为 null。返回的分段不会拆开代理字符对。每次调用都读取所选帧的目前文档；编辑可能改变偏移量。导航或更换帧后，从零开始读取新页面。若起始偏移落在代理字符对中间，会从该字符对的开头读取。
+
+`snapshot` 接受 `selector`，只传回符合元素的无障碍子树，也可使用上一份快照的引用。子树快照会产生新引用，限制与有效期限和整页快照相同。
 
 | 动作            | 参数                                                    | 备注                                                                                                                                                  |
 | --------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -155,7 +162,9 @@
 
 ## 批量 [#batch]
 
-`batch` 接受 `steps`，这是由 `{ action, args }` 对象组成的数组，含 1 到 64 项。步骤在同一个请求中依序运行，并在第一个错误时停止。错误保留失败步骤的错误码，消息以 `batch step N of M (action):` 开头，表示第 1 到第 N-1 步已经完成。已完成的步骤不会还原。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 与 `artifact_close` 不能出现在批量内。
+`batch` 接受含 1 到 64 个对象的 `steps` 数组。每个步骤都要有 `action` 字符串，可选择提供 `args` 对象。步骤的字段有误时，会在任何浏览器动作开始前返回 `invalid_args` 并指出步骤编号。使用 Firefox 时，daemon 也会在浏览器开始运行批量前准备上传文件。
+
+开始运行后，步骤会依序进行，遇到第一个错误便停止。回复保留失败动作的错误码，消息以 `batch step N of M (action):` 开头。前面已运行的动作仍会生效。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 与 `artifact_close` 要分开调用。
 
 ## 预设 [#presets]
 
@@ -199,6 +208,8 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 ## 错误 [#errors]
 
+`command_not_sent`（HTTP 408）表示请求在开始写入传输连接前就已结束。若已写入、仍在等待浏览器回复时请求结束，则返回 `outcome_unknown`。CLI 把错误码写到 stderr，并在 stdout 保留 JSON 回复。
+
 每个错误都带有 `code` 与 `message`。HTTP 状态码列于下方；这里未列出的错误码返回 502。
 
 | 错误码                  | HTTP | 意义                                                                                                                                                                         | 处理方式                                                                                                         |
@@ -211,7 +222,9 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 | `session_browser`       | 409  | 会话绑定到另一个浏览器，而请求指定了这个浏览器。                                                                                                                             | 移除 `browser`，或关闭该会话并开始新的会话。                                                                     |
 | `outcome_unknown`       | 504  | 命令可能已经运行：期限、取消、传输写入或断线切断了回复，或命令运行期间页面导航或调试器中断连接。消息会指出原因。                                                             | 重复之前，先观察页面或网络状态。切勿盲目重送提交、付款或发布操作。                                               |
 | `wait_timeout`          | 408  | `wait` 的条件在期限前没有成立。`wait` 不会变更页面。                                                                                                                         | 以更长的期限再次发送 `wait`，或检查条件。                                                                        |
+| `command_not_sent`      | 408  | 请求在开始写入传输连接前就已结束。                                                                                                                                           | 如果仍须运行该动作，可以重新发送命令。                                                                           |
 | `tab_busy`              | 409  | 该标签页属于另一个会话。                                                                                                                                                     | 使用这个会话持有的标签页，或使用另一个会话。                                                                     |
+| `ambiguous_tab`         | 409  | `borrow_tab` 指定的完整网址符合多个标签页。                                                                                                                                  | 使用用户指定的 `tabId`。                                                                                         |
 | `stale_ref`             | 409  | `@e` 引用比它所属的文档存活得更久。                                                                                                                                          | 重新取得 `snapshot`。                                                                                            |
 | `no_tab`                | 502  | 页面动作在会话还没有标签页时运行，或在目前标签页以 `close_tab` 以外的方式关闭之后运行。                                                                                      | 运行 `navigate` 或 `find_tab`，或传入会话另一个标签页的 `tabId`。                                                |
 | `tab_missing`           | 502  | `find_tab` 没有符合的标签页，或命令指定的标签页已经关闭。                                                                                                                    | 先在这个会话中打开该页面，或传入 `active: true` 借用浏览器的使用中标签页。标签页已关闭时，改在另一个标签页继续。 |
@@ -232,7 +245,7 @@ daemon 在内部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 | `download_missing`      | 502  | 浏览器没有列出该下载。                                                                                                                                                       | 重试 `download`。                                                                                                |
 | `download_failed`       | 502  | 浏览器中断了下载。                                                                                                                                                           | 阅读消息并重试。                                                                                                 |
 | `file_access_required`  | 502  | Chrome 的 `upload` 需要扩展程序的“允许访问文件网址”开关，而它默认为关闭。                                                                                                    | 在 `chrome://extensions` 找到 oh-my-webbridge，打开“允许访问文件网址”后重试。                                    |
-| `window_failed`         | 502  | 新窗口没有标签页。                                                                                                                                                           | 重试 `window_new`。                                                                                              |
+| `window_failed`         | 502  | 工作窗口没有标签页，或 Chrome 无法找到一般窗口、创建标签页或窗口，或将标签页加入分组。                                                                                       | 查看消息指出的操作。没有可用的一般 Chrome 窗口时，请先打开一个。                                                 |
 | `result_too_large`      | 502  | 结果在传输时超过 32 MiB、保存的屏幕截图或 PDF 超过 100 MiB，或网络本文在 Chrome 中超过 2 Mi 个字符、在 Firefox 中超过 1 MiB。                                                | 缩小结果：屏幕截图使用 `selector` 或 `jpeg`，并读取较小的片段。                                                  |
 | `debugger_unavailable`  | 502  | Chrome 拒绝附加调试工具，例如因为 DevTools 已打开，或原则拦截了它。                                                                                                          | 关闭该标签页的 DevTools 并重试。                                                                                 |
 | `browser_error`         | 502  | 扩展程序回报了没有错误码的错误。                                                                                                                                             | 阅读消息，重试一次，然后回报。                                                                                   |

@@ -10,6 +10,10 @@ Chrome 与 Firefox 可以并行使用，且各自独立配对。
 
 ## 系统需求 [#requirements]
 
+扩展程序和 daemon 使用相同的通信协议即可连接；新动作可能需要更新。`omw doctor` 会分别显示每个浏览器的扩展程序版本和兼容状态。连接设置会列出双方版本。旧组件若未提供版本，会显示为未知。
+
+更新时请安装对应的 daemon 可执行文件与浏览器商店版本。通过服务管理员重新启动用户服务；手动启动的 daemon 可用 `omw stop` 和 `omw start` 重新启动。保留设置和配对，并从同一发布版本的 agent kit 更新 Skill。两个浏览器重新连接后，运行 `omw doctor` 确认。
+
 - Chrome 156 或更新版本，或 Firefox 153 或更新版本。
 - macOS 或 Linux，且与浏览器在同一台电脑上。
 - 解开发布版本封存盘需要 `zstd`。
@@ -144,7 +148,7 @@ systemctl --user disable --now oh-my-webbridge.service
 
 ## 安装 Agent 技能 [#install-the-agent-skill]
 
-`omw install-skill DIR` 会写入 `DIR/oh-my-webbridge/SKILL.md`，并复制内置于可执行文件的指南。它拒绝覆写既有文件，所以重新安装前请先删除旧文件。`omw skill` 会输出同一份指南。这份指南告诉 Agent 要运行哪些命令、会话与标签页拥有权如何运行，以及可能遇到哪些错误。
+`omw install-skill DIR` 会将指南和同版本的参考文档安装到 `DIR/oh-my-webbridge/`。更新 CLI 后，运行 `omw install-skill --refresh DIR` 即可更新这些文件，并保留其他文件。`omw skill` 会输出入口指南。
 
 ## 第一批命令 [#first-commands]
 

@@ -49,20 +49,27 @@
 
 ## 導覽與分頁 [#navigation-and-tabs]
 
-| 動作            | 引數                                       | 備註                                                                                                         |
-| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `navigate`      | `url`、`newTab`、`group_title`、預設集欄位 | 除非工作階段已有目前分頁，或設定了 `newTab`，否則開啟一個背景任務分頁。URL 必須是 HTTP(S) 或 `about:blank`。 |
-| `find_tab`      | `url`（完整 URL 或主機名稱）、`active`     | 為工作階段認領既有分頁。`active: true` 借用瀏覽器的使用中分頁。回傳 `tabId`、`url`、`borrowed`。             |
-| `list_tabs`     | 無                                         | 列出這個工作階段擁有或借用的分頁，含 `tabId`、`url`、`title`、`active`、`borrowed`、`groupTitle`。           |
-| `switch_tab`    | `tabId`                                    | 讓該分頁成為目前分頁。已被丟棄的分頁會先重新載入；結果會回報 `revived`。                                     |
-| `window_new`    | `url`、預設集欄位                          | 開啟獨立的視窗，認領其分頁，並回傳 `tabId` 與 `windowId`。                                                   |
-| `close_tab`     | `tabId`                                    | 關閉工作階段建立的分頁。借用的分頁不會被關閉。                                                               |
-| `close_session` | 無                                         | 關閉任務分頁、釋放借用的分頁，並移除瀏覽器綁定。回傳已關閉的分頁數量。                                       |
-| `history`       | `cmd`：`list`、`back`、`forward`、`reload` | `list` 回傳導覽項目。每次 `history` 呼叫都會丟棄該分頁的參照與框架選擇。                                     |
+| 動作            | 引數                                       | 備註                                                                                                              |
+| --------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `navigate`      | `url`、`newTab`、`group_title`、預設集欄位 | 除非工作階段已有目前分頁，或設定了 `newTab`，否則開啟一個背景任務分頁。URL 必須是 HTTP(S) 或 `about:blank`。      |
+| `find_tab`      | `url`（完整 URL 或主機名稱）、`active`     | 為工作階段認領既有分頁。`active: true` 借用瀏覽器的使用中分頁。回傳 `tabId`、`url`、`borrowed`。                  |
+| `borrow_tab`    | 指定完整的 `url` 或 `tabId`，兩者擇一      | 借用指定分頁並保留視窗焦點。網址符合多個分頁時回傳 `ambiguous_tab`。執行 `close_session` 後，借用的分頁仍會開啟。 |
+| `list_tabs`     | 無                                         | 列出這個工作階段擁有或借用的分頁，含 `tabId`、`url`、`title`、`active`、`borrowed`、`groupTitle`。                |
+| `switch_tab`    | `tabId`                                    | 讓該分頁成為目前分頁。已被丟棄的分頁會先重新載入；結果會回報 `revived`。                                          |
+| `window_new`    | `url`、預設集欄位                          | 開啟獨立的視窗，認領其分頁，並回傳 `tabId` 與 `windowId`。                                                        |
+| `close_tab`     | `tabId`                                    | 關閉工作階段建立的分頁。借用的分頁不會被關閉。                                                                    |
+| `close_session` | 無                                         | 關閉任務分頁、釋放借用的分頁，並移除瀏覽器綁定。回傳已關閉的分頁數量。                                            |
+| `history`       | `cmd`：`list`、`back`、`forward`、`reload` | `list` 回傳導覽項目。每次 `history` 呼叫都會丟棄該分頁的參照與框架選擇。                                          |
 
 一個工作階段最多持有 32 個分頁，任務分頁與借用的分頁合計。
 
+`release_tabs` 接受 `keep` 和 `close` 分頁 ID 陣列。保留的頁面會解除認領，只有工作階段自己開啟的分頁可以關閉。回傳的 `kept`、`closed`、`released`、`skipped`（已不屬於此工作階段）和 `failed`（分頁 ID、代碼、訊息）列出各分頁的處理結果。請只重試失敗項目。未列出的分頁仍在工作階段中。可以關閉剩餘的自有分頁時，再執行 `close_session`。
+
 ## 讀取 [#reading]
+
+`read_page` 接受 UTF-16 的 `offset` 與 `pageSize`（2 至 192000，預設 192000）。用回傳的 `nextOffset` 繼續讀取，直到 `complete` 為 true、`nextOffset` 為 null。回傳的分段不會拆開代理字元對。每次呼叫都讀取所選訊框的目前文件；編輯可能改變偏移量。導覽或更換訊框後，從零開始讀取新頁面。若起始偏移落在代理字元對中間，會從該字元對的開頭讀取。
+
+`snapshot` 接受 `selector`，只傳回符合元素的無障礙子樹，也可使用上一份快照的參照。子樹快照會產生新參照，限制與有效期限和整頁快照相同。
 
 | 動作            | 引數                                                    | 備註                                                                                                                                                  |
 | --------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -153,7 +160,9 @@
 
 ## 批次 [#batch]
 
-`batch` 接受 `steps`，這是由 `{ action, args }` 物件組成的陣列，含 1 到 64 項。步驟在同一個請求中依序執行，並在第一個錯誤時停止。錯誤保留失敗步驟的錯誤碼，訊息以 `batch step N of M (action):` 開頭，表示第 1 到第 N-1 步已經完成。已完成的步驟不會還原。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 與 `artifact_close` 不能出現在批次內。
+`batch` 接受含 1 到 64 個物件的 `steps` 陣列。每個步驟都要有 `action` 字串，可選擇提供 `args` 物件。步驟的欄位有誤時，會在任何瀏覽器動作開始前回傳 `invalid_args` 並指出步驟編號。使用 Firefox 時，daemon 也會在瀏覽器開始執行批次前準備上傳檔案。
+
+開始執行後，步驟會依序進行，遇到第一個錯誤便停止。回覆保留失敗動作的錯誤碼，訊息以 `batch step N of M (action):` 開頭。前面已執行的動作仍會生效。`batch`、`close_session`、`screenshot`、`save_as_pdf`、`artifact_read` 與 `artifact_close` 要分開呼叫。
 
 ## 預設集 [#presets]
 
@@ -197,6 +206,8 @@ daemon 在內部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 
 ## 錯誤 [#errors]
 
+`command_not_sent`（HTTP 408）表示請求在開始寫入傳輸連線前就已結束。若已寫入、仍在等待瀏覽器回覆時請求結束，則回傳 `outcome_unknown`。CLI 把錯誤碼寫到 stderr，並在 stdout 保留 JSON 回覆。
+
 每個錯誤都帶有 `code` 與 `message`。HTTP 狀態碼列於下方；這裡未列出的錯誤碼回傳 502。
 
 | 錯誤碼                  | HTTP | 意義                                                                                                                                                                         | 處理方式                                                                                                       |
@@ -209,7 +220,9 @@ daemon 在內部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 | `session_browser`       | 409  | 工作階段綁定到另一個瀏覽器，而請求指定了這個瀏覽器。                                                                                                                         | 移除 `browser`，或關閉該工作階段並開始新的工作階段。                                                           |
 | `outcome_unknown`       | 504  | 指令可能已經執行：期限、取消、傳輸寫入或斷線切斷了回覆，或指令執行期間頁面導覽或偵錯器中斷連線。訊息會指出原因。                                                             | 重複之前，先觀察頁面或網路狀態。切勿盲目重送提交、付款或發布操作。                                             |
 | `wait_timeout`          | 408  | `wait` 的條件在期限前沒有成立。`wait` 不會變更頁面。                                                                                                                         | 以更長的期限再次送出 `wait`，或檢查條件。                                                                      |
+| `command_not_sent`      | 408  | 請求在開始寫入傳輸連線前就已結束。                                                                                                                                           | 如果仍須執行該動作，可以重新送出指令。                                                                         |
 | `tab_busy`              | 409  | 該分頁屬於另一個工作階段。                                                                                                                                                   | 使用這個工作階段持有的分頁，或使用另一個工作階段。                                                             |
+| `ambiguous_tab`         | 409  | `borrow_tab` 指定的完整網址符合多個分頁。                                                                                                                                    | 使用使用者指定的 `tabId`。                                                                                     |
 | `stale_ref`             | 409  | `@e` 參照比它所屬的文件存活得更久。                                                                                                                                          | 重新取得 `snapshot`。                                                                                          |
 | `no_tab`                | 502  | 頁面動作在工作階段還沒有分頁時執行，或在目前分頁以 `close_tab` 以外的方式關閉之後執行。                                                                                      | 執行 `navigate` 或 `find_tab`，或傳入工作階段另一個分頁的 `tabId`。                                            |
 | `tab_missing`           | 502  | `find_tab` 沒有符合的分頁，或指令指定的分頁已經關閉。                                                                                                                        | 先在這個工作階段中開啟該頁面，或傳入 `active: true` 借用瀏覽器的使用中分頁。分頁已關閉時，改在另一個分頁繼續。 |
@@ -230,7 +243,7 @@ daemon 在內部使用 `cdp_attach`、`cdp_detach`、`artifact_read`、`artifact
 | `download_missing`      | 502  | 瀏覽器沒有列出該下載。                                                                                                                                                       | 重試 `download`。                                                                                              |
 | `download_failed`       | 502  | 瀏覽器中斷了下載。                                                                                                                                                           | 閱讀訊息並重試。                                                                                               |
 | `file_access_required`  | 502  | Chrome 的 `upload` 需要擴充功能的「允許存取檔案網址」開關，而它預設為關閉。                                                                                                  | 在 `chrome://extensions` 找到 oh-my-webbridge，開啟「允許存取檔案網址」後重試。                                |
-| `window_failed`         | 502  | 新視窗沒有分頁。                                                                                                                                                             | 重試 `window_new`。                                                                                            |
+| `window_failed`         | 502  | 工作視窗沒有分頁，或 Chrome 無法找到一般視窗、建立分頁或視窗，或將分頁加入群組。                                                                                             | 查看訊息指出的操作。沒有可用的一般 Chrome 視窗時，請先開啟一個。                                               |
 | `result_too_large`      | 502  | 結果在傳輸時超過 32 MiB、儲存的螢幕截圖或 PDF 超過 100 MiB，或網路本文在 Chrome 中超過 2 Mi 個字元、在 Firefox 中超過 1 MiB。                                                | 縮小結果：螢幕截圖使用 `selector` 或 `jpeg`，並讀取較小的片段。                                                |
 | `debugger_unavailable`  | 502  | Chrome 拒絕附加偵錯工具，例如因為 DevTools 已開啟，或原則封鎖了它。                                                                                                          | 關閉該分頁的 DevTools 並重試。                                                                                 |
 | `browser_error`         | 502  | 擴充功能回報了沒有錯誤碼的錯誤。                                                                                                                                             | 閱讀訊息，重試一次，然後回報。                                                                                 |
